@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SuperAdmin — Clínica Hope Plataforma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #07090f;
+  --card:   #0e1118;
+  --border: #1c2333;
+  --accent: #00e5a0;
+  --accent2:#0080ff;
+  --warn:   #f59e0b;
+  --danger: #ef4444;
+  --text:   #e8edf5;
+  --muted:  #5a6478;
+  --radius: 12px;
+  --font-h: 'Syne', sans-serif;
+  --font-b: 'DM Sans', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font-b); background:var(--bg); color:var(--text); font-size:14px; }
+
+/* LAYOUT */
+.shell { display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
+
+/* SIDEBAR */
+.side {
+  background:var(--card);
+  border-right:1px solid var(--border);
+  padding:28px 16px;
+  display:flex; flex-direction:column;
+  position:sticky; top:0; height:100vh;
+}
+.side-logo {
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:36px; padding:0 8px;
+}
+.logo-dot {
+  width:36px; height:36px; border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-h); font-weight:800; font-size:18px; color:#000;
+}
+.logo-text { font-family:var(--font-h); font-weight:700; font-size:15px; line-height:1.2; }
+.logo-sub  { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+
+.nav-group { margin-bottom:24px; }
+.nav-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); padding:0 10px; margin-bottom:6px; }
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 10px; border-radius:8px;
+  color:var(--muted); font-size:13px; font-weight:500;
+  cursor:pointer; transition:all .15s; margin-bottom:2px;
+  text-decoration:none;
+}
+.nav-item:hover { background:rgba(255,255,255,.04); color:var(--text); }
+.nav-item.active { background:rgba(0,229,160,.08); color:var(--accent); }
+.nav-icon { font-size:16px; width:20px; text-align:center; }
+.side-bottom { margin-top:auto; }
+.super-badge {
+  background:linear-gradient(135deg,rgba(0,229,160,.15),rgba(0,128,255,.1));
+  border:1px solid rgba(0,229,160,.2);
+  border-radius:8px; padding:12px; margin-bottom:12px;
+}
+.super-badge-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:700; }
+.super-badge-name  { font-size:13px; font-weight:600; margin-top:2px; }
+
+/* MAIN */
+.main { padding:32px; overflow-x:hidden; }
+.page { display:none; }
+.page.active { display:block; }
+
+/* HEADER */
+.page-head { margin-bottom:28px; }
+.page-head h1 { font-family:var(--font-h); font-size:26px; font-weight:700; }
+.page-head p  { color:var(--muted); font-size:13px; margin-top:4px; }
+
+/* METRICS */
+.metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+.metric-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px;
+  position:relative; overflow:hidden;
+}
+.metric-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+}
+.metric-card.green::before  { background:var(--accent); }
+.metric-card.blue::before   { background:var(--accent2); }
+.metric-card.warn::before   { background:var(--warn); }
+.metric-card.danger::before { background:var(--danger); }
+
+.metric-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:10px; }
+.metric-val   { font-family:var(--font-h); font-size:32px; font-weight:700; line-height:1; }
+.metric-val.green  { color:var(--accent); }
+.metric-val.blue   { color:var(--accent2); }
+.metric-val.warn   { color:var(--warn); }
+.metric-val.danger { color:var(--danger); }
+.metric-sub { font-size:12px; color:var(--muted); margin-top:6px; }
+
+/* TABLE CARD */
+.tcard {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; margin-bottom:24px;
+}
+.tcard-head {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 20px; border-bottom:1px solid var(--border);
+}
+.tcard-title { font-family:var(--font-h); font-size:15px; font-weight:600; }
+.tcard-sub   { font-size:12px; color:var(--muted); margin-top:2px; }
+
+table { width:100%; border-collapse:collapse; }
+th {
+  padding:12px 16px; font-size:11px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.6px; color:var(--muted);
+  text-align:left; border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+}
+td {
+  padding:13px 16px; font-size:13px; border-bottom:1px solid rgba(255,255,255,.04);
+  vertical-align:middle;
+}
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(255,255,255,.02); }
+
+/* BADGES */
+.badge {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;
+}
+.badge-green  { background:rgba(0,229,160,.12); color:var(--accent); }
+.badge-warn   { background:rgba(245,158,11,.12); color:var(--warn); }
+.badge-danger { background:rgba(239,68,68,.12); color:var(--danger); }
+.badge-blue   { background:rgba(0,128,255,.12); color:var(--accent2); }
+.badge-gray   { background:rgba(255,255,255,.06); color:var(--muted); }
+
+/* CHART BARS */
+.bar-chart { padding:20px; }
+.bar-row { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.bar-label { width:140px; font-size:12px; color:var(--text); flex-shrink:0; }
+.bar-track { flex:1; height:8px; background:rgba(255,255,255,.06); border-radius:4px; overflow:hidden; }
+.bar-fill  { height:100%; border-radius:4px; transition:width .8s ease; }
+.bar-fill.green  { background:var(--accent); }
+.bar-fill.blue   { background:var(--accent2); }
+.bar-fill.warn   { background:var(--warn); }
+.bar-val { width:60px; text-align:right; font-size:12px; font-weight:600; color:var(--muted); }
+
+/* REVENUE GRID */
+.rev-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+
+/* ACTIVITY FEED */
+.activity-list { padding:8px 0; }
+.activity-item {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:12px 20px; border-bottom:1px solid rgba(255,255,255,.03);
+}
+.activity-dot {
+  width:8px; height:8px; border-radius:50%; margin-top:4px; flex-shrink:0;
+}
+.activity-text { font-size:13px; line-height:1.5; }
+.activity-time { font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* BUTTONS */
+.btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; border-radius:8px; border:none;
+  font-family:var(--font-b); font-size:13px; font-weight:600;
+  cursor:pointer; transition:all .2s;
+}
+.btn-accent { background:var(--accent); color:#000; }
+.btn-accent:hover { opacity:.85; transform:translateY(-1px); }
+.btn-ghost  { background:rgba(255,255,255,.06); color:var(--text); }
+.btn-ghost:hover { background:rgba(255,255,255,.1); }
+.btn-danger { background:rgba(239,68,68,.15); color:var(--danger); border:1px solid rgba(239,68,68,.2); }
+
+/* FILTER BAR */
+.filter-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.sel {
+  padding:8px 12px; background:var(--card); border:1px solid var(--border);
+  border-radius:8px; color:var(--text); font-family:var(--font-b);
+  font-size:13px; outline:none; cursor:pointer;
+}
+.sel:focus { border-color:var(--accent); }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:24px; right:24px; z-index:9999;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:14px 20px; font-size:13px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+  animation:toastIn .3s ease;
+  display:none;
+}
+.toast.show { display:block; }
+@keyframes toastIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* PLAN CARDS */
+.plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-bottom:24px; }
+.plan-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:24px;
+}
+.plan-card.featured { border-color:rgba(0,229,160,.3); }
+.plan-name { font-family:var(--font-h); font-size:18px; font-weight:700; margin-bottom:4px; }
+.plan-price { font-size:32px; font-weight:700; color:var(--accent); margin:12px 0; }
+.plan-price span { font-size:14px; color:var(--muted); font-weight:400; }
+.plan-clients { font-size:28px; font-weight:700; }
+.plan-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+
+/* EMPTY STATE */
+.empty { text-align:center; padding:48px 24px; color:var(--muted); }
+.empty-icon { font-size:40px; margin-bottom:12px; opacity:.4; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="side">
+  <div class="side-logo">
+    <div class="logo-dot">S</div>
+    <div>
+      <div class="logo-text">Hope Platform</div>
+      <div class="logo-sub">Super Admin</div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Visão Geral</div>
+    <a class="nav-item active" onclick="goTo('dashboard')"><span class="nav-icon">◈</span> Dashboard</a>
+    <a class="nav-item" onclick="goTo('clinicas')"><span class="nav-icon">⬡</span> Clínicas</a>
+    <a class="nav-item" onclick="goTo('contratos')"><span class="nav-icon">◎</span> Contratos</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Financeiro</div>
+    <a class="nav-item" onclick="goTo('financeiro')"><span class="nav-icon">◇</span> Receita da Plataforma</a>
+    <a class="nav-item" onclick="goTo('inadimplentes')"><span class="nav-icon">⚠</span> Inadimplentes</a>
+    <a class="nav-item" onclick="goTo('planos')"><span class="nav-icon">⊞</span> Planos & Preços</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Sistema</div>
+    <a class="nav-item" onclick="goTo('atividade')"><span class="nav-icon">⟳</span> Atividade</a>
+  </div>
+
+  <div class="side-bottom">
+    <div class="super-badge">
+      <div class="super-badge-label">Super Admin</div>
+      <div class="super-badge-name" id="saName">Carregando...</div>
+    </div>
+    <a class="nav-item" onclick="sair()"><span class="nav-icon">→</span> Sair</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section id="pageDashboard" class="page active">
+    <div class="page-head">
+      <h1>Dashboard da Plataforma</h1>
+      <p>Visão consolidada de todas as clínicas parceiras</p>
+    </div>
+
+    <div class="metrics" id="metricsGerais"></div>
+
+    <div class="rev-grid">
+      <div class="tcard">
+        <div class="tcard-head">
+          <div>
+            <div class="tcard-title">Receita por Plano</div>
+            <div class="tcard-sub">MRR por categoria de assinatura</div>
+          </div>
+        </div>
+        <div class="bar-chart" id="chartPlanos"></div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-head">
+          <div>
+            <div class="tcard-title">Status das Assinaturas</div>
+            <div class="tcard-sub">Situação atual das clínicas</div>
+          </div>
+        </div>
+        <div class="bar-chart" id="chartStatus"></div>
+      </div>
+    </div>
+
+    <div class="tcard">
+      <div class="tcard-head">
+        <div>
+          <div class="tcard-title">Atividade Recente</div>
+          <div class="tcard-sub">Últimos eventos na plataforma</div>
+        </div>
+      </div>
+      <div class="activity-list" id="feedAtividade"></div>
+    </div>
+  </section>
+
+  <!-- CLÍNICAS -->
+  <section id="pageClinicas" class="page">
+    <div class="page-head">
+      <h1>Clínicas Parceiras</h1>
+      <p>Todas as clínicas que usam a plataforma</p>
+    </div>
+    <div class="filter-bar">
+      <select class="sel" id="filtroStatusClinica" onchange="renderClinicas()">
+        <option value="">Todos os status</option>
+        <option value="ativa">Ativas</option>
+        <option value="trial">Em trial</option>
+        <option value="suspensa">Suspensas</option>
+        <option value="cancelada">Canceladas</option>
+      </select>
+      <select class="sel" id="filtroPlanoClinica" onchange="renderClinicas()">
+        <option value="">Todos os planos</option>
+        <option value="basico">Básico</option>
+        <option value="profissional">Profissional</option>
+        <option value="enterprise">Enterprise</option>
+      </select>
+    </div>
+    <div class="tcard">
+      <table>
+        <thead>
+          <tr><th>Clínica</th><th>Proprietária</th><th>Plano</th><th>Psicólogas</th><th>Contratos</th><th>MRR</th><th>Status</th><th>Vencimento</th><th>Ação</th></tr>
+        </thead>
+        <tbody id="tabelaClinicas"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CONTRATOS -->
+  <section id="pageContratos" class="page">
+    <div class="page-head">
+      <h1>Contratos Gerados</h1>
+      <p>Todos os contratos de sublocação de todas as clínicas</p>
+    </div>
+    <div class="filter-bar">
+      <select class="sel" id="filtroClinicaContrato" onchange="renderContratos()">
+        <option value="">Todas as clínicas</option>
+      </select>
+      <select class="sel" id="filtroTipoContrato" onchange="renderContratos()">
+        <option value="">Todos os tipos</option>
+        <option value="avulso">Avulso</option>
+        <option value="bloco">Bloco</option>
+      </select>
+      <select class="sel" id="filtroStatusContrato" onchange="renderContratos()">
+        <option value="">Todos os status</option>
+        <option value="ativo">Ativo</option>
+        <option value="expirado">Expirado</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+    </div>
+    <div class="tcard">
+      <table>
+        <thead>
+          <tr><th>Clínica</th><th>Psicóloga</th><th>Tipo</th><th>Valor</th><th>Início</th><th>Validade</th><th>Status</th></tr>
+        </thead>
+        <tbody id="tabelaContratos"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FINANCEIRO -->
+  <section id="pageFinanceiro" class="page">
+    <div class="page-head">
+      <h1>Receita da Plataforma</h1>
+      <p>Seu faturamento como dono do SaaS</p>
+    </div>
+    <div class="metrics" id="metricsFinanceiro"></div>
+    <div class="tcard">
+      <div class="tcard-head">
+        <div class="tcard-title">Histórico de Cobranças — Assinaturas</div>
+      </div>
+      <table>
+        <thead><tr><th>Clínica</th><th>Plano</th><th>Valor</th><th>Competência</th><th>Status</th></tr></thead>
+        <tbody id="tabelaCobrancas"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- INADIMPLENTES -->
+  <section id="pageInadimplentes" class="page">
+    <div class="page-head">
+      <h1>Inadimplentes</h1>
+      <p>Clínicas com pagamento em atraso ou assinatura vencida</p>
+    </div>
+    <div class="metrics" id="metricsInad"></div>
+    <div class="tcard">
+      <table>
+        <thead><tr><th>Clínica</th><th>Plano</th><th>Valor</th><th>Vencimento</th><th>Dias em atraso</th><th>Ação</th></tr></thead>
+        <tbody id="tabelaInad"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PLANOS -->
+  <section id="pagePlanos" class="page">
+    <div class="page-head">
+      <h1>Planos & Preços</h1>
+      <p>Configure o que cada plano oferece e cobra</p>
+    </div>
+    <div class="plan-grid" id="planGrid"></div>
+    <div class="tcard">
+      <div class="tcard-head"><div class="tcard-title">Editar Plano</div></div>
+      <div style="padding:20px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+        <div>
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Plano Básico (R$/mês)</label>
+          <input type="number" id="precoBasico" class="sel" style="width:100%" value="49" />
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Plano Profissional (R$/mês)</label>
+          <input type="number" id="precoProfissional" class="sel" style="width:100%" value="97" />
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Plano Enterprise (R$/mês)</label>
+          <input type="number" id="precoEnterprise" class="sel" style="width:100%" value="197" />
+        </div>
+      </div>
+      <div style="padding:0 20px 20px">
+        <button class="btn btn-accent" onclick="salvarPlanos()">Salvar preços</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATIVIDADE -->
+  <section id="pageAtividade" class="page">
+    <div class="page-head">
+      <h1>Log de Atividade</h1>
+      <p>Todos os eventos registrados na plataforma</p>
+    </div>
+    <div class="tcard">
+      <div class="activity-list" id="feedCompleto"></div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ SEED DEMO DATA ═══
+const CLINICAS_DEMO = [
+  { id:'c1', nome:'Clínica Esperança', proprietaria:'Dra. Ana Lima', plano:'profissional', psis:9, contratos:14, mrr:97, status:'ativa', vencimento:'15/03/2026', cidade:'São Paulo' },
+  { id:'c2', nome:'Instituto Bem Estar', proprietaria:'Dra. Carla Souza', plano:'basico', psis:3, contratos:5, mrr:49, status:'ativa', vencimento:'08/03/2026', cidade:'Campinas' },
+  { id:'c3', nome:'Clínica Mente Sã', proprietaria:'Dra. Paula Ramos', plano:'enterprise', psis:18, contratos:32, mrr:197, status:'ativa', vencimento:'22/03/2026', cidade:'Rio de Janeiro' },
+  { id:'c4', nome:'Espaço Terapêutico', proprietaria:'Dra. Beatriz Costa', plano:'profissional', psis:6, contratos:8, mrr:97, status:'trial', vencimento:'28/02/2026', cidade:'Belo Horizonte' },
+  { id:'c5', nome:'Clínica Harmonia', proprietaria:'Dra. Fernanda Lima', plano:'basico', psis:2, contratos:3, mrr:49, status:'suspensa', vencimento:'10/02/2026', cidade:'Porto Alegre' },
+  { id:'c6', nome:'Centro Psico Sul', proprietaria:'Dra. Renata Melo', plano:'profissional', psis:7, contratos:11, mrr:97, status:'ativa', vencimento:'05/04/2026', cidade:'Curitiba' },
+];
+
+const CONTRATOS_DEMO = [
+  { clinica:'Clínica Esperança', psi:'Psi. Michelle', tipo:'semanal', valor:360, inicio:'01/01/2026', validade:'31/12/2026', status:'ativo' },
+  { clinica:'Clínica Esperança', psi:'Psi. Graziela', tipo:'bloco', valor:280, inicio:'01/02/2026', validade:'31/01/2027', status:'ativo' },
+  { clinica:'Instituto Bem Estar', psi:'Psi. Carla', tipo:'avulso', valor:90, inicio:'15/01/2026', validade:'14/01/2027', status:'ativo' },
+  { clinica:'Clínica Mente Sã', psi:'Psi. Renata', tipo:'bloco', valor:450, inicio:'01/01/2026', validade:'31/12/2026', status:'ativo' },
+  { clinica:'Clínica Harmonia', psi:'Psi. Laura', tipo:'avulso', valor:90, inicio:'01/11/2025', validade:'31/10/2026', status:'ativo' },
+  { clinica:'Centro Psico Sul', psi:'Psi. Amanda', tipo:'bloco', valor:320, inicio:'01/02/2026', validade:'31/01/2027', status:'ativo' },
+];
+
+const COBR_DEMO = [
+  { clinica:'Clínica Esperança', plano:'Profissional', valor:97, comp:'Fev/2026', status:'pago' },
+  { clinica:'Instituto Bem Estar', plano:'Básico', valor:49, comp:'Fev/2026', status:'pago' },
+  { clinica:'Clínica Mente Sã', plano:'Enterprise', valor:197, comp:'Fev/2026', status:'pago' },
+  { clinica:'Espaço Terapêutico', plano:'Profissional', valor:97, comp:'Fev/2026', status:'trial' },
+  { clinica:'Clínica Harmonia', plano:'Básico', valor:49, comp:'Jan/2026', status:'inadimplente' },
+  { clinica:'Centro Psico Sul', plano:'Profissional', valor:97, comp:'Fev/2026', status:'pago' },
+];
+
+const ATIVIDADE_DEMO = [
+  { cor:'#00e5a0', texto:'Nova clínica cadastrada: <strong>Centro Psico Sul</strong> — Plano Profissional', hora:'Hoje, 11:32' },
+  { cor:'#00e5a0', texto:'Contrato gerado: <strong>Psi. Amanda</strong> na Clínica Harmonia — Bloco R$ 320/mês', hora:'Hoje, 10:15' },
+  { cor:'#f59e0b', texto:'Pagamento pendente: <strong>Clínica Harmonia</strong> — R$ 49,00 (jan/2026)', hora:'Hoje, 08:00' },
+  { cor:'#0080ff', texto:'Nova psicóloga registrada: <strong>Psi. Renata Melo</strong> na Clínica Mente Sã', hora:'Ontem, 16:44' },
+  { cor:'#00e5a0', texto:'Assinatura renovada: <strong>Clínica Esperança</strong> — R$ 97,00', hora:'Ontem, 14:20' },
+  { cor:'#ef4444', texto:'Assinatura suspensa: <strong>Clínica Harmonia</strong> — inadimplência', hora:'Ontem, 09:10' },
+  { cor:'#00e5a0', texto:'Contrato assinado digitalmente: <strong>Psi. Graziela</strong> + Clínica Esperança', hora:'22/02, 15:30' },
+];
+
+// ═══ NAVEGAÇÃO ═══
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
+  event?.currentTarget?.classList.add('active');
+  const renders = { dashboard: renderDashboard, clinicas: renderClinicas, contratos: renderContratos, financeiro: renderFinanceiro, inadimplentes: renderInadimplentes, planos: renderPlanos, atividade: renderAtividade };
+  if (renders[page]) renders[page]();
+}
+
+// ═══ DASHBOARD ═══
+function renderDashboard() {
+  const ativas    = CLINICAS_DEMO.filter(c => c.status === 'ativa').length;
+  const mrr       = CLINICAS_DEMO.filter(c=>c.status==='ativa').reduce((s,c)=>s+c.mrr,0);
+  const contratos = CONTRATOS_DEMO.filter(c=>c.status==='ativo').length;
+  const inad      = CLINICAS_DEMO.filter(c=>c.status==='suspensa').length;
+
+  document.getElementById('metricsGerais').innerHTML = `
+    <div class="metric-card green">
+      <div class="metric-label">MRR — Receita Mensal</div>
+      <div class="metric-val green">R$ ${mrr.toLocaleString('pt-BR')}</div>
+      <div class="metric-sub">Receita recorrente mensal ativa</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-label">Clínicas Ativas</div>
+      <div class="metric-val blue">${ativas}</div>
+      <div class="metric-sub">de ${CLINICAS_DEMO.length} clínicas cadastradas</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Contratos Vigentes</div>
+      <div class="metric-val">${contratos}</div>
+      <div class="metric-sub">em todas as clínicas</div>
+    </div>
+    <div class="metric-card ${inad > 0 ? 'danger' : 'green'}">
+      <div class="metric-label">Inadimplentes</div>
+      <div class="metric-val ${inad > 0 ? 'danger' : 'green'}">${inad}</div>
+      <div class="metric-sub">clínicas com pagamento em atraso</div>
+    </div>
+  `;
+
+  // Chart planos
+  const planos = [{nome:'Enterprise',val:197,cls:'green'},{nome:'Profissional',val:291,cls:'blue'},{nome:'Básico',val:98,cls:'warn'}];
+  const maxP = Math.max(...planos.map(p=>p.val));
+  document.getElementById('chartPlanos').innerHTML = planos.map(p=>`
+    <div class="bar-row">
+      <div class="bar-label">${p.nome}</div>
+      <div class="bar-track"><div class="bar-fill ${p.cls}" style="width:${p.val/maxP*100}%"></div></div>
+      <div class="bar-val">R$ ${p.val}</div>
+    </div>
+  `).join('');
+
+  // Chart status
+  const statusData = [
+    {nome:'Ativas',val:ativas,cls:'green'},
+    {nome:'Trial',val:CLINICAS_DEMO.filter(c=>c.status==='trial').length,cls:'blue'},
+    {nome:'Suspensas',val:inad,cls:'danger'},
+  ];
+  const maxS = Math.max(...statusData.map(s=>s.val));
+  document.getElementById('chartStatus').innerHTML = statusData.map(s=>`
+    <div class="bar-row">
+      <div class="bar-label">${s.nome}</div>
+      <div class="bar-track"><div class="bar-fill ${s.cls}" style="width:${maxS>0?s.val/maxS*100:0}%"></div></div>
+      <div class="bar-val">${s.val}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('feedAtividade').innerHTML = ATIVIDADE_DEMO.slice(0,5).map(a=>`
+    <div class="activity-item">
+      <div class="activity-dot" style="background:${a.cor}"></div>
+      <div>
+        <div class="activity-text">${a.texto}</div>
+        <div class="activity-time">${a.hora}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══ CLÍNICAS ═══
+function renderClinicas() {
+  const fStatus = document.getElementById('filtroStatusClinica')?.value || '';
+  const fPlano  = document.getElementById('filtroPlanoClinica')?.value  || '';
+  const lista   = CLINICAS_DEMO.filter(c => {
+    if (fStatus && c.status !== fStatus) return false;
+    if (fPlano  && c.plano  !== fPlano)  return false;
+    return true;
+  });
+
+  const statusMap = { ativa:'badge-green', trial:'badge-blue', suspensa:'badge-danger', cancelada:'badge-gray' };
+  const planoMap  = { basico:'Básico', profissional:'Profissional', enterprise:'Enterprise' };
+
+  document.getElementById('tabelaClinicas').innerHTML = lista.map(c=>`
+    <tr>
+      <td><strong>${c.nome}</strong><br><span style="font-size:11px;color:var(--muted)">${c.cidade}</span></td>
+      <td>${c.proprietaria}</td>
+      <td><span class="badge badge-gray">${planoMap[c.plano]}</span></td>
+      <td>${c.psis}</td>
+      <td>${c.contratos}</td>
+      <td style="color:var(--accent);font-weight:700">R$ ${c.mrr}/mês</td>
+      <td><span class="badge ${statusMap[c.status]}">${c.status}</span></td>
+      <td style="font-size:12px">${c.vencimento}</td>
+      <td>
+        <button class="btn btn-ghost" style="font-size:11px;padding:6px 10px" onclick="verClinica('${c.id}')">Ver</button>
+        ${c.status==='suspensa'?`<button class="btn btn-accent" style="font-size:11px;padding:6px 10px;margin-left:4px" onclick="reativar('${c.id}')">Reativar</button>`:''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ═══ CONTRATOS ═══
+function renderContratos() {
+  const fClinica = document.getElementById('filtroClinicaContrato')?.value || '';
+  const fTipo    = document.getElementById('filtroTipoContrato')?.value    || '';
+  const fStatus  = document.getElementById('filtroStatusContrato')?.value  || '';
+
+  // Popular select de clínicas
+  const sel = document.getElementById('filtroClinicaContrato');
+  if (sel && sel.options.length === 1) {
+    CLINICAS_DEMO.forEach(c => {
+      const o = document.createElement('option'); o.value=c.nome; o.textContent=c.nome; sel.appendChild(o);
+    });
+  }
+
+  const lista = CONTRATOS_DEMO.filter(c => {
+    if (fClinica && c.clinica !== fClinica) return false;
+    if (fTipo    && c.tipo   !== fTipo)    return false;
+    if (fStatus  && c.status !== fStatus)  return false;
+    return true;
+  });
+
+  document.getElementById('tabelaContratos').innerHTML = lista.map(c=>`
+    <tr>
+      <td>${c.clinica}</td>
+      <td><strong>${c.psi}</strong></td>
+      <td><span class="badge ${c.tipo==='bloco'?'badge-blue':'badge-gray'}">${c.tipo}</span></td>
+      <td style="font-weight:700;color:var(--accent)">R$ ${c.valor.toLocaleString('pt-BR')}</td>
+      <td>${c.inicio}</td>
+      <td>${c.validade}</td>
+      <td><span class="badge ${c.status==='ativo'?'badge-green':'badge-gray'}">${c.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ═══ FINANCEIRO ═══
+function renderFinanceiro() {
+  const pago = COBR_DEMO.filter(c=>c.status==='pago').reduce((s,c)=>s+c.valor,0);
+  const inad = COBR_DEMO.filter(c=>c.status==='inadimplente').reduce((s,c)=>s+c.valor,0);
+
+  document.getElementById('metricsFinanceiro').innerHTML = `
+    <div class="metric-card green">
+      <div class="metric-label">Recebido este mês</div>
+      <div class="metric-val green">R$ ${pago.toLocaleString('pt-BR')}</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-label">ARR (Anual estimado)</div>
+      <div class="metric-val blue">R$ ${(pago*12).toLocaleString('pt-BR')}</div>
+    </div>
+    <div class="metric-card danger">
+      <div class="metric-label">Inadimplência</div>
+      <div class="metric-val danger">R$ ${inad.toLocaleString('pt-BR')}</div>
+    </div>
+  `;
+
+  const stMap = { pago:'badge-green', inadimplente:'badge-danger', trial:'badge-blue' };
+  document.getElementById('tabelaCobrancas').innerHTML = COBR_DEMO.map(c=>`
+    <tr>
+      <td><strong>${c.clinica}</strong></td>
+      <td>${c.plano}</td>
+      <td style="font-weight:700;color:var(--accent)">R$ ${c.valor.toLocaleString('pt-BR')}</td>
+      <td>${c.comp}</td>
+      <td><span class="badge ${stMap[c.status]||'badge-gray'}">${c.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ═══ INADIMPLENTES ═══
+function renderInadimplentes() {
+  const lista = CLINICAS_DEMO.filter(c=>c.status==='suspensa');
+  const total = lista.reduce((s,c)=>s+c.mrr,0);
+
+  document.getElementById('metricsInad').innerHTML = `
+    <div class="metric-card danger">
+      <div class="metric-label">Clínicas inadimplentes</div>
+      <div class="metric-val danger">${lista.length}</div>
+    </div>
+    <div class="metric-card warn">
+      <div class="metric-label">Valor em aberto</div>
+      <div class="metric-val warn">R$ ${total}</div>
+    </div>
+  `;
+
+  document.getElementById('tabelaInad').innerHTML = lista.length ? lista.map(c=>`
+    <tr>
+      <td><strong>${c.nome}</strong></td>
+      <td>${c.plano}</td>
+      <td>R$ ${c.mrr}/mês</td>
+      <td>${c.vencimento}</td>
+      <td style="color:var(--danger);font-weight:700">15 dias</td>
+      <td>
+        <button class="btn btn-accent" style="font-size:11px;padding:6px 12px" onclick="cobrar('${c.id}')">Cobrar via MP</button>
+        <button class="btn btn-danger" style="font-size:11px;padding:6px 12px;margin-left:4px" onclick="suspender('${c.id}')">Suspender</button>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">✓ Nenhuma inadimplência</td></tr>';
+}
+
+// ═══ PLANOS ═══
+function renderPlanos() {
+  const planos = [
+    { nome:'Básico', preco:49, cor:'blue', clientes: CLINICAS_DEMO.filter(c=>c.plano==='basico').length, recursos:['Até 5 salas','Até 10 psicólogas','Contratos básicos','Suporte padrão'] },
+    { nome:'Profissional', preco:97, cor:'green', clientes: CLINICAS_DEMO.filter(c=>c.plano==='profissional').length, recursos:['Salas ilimitadas','Psicólogas ilimitadas','Contratos + assinatura digital','Cobranças Mercado Pago','Relatórios completos'] },
+    { nome:'Enterprise', preco:197, cor:'warn', clientes: CLINICAS_DEMO.filter(c=>c.plano==='enterprise').length, recursos:['Tudo do Profissional','Domínio personalizado','API access','Suporte prioritário 24h','Multi-unidades'] },
+  ];
+  const corMap = { green:'var(--accent)', blue:'var(--accent2)', warn:'var(--warn)' };
+  document.getElementById('planGrid').innerHTML = planos.map(p=>`
+    <div class="plan-card ${p.cor==='green'?'featured':''}">
+      <div class="plan-name">${p.nome}</div>
+      <div class="plan-price" style="color:${corMap[p.cor]}">R$ ${p.preco}<span>/mês</span></div>
+      <div style="margin:12px 0">
+        <div class="plan-clients" style="color:${corMap[p.cor]}">${p.clientes}</div>
+        <div class="plan-label">clínicas neste plano</div>
+      </div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:12px">
+        ${p.recursos.map(r=>`<li style="font-size:12px;color:var(--muted)">✓ ${r}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+}
+
+// ═══ ATIVIDADE ═══
+function renderAtividade() {
+  document.getElementById('feedCompleto').innerHTML = ATIVIDADE_DEMO.map(a=>`
+    <div class="activity-item">
+      <div class="activity-dot" style="background:${a.cor}"></div>
+      <div>
+        <div class="activity-text">${a.texto}</div>
+        <div class="activity-time">${a.hora}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══ AÇÕES ═══
+function verClinica(id)   { toast('Abrindo painel da clínica...'); }
+function reativar(id)     { toast('✓ Clínica reativada — link de pagamento enviado'); }
+function cobrar(id)       { toast('✓ Link de cobrança Mercado Pago enviado por e-mail'); }
+function suspender(id)    { toast('⚠ Clínica suspensa — acesso bloqueado'); }
+function salvarPlanos()   { toast('✓ Preços atualizados com sucesso!'); }
+function sair()           { window.location.href = 'index.html'; }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('saName').textContent = 'Jorge — Dono';
+  renderDashboard();
+});
+</script>
+</body>
+</html>

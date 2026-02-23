@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Configurações Avançadas — Clínica Hope</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#0a7c5c;--green-l:#10b981;--green-xl:#d1fae5;
+  --ink:#1a2332;--muted:#6b7a94;--border:#e2e8f2;
+  --bg:#f6f8fc;--white:#fff;--danger:#dc2626;--warn:#d97706;
+  --radius:12px;--font-h:'DM Serif Display',serif;--font-b:'DM Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-b);background:var(--bg);color:var(--ink);font-size:14px;}
+
+.wrap{max-width:900px;margin:0 auto;padding:40px 20px 80px;}
+.back-btn{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:28px;text-decoration:none;}
+.back-btn:hover{color:var(--green);}
+.page-title{font-family:var(--font-h);font-size:30px;margin-bottom:4px;}
+.page-sub{color:var(--muted);font-size:14px;margin-bottom:36px;}
+
+/* SECTION */
+.sec{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.sec-title{font-size:16px;font-weight:700;}
+.sec-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+
+/* FIELD */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;}
+.field input,.field select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font-b);font-size:14px;color:var(--ink);background:white;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--green-l);box-shadow:0 0 0 3px rgba(16,185,129,.1);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-row .field{margin-bottom:0;}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.field-row3 .field{margin-bottom:0;}
+.input-prefix{display:flex;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s;}
+.input-prefix:focus-within{border-color:var(--green-l);box-shadow:0 0 0 3px rgba(16,185,129,.1);}
+.input-prefix span{padding:10px 12px;background:var(--bg);color:var(--muted);font-weight:600;font-size:13px;border-right:1.5px solid var(--border);}
+.input-prefix input{border:none;border-radius:0;flex:1;}
+.input-prefix input:focus{box-shadow:none;}
+
+/* BLOCO PRICING */
+.bloco-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+.bloco-card{border:1.5px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+.bloco-card.featured{border-color:var(--green-l);background:var(--green-xl);}
+.bloco-num{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px;}
+.bloco-desc-tag{font-size:11px;color:var(--green);font-weight:600;margin-top:6px;}
+
+/* DESCONTO TOGGLE */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.toggle-row:last-child{border:none;}
+.toggle-label{font-size:13px;font-weight:600;}
+.toggle-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:12px;cursor:pointer;transition:.3s;}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle input:checked + .toggle-slider{background:var(--green-l);}
+.toggle input:checked + .toggle-slider::before{transform:translateX(20px);}
+
+/* ASSINATURA */
+.sig-area{border:2px dashed var(--border);border-radius:var(--radius);background:var(--bg);position:relative;overflow:hidden;margin-bottom:12px;}
+.sig-area canvas{display:block;cursor:crosshair;touch-action:none;}
+.sig-placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.sig-ph-icon{font-size:32px;color:var(--border);margin-bottom:6px;}
+.sig-ph-text{font-size:13px;color:var(--muted);}
+.sig-preview{border:1px solid var(--border);border-radius:10px;padding:16px;background:var(--bg);min-height:100px;display:flex;align-items:center;justify-content:center;}
+.sig-preview canvas{display:block;}
+
+/* CONTRATO TEMPLATE */
+.template-tabs{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:16px;}
+.template-tab{flex:1;padding:9px;border:none;border-radius:7px;background:transparent;font-family:var(--font-b);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;}
+.template-tab.active{background:white;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.template-area{border:1.5px solid var(--border);border-radius:10px;min-height:200px;padding:14px;font-family:var(--font-b);font-size:13px;line-height:1.7;color:var(--ink);background:white;width:100%;resize:vertical;outline:none;}
+.template-area:focus{border-color:var(--green-l);}
+.template-vars{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.var-tag{background:var(--green-xl);color:var(--green);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;}
+.var-tag:hover{background:var(--green-l);color:white;}
+
+/* BOTÕES */
+.btn-p{background:var(--green);color:white;border:none;padding:11px 24px;border-radius:10px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+.btn-p:hover{background:#086649;transform:translateY(-1px);box-shadow:0 4px 16px rgba(10,124,92,.3);}
+.btn-o{background:transparent;color:var(--ink);border:1.5px solid var(--border);padding:10px 20px;border-radius:10px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-o:hover{border-color:var(--green-l);color:var(--green);}
+.btn-d{background:#fee2e2;color:var(--danger);border:1px solid #fca5a5;padding:10px 20px;border-radius:10px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+
+/* INFO */
+.info-box{background:var(--green-xl);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:14px;font-size:13px;color:var(--green);display:flex;gap:10px;margin-bottom:16px;}
+.warn-box{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:14px;font-size:13px;color:#92400e;display:flex;gap:8px;margin-bottom:16px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--ink);color:white;padding:13px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .3s;}
+.toast.show{opacity:1;}
+.toast.success{border-left:4px solid var(--green-l);}
+.toast.error{border-left:4px solid var(--danger);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-btn" href="index.html">← Voltar ao painel</a>
+  <div class="page-title">Configurações Avançadas</div>
+  <div class="page-sub">Preços, contratos, assinatura e regras de cancelamento</div>
+
+  <!-- ═══ 1. PREÇOS ═══ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">💰 Tabela de Preços</div>
+        <div class="sec-sub">Defina os valores de sublocação avulso e por bloco</div>
+      </div>
+      <button class="btn-p" onclick="salvarPrecos()">Salvar preços</button>
+    </div>
+
+    <div class="field">
+      <label>Sublocação Avulso (por sessão)</label>
+      <div class="input-prefix"><span>R$</span><input type="number" id="precoAvulso" value="31.90" step="0.01" /></div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Blocos Fixos</div>
+    <div class="bloco-grid">
+      <div class="bloco-card">
+        <div class="bloco-num">Bloco 1</div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Valor/bloco/semana</label>
+          <div class="input-prefix"><span>R$</span><input type="number" id="precoBloco1" value="80.00" step="0.01" onchange="calcPreview()" /></div>
+        </div>
+        <div class="bloco-desc-tag">Sem desconto</div>
+      </div>
+      <div class="bloco-card featured">
+        <div class="bloco-num">Bloco 2</div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Desconto (%)</label>
+          <input type="number" id="descBloco2" value="30" min="0" max="80" onchange="calcPreview()" />
+        </div>
+        <div class="bloco-desc-tag" id="previewBloco2">≈ R$ 448/mês</div>
+      </div>
+      <div class="bloco-card">
+        <div class="bloco-num">Bloco 3</div>
+        <div class="field" style="margin-bottom:6px">
+          <label>Desconto (%)</label>
+          <input type="number" id="descBloco3" value="45" min="0" max="80" onchange="calcPreview()" />
+        </div>
+        <div class="bloco-desc-tag" id="previewBloco3">≈ R$ 528/mês</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      ✦ O valor do bloco é cobrado mensalmente (4 semanas × valor/bloco × qtd blocos − desconto). A cobrança é fixa independente do uso.
+    </div>
+    <div id="precoPreview" style="font-size:13px;color:var(--muted)"></div>
+  </div>
+
+  <!-- ═══ 2. CANCELAMENTO ═══ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">⏱ Regras de Cancelamento</div>
+        <div class="sec-sub">Defina as políticas que serão inseridas automaticamente nos contratos</div>
+      </div>
+      <button class="btn-p" onclick="salvarCancelamento()">Salvar regras</button>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Avulso</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Horas mínimas antes para cancelar</label>
+        <div class="input-prefix"><input type="number" id="cancelAvulsoHoras" value="24" min="1" /><span>horas</span></div>
+      </div>
+      <div class="field">
+        <label>Cobrança se cancelar fora do prazo</label>
+        <select id="cancelAvulsoMulta">
+          <option value="total">100% do valor da sessão</option>
+          <option value="50">50% do valor da sessão</option>
+          <option value="zero">Sem cobrança</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px;margin-top:8px">Bloco — Cancelamento Parcial (dias específicos)</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Aviso prévio (dias)</label>
+        <div class="input-prefix"><input type="number" id="cancelBlocoParcialDias" value="7" min="1" /><span>dias</span></div>
+      </div>
+      <div class="field">
+        <label>Cobrança se cancelar fora do prazo</label>
+        <select id="cancelBlocoParcialMulta">
+          <option value="total">100% do valor do bloco</option>
+          <option value="50">50% do valor do bloco</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px;margin-top:8px">Bloco — Cancelamento Total (rescisão do contrato)</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Aviso prévio para rescisão (dias)</label>
+        <div class="input-prefix"><input type="number" id="cancelBlocoTotalDias" value="30" min="1" /><span>dias</span></div>
+      </div>
+      <div class="field">
+        <label>Multa rescisória</label>
+        <select id="cancelBlocoTotalMulta">
+          <option value="1mensalidade">1 mensalidade completa</option>
+          <option value="2mensalidades">2 mensalidades</option>
+          <option value="zero">Sem multa</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 3. ASSINATURA DA PROPRIETÁRIA ═══ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">✍ Assinatura Digital da Proprietária</div>
+        <div class="sec-sub">Esta assinatura será replicada automaticamente em todos os contratos gerados</div>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      ⚠ Assine apenas uma vez. Esta assinatura ficará registrada e será aplicada em todos os contratos futuros. Para atualizar, limpe e assine novamente.
+    </div>
+
+    <div id="sigSalvaWrap" style="display:none">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--green)">✓ Assinatura registrada</div>
+      <div class="sig-preview" id="sigPreview"></div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn-d" onclick="limparAssinaturaClinica()">✕ Limpar e reasinar</button>
+      </div>
+    </div>
+
+    <div id="sigNovaWrap">
+      <div class="sig-area">
+        <canvas id="sigCanvas" width="800" height="180"></canvas>
+        <div class="sig-placeholder" id="sigPh">
+          <div class="sig-ph-icon">✍</div>
+          <div class="sig-ph-text">Desenhe sua assinatura aqui com o mouse ou dedo</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn-o" onclick="limparSig()">✕ Limpar</button>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Seu nome completo</label>
+          <input type="text" id="sigNome" placeholder="Dra. Ana Lima" />
+        </div>
+        <div class="field">
+          <label>CPF / CRM (opcional)</label>
+          <input type="text" id="sigDoc" placeholder="000.000.000-00" />
+        </div>
+      </div>
+      <button class="btn-p" onclick="salvarAssinatura()">Salvar assinatura</button>
+    </div>
+  </div>
+
+  <!-- ═══ 4. MODELOS DE CONTRATO ═══ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">📄 Modelos de Contrato</div>
+        <div class="sec-sub">Personalize o texto base dos contratos. Use as variáveis para inserir dados automaticamente.</div>
+      </div>
+      <button class="btn-p" onclick="salvarTemplates()">Salvar modelos</button>
+    </div>
+
+    <div class="template-tabs">
+      <button class="template-tab active" onclick="switchTemplate('avulso')">Contrato Avulso</button>
+      <button class="template-tab" onclick="switchTemplate('bloco')">Contrato Bloco</button>
+    </div>
+
+    <textarea class="template-area" id="templateText" rows="12"></textarea>
+
+    <div style="font-size:12px;color:var(--muted);margin-top:10px;margin-bottom:6px">Clique para inserir variáveis automáticas:</div>
+    <div class="template-vars">
+      <span class="var-tag" onclick="inserirVar('{{nome_psi}}')"   title="Nome da psicóloga">{{nome_psi}}</span>
+      <span class="var-tag" onclick="inserirVar('{{crp}}')"        title="CRP">{{crp}}</span>
+      <span class="var-tag" onclick="inserirVar('{{cpf_psi}}')"    title="CPF da psicóloga">{{cpf_psi}}</span>
+      <span class="var-tag" onclick="inserirVar('{{nome_clinica}}')"  title="Nome da clínica">{{nome_clinica}}</span>
+      <span class="var-tag" onclick="inserirVar('{{cnpj_clinica}}')"  title="CNPJ">{{cnpj_clinica}}</span>
+      <span class="var-tag" onclick="inserirVar('{{data_inicio}}')"   title="Data início">{{data_inicio}}</span>
+      <span class="var-tag" onclick="inserirVar('{{data_validade}}')" title="Data validade">{{data_validade}}</span>
+      <span class="var-tag" onclick="inserirVar('{{valor}}')"         title="Valor">{{valor}}</span>
+      <span class="var-tag" onclick="inserirVar('{{sala}}')"          title="Sala">{{sala}}</span>
+      <span class="var-tag" onclick="inserirVar('{{horas_cancel}}')"  title="Horas cancelamento">{{horas_cancel}}</span>
+      <span class="var-tag" onclick="inserirVar('{{dias_cancel_bloco}}')" title="Dias cancelamento bloco">{{dias_cancel_bloco}}</span>
+      <span class="var-tag" onclick="inserirVar('{{multa_rescisao}}')"    title="Multa rescisão">{{multa_rescisao}}</span>
+    </div>
+  </div>
+
+  <!-- ═══ 5. LINK PÚBLICO ═══ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">🔗 Link Público para Psicólogas</div>
+        <div class="sec-sub">Compartilhe este link para que psicólogas possam se cadastrar e assinar contratos</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="linkPublico" value="https://clinicahope.vercel.app/portal-psi.html?c=clinica-esperanca" readonly style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg);color:var(--muted);" />
+      <button class="btn-p" onclick="copiarLink()">Copiar link</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">
+      Este link leva a psicóloga diretamente ao portal de cadastro e assinatura de contrato da sua clínica.
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ CANVAS ASSINATURA ═══
+let sigDrawing = false, sigCtx = null, sigHasDraw = false;
+
+function initCanvas() {
+  const canvas = document.getElementById('sigCanvas');
+  if (!canvas) return;
+  sigCtx = canvas.getContext('2d');
+  sigCtx.strokeStyle = '#1a2332';
+  sigCtx.lineWidth   = 2.5;
+  sigCtx.lineCap     = 'round';
+  sigCtx.lineJoin    = 'round';
+
+  const getPos = e => {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x:(src.clientX-r.left)*canvas.width/r.width, y:(src.clientY-r.top)*canvas.height/r.height };
+  };
+
+  canvas.addEventListener('mousedown', e => { sigDrawing=true; const p=getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); document.getElementById('sigPh').style.display='none'; });
+  canvas.addEventListener('mousemove', e => { if(!sigDrawing)return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); sigHasDraw=true; });
+  canvas.addEventListener('mouseup',   () => sigDrawing=false);
+  canvas.addEventListener('mouseleave',() => sigDrawing=false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); sigDrawing=true; const p=getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); document.getElementById('sigPh').style.display='none'; }, {passive:false});
+  canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!sigDrawing)return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); sigHasDraw=true; }, {passive:false});
+  canvas.addEventListener('touchend',   () => sigDrawing=false);
+}
+
+function limparSig() {
+  if (!sigCtx) return;
+  const canvas = document.getElementById('sigCanvas');
+  sigCtx.clearRect(0,0,canvas.width,canvas.height);
+  sigHasDraw = false;
+  document.getElementById('sigPh').style.display = 'block';
+}
+
+function salvarAssinatura() {
+  if (!sigHasDraw) { toast('Desenhe sua assinatura antes de salvar', 'error'); return; }
+  const nome = document.getElementById('sigNome').value.trim();
+  if (!nome) { toast('Informe seu nome completo', 'error'); return; }
+
+  const canvas = document.getElementById('sigCanvas');
+  const dataURL = canvas.toDataURL('image/png');
+  localStorage.setItem('hope_sig_clinica', dataURL);
+  localStorage.setItem('hope_sig_nome', nome);
+  localStorage.setItem('hope_sig_doc', document.getElementById('sigDoc').value);
+
+  document.getElementById('sigNovaWrap').style.display = 'none';
+  document.getElementById('sigSalvaWrap').style.display = 'block';
+
+  // Mostrar preview
+  const img = new Image();
+  img.src = dataURL;
+  img.style.maxWidth = '100%';
+  img.style.maxHeight = '100px';
+  const preview = document.getElementById('sigPreview');
+  preview.innerHTML = '';
+  preview.appendChild(img);
+
+  toast('✓ Assinatura salva! Será aplicada em todos os contratos.', 'success');
+}
+
+function limparAssinaturaClinica() {
+  if (!confirm('Limpar a assinatura registrada? Você precisará assinar novamente.')) return;
+  localStorage.removeItem('hope_sig_clinica');
+  localStorage.removeItem('hope_sig_nome');
+  document.getElementById('sigNovaWrap').style.display = 'block';
+  document.getElementById('sigSalvaWrap').style.display = 'none';
+  limparSig();
+}
+
+// ═══ TEMPLATES ═══
+const TEMPLATES = {
+  avulso: `CONTRATO DE SUBLOCAÇÃO DE SALA — MODALIDADE AVULSA
+
+SUBLOCADORA: {{nome_clinica}}, CNPJ {{cnpj_clinica}}.
+SUBLOCATÁRIA: {{nome_psi}}, CRP {{crp}}, CPF {{cpf_psi}}.
+
+CLÁUSULA 1ª — DO OBJETO
+Sublocação de sala de atendimento psicológico na modalidade avulsa.
+
+CLÁUSULA 2ª — DA VIGÊNCIA
+Vigência de 12 meses: de {{data_inicio}} a {{data_validade}}.
+
+CLÁUSULA 3ª — DO VALOR
+Valor por sessão: {{valor}}, cobrado por sessão efetivamente realizada.
+
+CLÁUSULA 4ª — DO CANCELAMENTO
+Cancelamentos devem ser comunicados com mínimo de {{horas_cancel}} horas de antecedência. 
+Cancelamentos fora deste prazo serão cobrados integralmente.
+
+CLÁUSULA 5ª — DAS OBRIGAÇÕES
+A SUBLOCATÁRIA deverá zelar pela conservação da sala {{sala}}, respeitando as normas internas.`,
+
+  bloco: `CONTRATO DE SUBLOCAÇÃO DE SALA — MODALIDADE BLOCO FIXO
+
+SUBLOCADORA: {{nome_clinica}}, CNPJ {{cnpj_clinica}}.
+SUBLOCATÁRIA: {{nome_psi}}, CRP {{crp}}, CPF {{cpf_psi}}.
+
+CLÁUSULA 1ª — DO OBJETO
+Sublocação de sala de atendimento na modalidade bloco fixo, com dia(s) e horário(s) reservados semanalmente.
+
+CLÁUSULA 2ª — DA VIGÊNCIA
+Vigência de 12 meses: de {{data_inicio}} a {{data_validade}}.
+
+CLÁUSULA 3ª — DO VALOR E COBRANÇA
+Valor mensal: {{valor}}. A cobrança é fixa e será devida independentemente do uso efetivo da sala reservada.
+
+CLÁUSULA 4ª — DO CANCELAMENTO PARCIAL
+Para cancelar dias específicos do bloco: aviso prévio de {{dias_cancel_bloco}} dias. Cancelamentos sem aviso são cobrados normalmente.
+
+CLÁUSULA 5ª — DA RESCISÃO TOTAL
+Para rescisão deste contrato: aviso prévio de 30 dias + multa de {{multa_rescisao}}.
+
+CLÁUSULA 6ª — DAS OBRIGAÇÕES
+A SUBLOCATÁRIA deverá zelar pela conservação da sala {{sala}}, respeitando as normas internas da SUBLOCADORA.`
+};
+
+let templateAtivo = 'avulso';
+
+function switchTemplate(tipo) {
+  templateAtivo = tipo;
+  document.querySelectorAll('.template-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const saved = localStorage.getItem('hope_template_' + tipo);
+  document.getElementById('templateText').value = saved || TEMPLATES[tipo];
+}
+
+function inserirVar(variavel) {
+  const ta = document.getElementById('templateText');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  const val   = ta.value;
+  ta.value = val.substring(0,start) + variavel + val.substring(end);
+  ta.selectionStart = ta.selectionEnd = start + variavel.length;
+  ta.focus();
+}
+
+// ═══ PREVIEW PREÇOS ═══
+function calcPreview() {
+  const base = parseFloat(document.getElementById('precoBloco1')?.value) || 80;
+  const d2   = parseFloat(document.getElementById('descBloco2')?.value)  || 30;
+  const d3   = parseFloat(document.getElementById('descBloco3')?.value)  || 45;
+
+  const t2 = (base * 2 * (1 - d2/100) * 4).toFixed(2);
+  const t3 = (base * 3 * (1 - d3/100) * 4).toFixed(2);
+
+  const p2 = document.getElementById('previewBloco2');
+  const p3 = document.getElementById('previewBloco3');
+  if (p2) p2.textContent = `≈ R$ ${parseFloat(t2).toLocaleString('pt-BR',{minimumFractionDigits:2})}/mês`;
+  if (p3) p3.textContent = `≈ R$ ${parseFloat(t3).toLocaleString('pt-BR',{minimumFractionDigits:2})}/mês`;
+}
+
+// ═══ SALVAR ═══
+function salvarPrecos() {
+  const cfg = {
+    avulso: parseFloat(document.getElementById('precoAvulso').value),
+    bloco1: parseFloat(document.getElementById('precoBloco1').value),
+    descBloco2: parseFloat(document.getElementById('descBloco2').value),
+    descBloco3: parseFloat(document.getElementById('descBloco3').value),
+  };
+  localStorage.setItem('hope_precos', JSON.stringify(cfg));
+  toast('✓ Preços salvos com sucesso!', 'success');
+}
+
+function salvarCancelamento() {
+  const cfg = {
+    avulso_horas: parseInt(document.getElementById('cancelAvulsoHoras').value),
+    avulso_multa: document.getElementById('cancelAvulsoMulta').value,
+    bloco_parcial_dias: parseInt(document.getElementById('cancelBlocoParcialDias').value),
+    bloco_parcial_multa: document.getElementById('cancelBlocoParcialMulta').value,
+    bloco_total_dias: parseInt(document.getElementById('cancelBlocoTotalDias').value),
+    bloco_total_multa: document.getElementById('cancelBlocoTotalMulta').value,
+  };
+  localStorage.setItem('hope_cancelamento', JSON.stringify(cfg));
+  toast('✓ Regras de cancelamento salvas!', 'success');
+}
+
+function salvarTemplates() {
+  const texto = document.getElementById('templateText').value;
+  localStorage.setItem('hope_template_' + templateAtivo, texto);
+  toast('✓ Modelo de contrato salvo!', 'success');
+}
+
+function copiarLink() {
+  const link = document.getElementById('linkPublico').value;
+  navigator.clipboard.writeText(link).then(() => toast('✓ Link copiado!', 'success'));
+}
+
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show ' + type;
+  setTimeout(()=>el.classList.remove('show'), 3500);
+}
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded', () => {
+  initCanvas();
+  switchTemplate('avulso');
+  calcPreview();
+
+  // Verificar se já tem assinatura salva
+  const sigSalva = localStorage.getItem('hope_sig_clinica');
+  if (sigSalva) {
+    document.getElementById('sigNovaWrap').style.display = 'none';
+    document.getElementById('sigSalvaWrap').style.display = 'block';
+    const img = new Image(); img.src = sigSalva;
+    img.style.maxWidth='100%'; img.style.maxHeight='100px';
+    document.getElementById('sigPreview').appendChild(img);
+  }
+
+  // Carregar preços salvos
+  const precos = JSON.parse(localStorage.getItem('hope_precos') || 'null');
+  if (precos) {
+    document.getElementById('precoAvulso').value = precos.avulso;
+    document.getElementById('precoBloco1').value = precos.bloco1;
+    document.getElementById('descBloco2').value  = precos.descBloco2;
+    document.getElementById('descBloco3').value  = precos.descBloco3;
+    calcPreview();
+  }
+
+  // Carregar cancelamento salvo
+  const cancel = JSON.parse(localStorage.getItem('hope_cancelamento') || 'null');
+  if (cancel) {
+    document.getElementById('cancelAvulsoHoras').value       = cancel.avulso_horas;
+    document.getElementById('cancelAvulsoMulta').value       = cancel.avulso_multa;
+    document.getElementById('cancelBlocoParcialDias').value  = cancel.bloco_parcial_dias;
+    document.getElementById('cancelBlocoParcialMulta').value = cancel.bloco_parcial_multa;
+    document.getElementById('cancelBlocoTotalDias').value    = cancel.bloco_total_dias;
+    document.getElementById('cancelBlocoTotalMulta').value   = cancel.bloco_total_multa;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Portal da Psicóloga — Clínica Hope</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:   #0a7c5c;
+  --green-l: #10b981;
+  --green-xl:#d1fae5;
+  --ink:     #1a2332;
+  --muted:   #6b7a94;
+  --border:  #e2e8f2;
+  --bg:      #f6f8fc;
+  --white:   #ffffff;
+  --danger:  #dc2626;
+  --warn:    #d97706;
+  --radius:  14px;
+  --font-h:  'Lora', Georgia, serif;
+  --font-b:  'DM Sans', system-ui, sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-size:14px; }
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, #0d1117 0%, #0a2e1f 100%);
+  padding: 40px 24px 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content:'';position:absolute;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(16,185,129,.12) 0%,transparent 70%);
+  top:-200px;left:50%;transform:translateX(-50%);pointer-events:none;
+}
+.hero-clinic-name {
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);
+  border-radius:20px;padding:6px 16px;
+  font-size:13px;font-weight:600;color:var(--green-l);
+  margin-bottom:20px;
+}
+.hero h1 {
+  font-family:var(--font-h);font-size:clamp(28px,5vw,44px);
+  color:white;line-height:1.2;margin-bottom:12px;
+}
+.hero h1 em { font-style:italic;color:var(--green-l); }
+.hero p { color:rgba(255,255,255,.6);font-size:15px;max-width:480px;margin:0 auto; }
+
+/* STEPS */
+.steps-bar {
+  background:white;border-bottom:1px solid var(--border);
+  padding:16px 24px;display:flex;justify-content:center;gap:0;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.step {
+  display:flex;align-items:center;gap:8px;padding:0 16px;
+  font-size:12px;font-weight:600;color:var(--muted);
+}
+.step-num {
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.step.active .step-num { background:var(--green);border-color:var(--green);color:white; }
+.step.active { color:var(--green); }
+.step.done .step-num { background:var(--green-xl);border-color:var(--green-l);color:var(--green); }
+.step-sep { width:32px;height:1px;background:var(--border); }
+
+/* CONTAINER */
+.wrap { max-width:720px;margin:0 auto;padding:32px 20px 60px; }
+
+/* SCREEN */
+.screen { display:none; }
+.screen.active { display:block; }
+
+/* SECTION TITLE */
+.sec-title { font-family:var(--font-h);font-size:22px;margin-bottom:4px; }
+.sec-sub { color:var(--muted);font-size:13px;margin-bottom:24px; }
+
+/* FIELD */
+.field { margin-bottom:16px; }
+.field label {
+  display:block;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;
+}
+.field input,.field select,.field textarea {
+  width:100%;padding:11px 14px;
+  border:1.5px solid var(--border);border-radius:10px;
+  font-family:var(--font-b);font-size:14px;color:var(--ink);
+  background:white;outline:none;transition:border-color .2s;
+}
+.field input:focus,.field select:focus { border-color:var(--green-l);box-shadow:0 0 0 3px rgba(16,185,129,.1); }
+.field-row { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.field-row .field { margin-bottom:0; }
+
+/* CARD */
+.card {
+  background:white;border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:16px;
+}
+.card-title { font-size:15px;font-weight:700;margin-bottom:4px; }
+.card-sub   { font-size:12px;color:var(--muted);margin-bottom:16px; }
+
+/* TIPO SUBLOCACAO */
+.tipo-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px; }
+.tipo-card {
+  border:2px solid var(--border);border-radius:var(--radius);
+  padding:20px;cursor:pointer;transition:all .2s;
+}
+.tipo-card:hover { border-color:var(--green-l); }
+.tipo-card.selected { border-color:var(--green);background:var(--green-xl); }
+.tipo-icon { font-size:24px;margin-bottom:8px; }
+.tipo-name { font-weight:700;font-size:15px;margin-bottom:4px; }
+.tipo-desc { font-size:12px;color:var(--muted); }
+.tipo-price { font-size:18px;font-weight:700;color:var(--green);margin-top:8px; }
+
+/* HORARIOS GRID */
+.dias-grid { display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:16px; }
+.dia-btn {
+  padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;
+  background:white;font-family:var(--font-b);font-size:11px;font-weight:700;
+  color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;
+}
+.dia-btn.selected { background:var(--green);border-color:var(--green);color:white; }
+
+.horas-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px; }
+.hora-btn {
+  padding:8px;border:1.5px solid var(--border);border-radius:8px;
+  background:white;font-family:var(--font-b);font-size:12px;font-weight:600;
+  color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;
+}
+.hora-btn.selected { background:var(--green);border-color:var(--green);color:white; }
+.hora-btn.ocupado  { background:var(--bg);color:var(--border);cursor:not-allowed;text-decoration:line-through; }
+
+/* RESUMO */
+.resumo-box {
+  background:linear-gradient(135deg,var(--ink),#0a2e1f);
+  border-radius:var(--radius);padding:24px;color:white;margin-bottom:16px;
+}
+.resumo-row { display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1); }
+.resumo-row:last-child { border:none; }
+.resumo-label { font-size:13px;color:rgba(255,255,255,.6); }
+.resumo-val   { font-size:14px;font-weight:700; }
+.resumo-total-label { font-size:14px;color:rgba(255,255,255,.8); }
+.resumo-total-val   { font-size:24px;font-weight:700;color:var(--green-l); }
+.desconto-badge {
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.3);
+  border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;color:var(--green-l);
+}
+
+/* CONTRATO */
+.contrato-box {
+  background:white;border:1px solid var(--border);border-radius:var(--radius);
+  padding:28px;max-height:360px;overflow-y:auto;margin-bottom:16px;
+  font-size:13px;line-height:1.8;color:var(--ink);
+}
+.contrato-box h3 { font-family:var(--font-h);font-size:16px;margin-bottom:12px;text-align:center; }
+.contrato-box h4 { font-size:13px;font-weight:700;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.5px; }
+.contrato-box p  { margin-bottom:10px; }
+
+/* ASSINATURA */
+.sig-area {
+  border:2px dashed var(--border);border-radius:var(--radius);
+  background:var(--bg);position:relative;overflow:hidden;
+  margin-bottom:12px;
+}
+.sig-area canvas { display:block;cursor:crosshair;touch-action:none; }
+.sig-placeholder {
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.sig-placeholder-icon { font-size:28px;color:var(--border);margin-bottom:6px; }
+.sig-placeholder-text { font-size:12px;color:var(--muted); }
+.sig-actions { display:flex;gap:8px;margin-bottom:16px; }
+
+/* BOTÕES */
+.btn-primary {
+  background:var(--green);color:white;border:none;
+  padding:13px 28px;border-radius:10px;
+  font-family:var(--font-b);font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary:hover { background:#086649;transform:translateY(-1px);box-shadow:0 4px 16px rgba(10,124,92,.3); }
+.btn-primary.full { width:100%;justify-content:center; }
+.btn-primary:disabled { opacity:.5;cursor:not-allowed;transform:none; }
+.btn-outline {
+  background:transparent;color:var(--ink);border:1.5px solid var(--border);
+  padding:11px 20px;border-radius:10px;font-family:var(--font-b);
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.btn-outline:hover { border-color:var(--green-l);color:var(--green); }
+.btn-sm {
+  padding:7px 14px;font-size:12px;border-radius:8px;border:1.5px solid var(--border);
+  background:white;cursor:pointer;font-family:var(--font-b);font-weight:600;color:var(--muted);
+  transition:all .15s;
+}
+.btn-sm:hover { border-color:var(--danger);color:var(--danger); }
+.nav-row { display:flex;justify-content:space-between;align-items:center;margin-top:24px; }
+
+/* SUCESSO */
+.sucesso-box { text-align:center;padding:48px 24px; }
+.sucesso-icon { font-size:64px;margin-bottom:20px; }
+.sucesso-title { font-family:var(--font-h);font-size:28px;margin-bottom:12px;color:var(--green); }
+.sucesso-sub { color:var(--muted);font-size:15px;max-width:400px;margin:0 auto 32px; }
+.sucesso-badges { display:flex;gap:10px;justify-content:center;flex-wrap:wrap; }
+.sucesso-badge {
+  background:var(--green-xl);border:1px solid rgba(16,185,129,.3);
+  border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--green);
+}
+
+/* CHECKBOX */
+.check-row { display:flex;align-items:flex-start;gap:10px;margin-bottom:12px; }
+.check-row input[type=checkbox] { margin-top:2px;width:16px;height:16px;cursor:pointer;accent-color:var(--green); }
+.check-row label { font-size:13px;cursor:pointer;line-height:1.5; }
+
+/* INFO BOX */
+.info-box {
+  background:var(--green-xl);border:1px solid rgba(16,185,129,.2);
+  border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--green);
+  display:flex;gap:10px;
+}
+
+/* TOAST */
+.toast {
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  background:var(--ink);color:white;padding:13px 20px;
+  border-radius:10px;font-size:13px;font-weight:500;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+  transition:all .3s;opacity:0;pointer-events:none;
+}
+.toast.show { opacity:1; }
+.toast.success { border-left:4px solid var(--green-l); }
+.toast.error   { border-left:4px solid var(--danger); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-clinic-name">🏥 Clínica Esperança</div>
+  <h1>Reserve sua sala,<br><em>sem complicação.</em></h1>
+  <p>Escolha o horário, assine o contrato digitalmente e comece a atender.</p>
+</div>
+
+<!-- BARRA DE PASSOS -->
+<div class="steps-bar">
+  <div class="step active" id="step1"><div class="step-num">1</div> Cadastro</div>
+  <div class="step-sep"></div>
+  <div class="step" id="step2"><div class="step-num">2</div> Reserva</div>
+  <div class="step-sep"></div>
+  <div class="step" id="step3"><div class="step-num">3</div> Contrato</div>
+  <div class="step-sep"></div>
+  <div class="step" id="step4"><div class="step-num">4</div> Assinatura</div>
+</div>
+
+<div class="wrap">
+
+  <!-- ══ TELA 1: CADASTRO ══ -->
+  <div class="screen active" id="screenCadastro">
+    <div class="sec-title">Seus dados</div>
+    <div class="sec-sub">Preencha suas informações para continuar</div>
+    <div class="card">
+      <div class="field-row">
+        <div class="field"><label>Nome completo</label><input type="text" id="psiNome" placeholder="Dra. Maria Silva" /></div>
+        <div class="field"><label>CRP</label><input type="text" id="psiCRP" placeholder="06/12345" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>E-mail</label><input type="email" id="psiEmail" placeholder="maria@email.com" /></div>
+        <div class="field"><label>WhatsApp</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" /></div>
+      </div>
+      <div class="field"><label>CPF</label><input type="text" id="psiCPF" placeholder="000.000.000-00" /></div>
+      <div class="field"><label>Endereço completo</label><input type="text" id="psiEnd" placeholder="Rua das Flores, 123 — São Paulo/SP" /></div>
+    </div>
+    <div class="nav-row">
+      <div></div>
+      <button class="btn-primary" onclick="irParaReserva()">Próximo → Escolher sala</button>
+    </div>
+  </div>
+
+  <!-- ══ TELA 2: RESERVA ══ -->
+  <div class="screen" id="screenReserva">
+    <div class="sec-title">Tipo de sublocação</div>
+    <div class="sec-sub">Escolha como quer usar a sala</div>
+
+    <div class="tipo-grid">
+      <div class="tipo-card" id="cardAvulso" onclick="selecionarTipo('avulso')">
+        <div class="tipo-icon">📅</div>
+        <div class="tipo-name">Avulso</div>
+        <div class="tipo-desc">Reserve horários específicos quando precisar. Paga somente o que usar.</div>
+        <div class="tipo-price" id="precoAvulso">R$ 31,90/sessão</div>
+      </div>
+      <div class="tipo-card" id="cardBloco" onclick="selecionarTipo('bloco')">
+        <div class="tipo-icon">📆</div>
+        <div class="tipo-name">Bloco Fixo</div>
+        <div class="tipo-desc">Reserve um dia e horário fixo toda semana. Desconto progressivo por quantidade.</div>
+        <div class="tipo-price" id="precoBloco">A partir de R$ 80/bloco</div>
+      </div>
+    </div>
+
+    <!-- AVULSO: escolhe horário -->
+    <div id="secAvulso" style="display:none">
+      <div class="card">
+        <div class="card-title">Escolha o dia e horário</div>
+        <div class="card-sub">Selecione nos horários disponíveis abaixo</div>
+        <div class="field"><label>Dia</label>
+          <select id="avulso_dia">
+            <option value="">Selecione o dia...</option>
+            <option value="segunda">Segunda-feira</option>
+            <option value="terca">Terça-feira</option>
+            <option value="quarta">Quarta-feira</option>
+            <option value="quinta">Quinta-feira</option>
+            <option value="sexta">Sexta-feira</option>
+          </select>
+        </div>
+        <div class="field"><label>Sala</label>
+          <select id="avulso_sala">
+            <option value="">Selecione a sala...</option>
+            <option value="s1">Sala 01 — 2º andar</option>
+            <option value="s2">Sala 02 — 2º andar</option>
+            <option value="s3">Sala 03 — 3º andar (ampla)</option>
+          </select>
+        </div>
+        <div class="field"><label>Horário disponível</label>
+          <div class="horas-grid" id="horasAvulso"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO: escolhe dia + hora fixos -->
+    <div id="secBloco" style="display:none">
+      <div class="card">
+        <div class="card-title">Configure seu bloco fixo</div>
+        <div class="card-sub">O horário escolhido ficará reservado para você todas as semanas do mês</div>
+
+        <div class="field"><label>Quantos blocos? (dias fixos/semana)</label>
+          <select id="bloco_qtd" onchange="calcularBloco()">
+            <option value="1">1 bloco — 1 dia fixo por semana</option>
+            <option value="2">2 blocos — 2 dias fixos por semana (−30%)</option>
+            <option value="3">3 blocos — 3 dias fixos por semana (−45%)</option>
+          </select>
+        </div>
+
+        <div id="blocoSlotsWrap"></div>
+
+        <div class="field"><label>Sala</label>
+          <select id="bloco_sala">
+            <option value="">Selecione a sala...</option>
+            <option value="s1">Sala 01 — R$ 80/bloco</option>
+            <option value="s2">Sala 02 — R$ 80/bloco</option>
+            <option value="s3">Sala 03 ampla — R$ 100/bloco</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="resumo-box" id="resumoBloco" style="display:none">
+        <div style="font-size:12px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px">Resumo do bloco</div>
+        <div id="resumoBlocoContent"></div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-outline" onclick="irPara('screenCadastro',1)">← Voltar</button>
+      <button class="btn-primary" onclick="irParaContrato()">Próximo → Ver contrato</button>
+    </div>
+  </div>
+
+  <!-- ══ TELA 3: CONTRATO ══ -->
+  <div class="screen" id="screenContrato">
+    <div class="sec-title">Contrato de Sublocação</div>
+    <div class="sec-sub">Leia com atenção antes de assinar</div>
+
+    <div class="info-box">
+      ✦ Este contrato tem validade de <strong>12 meses</strong>. Após esse período, um novo contrato será gerado automaticamente.
+    </div>
+
+    <div class="contrato-box" id="contratoTexto"></div>
+
+    <div class="check-row">
+      <input type="checkbox" id="checkContrato" />
+      <label for="checkContrato">Li e aceito os termos do contrato de sublocação acima</label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="checkLGPD" />
+      <label for="checkLGPD">Autorizo o tratamento dos meus dados conforme a LGPD</label>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-outline" onclick="irPara('screenReserva',2)">← Voltar</button>
+      <button class="btn-primary" onclick="irParaAssinatura()">Próximo → Assinar</button>
+    </div>
+  </div>
+
+  <!-- ══ TELA 4: ASSINATURA ══ -->
+  <div class="screen" id="screenAssinatura">
+    <div class="sec-title">Assinatura Digital</div>
+    <div class="sec-sub">Assine com o dedo ou mouse para confirmar o contrato</div>
+
+    <div class="card">
+      <div class="card-title">Sua assinatura</div>
+      <div class="card-sub">Use o mouse ou o dedo na tela para assinar abaixo</div>
+      <div class="sig-area">
+        <canvas id="sigCanvas" width="640" height="160"></canvas>
+        <div class="sig-placeholder" id="sigPlaceholder">
+          <div class="sig-placeholder-icon">✍</div>
+          <div class="sig-placeholder-text">Assine aqui</div>
+        </div>
+      </div>
+      <div class="sig-actions">
+        <button class="btn-sm" onclick="limparAssinatura()">✕ Limpar</button>
+        <span style="font-size:12px;color:var(--muted);align-self:center">Carimbado com seu IP e data/hora</span>
+      </div>
+    </div>
+
+    <div class="card" id="cardAssinaturaClinica">
+      <div class="card-title">Assinatura da Clínica</div>
+      <div class="card-sub">Assinatura da proprietária (pré-registrada)</div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:16px;background:var(--bg);">
+        <canvas id="sigClinicaCanvas" width="640" height="100" style="display:block"></canvas>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">
+        Dra. Ana Lima — CRM 12345 — Proprietária da Clínica Esperança
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-outline" onclick="irPara('screenContrato',3)">← Voltar</button>
+      <button class="btn-primary full" onclick="finalizarContrato()" id="btnFinalizar" style="margin-top:12px">✓ Finalizar e gerar contrato</button>
+    </div>
+  </div>
+
+  <!-- ══ TELA 5: SUCESSO ══ -->
+  <div class="screen" id="screenSucesso">
+    <div class="sucesso-box">
+      <div class="sucesso-icon">🎉</div>
+      <div class="sucesso-title">Contrato assinado!</div>
+      <div class="sucesso-sub">Sua reserva foi confirmada. Você receberá o contrato por e-mail em instantes.</div>
+      <div class="sucesso-badges">
+        <div class="sucesso-badge">📄 Contrato válido por 12 meses</div>
+        <div class="sucesso-badge" id="sucessoBadgeTipo">📅 Avulso</div>
+        <div class="sucesso-badge" id="sucessoBadgeValor">R$ —</div>
+      </div>
+      <div style="margin-top:32px">
+        <button class="btn-primary" onclick="irParaPainelPsi()">Acessar meu painel →</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ CONFIGURAÇÕES DA CLÍNICA (viriam do banco) ═══
+const CONFIG_CLINICA = {
+  nome: 'Clínica Esperança',
+  proprietaria: 'Dra. Ana Lima',
+  cpf_cnpj: '12.345.678/0001-90',
+  endereco: 'Rua das Flores, 123 — São Paulo/SP',
+  precos: {
+    avulso: 31.90,
+    bloco1: 80.00,
+    bloco2: 80.00 * 2 * (1 - 0.30), // 2 blocos -30%
+    bloco3: 80.00 * 3 * (1 - 0.45), // 3 blocos -45%
+    desconto2: 30,
+    desconto3: 45,
+  },
+  cancelamento: {
+    avulso_horas: 24,      // horas antes para cancelar avulso
+    bloco_dias_parcial: 7, // dias de aviso para cancelar dia do bloco
+    bloco_dias_total: 30,  // dias para cancelar bloco total
+  },
+  assinatura_clinica: null // canvas salvo em base64
+};
+
+// ═══ ESTADO ═══
+let dadosPsi = {};
+let tipoSelecionado = '';
+let reservaData = {};
+let sigDrawing = false;
+let sigCtx = null;
+let sigHasDraw = false;
+
+// ═══ UTILS ═══
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show ' + type;
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function atualizarSteps(ativo) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step' + i);
+    el.className = 'step' + (i === ativo ? ' active' : i < ativo ? ' done' : '');
+  }
+}
+
+function irPara(screenId, stepNum) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  atualizarSteps(stepNum);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══ TELA 1 → 2 ═══
+function irParaReserva() {
+  const nome  = document.getElementById('psiNome').value.trim();
+  const email = document.getElementById('psiEmail').value.trim();
+  const crp   = document.getElementById('psiCRP').value.trim();
+  const cpf   = document.getElementById('psiCPF').value.trim();
+
+  if (!nome || !email || !crp || !cpf) { toast('Preencha todos os campos obrigatórios', 'error'); return; }
+
+  dadosPsi = {
+    nome, email, crp, cpf,
+    tel: document.getElementById('psiTel').value.trim(),
+    end: document.getElementById('psiEnd').value.trim()
+  };
+
+  renderBlocoSlots();
+  renderHorasAvulso();
+  irPara('screenReserva', 2);
+}
+
+// ═══ TIPO ═══
+function selecionarTipo(tipo) {
+  tipoSelecionado = tipo;
+  document.getElementById('cardAvulso').classList.toggle('selected', tipo==='avulso');
+  document.getElementById('cardBloco').classList.toggle('selected', tipo==='bloco');
+  document.getElementById('secAvulso').style.display = tipo==='avulso' ? 'block' : 'none';
+  document.getElementById('secBloco').style.display  = tipo==='bloco'  ? 'block' : 'none';
+}
+
+// ═══ HORAS AVULSO ═══
+const HORAS_DISP = ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+const OCUPADOS   = ['09:00','14:00']; // simulação
+
+function renderHorasAvulso() {
+  document.getElementById('horasAvulso').innerHTML = HORAS_DISP.map(h => {
+    const ocup = OCUPADOS.includes(h);
+    return `<button class="hora-btn ${ocup?'ocupado':''}" onclick="${ocup?'':''}" data-hora="${h}" ${ocup?'disabled':''}>${h}</button>`;
+  }).join('');
+  document.getElementById('horasAvulso').querySelectorAll('.hora-btn:not(.ocupado)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.hora-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      reservaData.horaAvulso = btn.dataset.hora;
+    });
+  });
+}
+
+// ═══ BLOCOS ═══
+function renderBlocoSlots() {
+  const qtd = parseInt(document.getElementById('bloco_qtd')?.value || 1);
+  let html = '';
+  for (let i = 1; i <= qtd; i++) {
+    html += `
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title">Bloco ${i}</div>
+        <div class="field-row">
+          <div class="field"><label>Dia fixo</label>
+            <select id="bloco_dia_${i}" onchange="calcularBloco()">
+              <option value="">Escolha o dia...</option>
+              <option value="segunda">Segunda-feira</option>
+              <option value="terca">Terça-feira</option>
+              <option value="quarta">Quarta-feira</option>
+              <option value="quinta">Quinta-feira</option>
+              <option value="sexta">Sexta-feira</option>
+            </select>
+          </div>
+          <div class="field"><label>Horário fixo</label>
+            <select id="bloco_hora_${i}" onchange="calcularBloco()">
+              <option value="">Escolha o horário...</option>
+              ${HORAS_DISP.map(h=>`<option value="${h}">${h}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  document.getElementById('blocoSlotsWrap').innerHTML = html;
+}
+
+function calcularBloco() {
+  const qtd = parseInt(document.getElementById('bloco_qtd').value);
+  renderBlocoSlots();
+
+  const precos = CONFIG_CLINICA.precos;
+  const sala   = document.getElementById('bloco_sala')?.value;
+  const valorBase = sala === 's3' ? 100 : 80;
+  const desconto  = qtd === 2 ? precos.desconto2 : qtd === 3 ? precos.desconto3 : 0;
+  const total     = valorBase * qtd * (1 - desconto/100) * 4; // 4 semanas
+
+  document.getElementById('resumoBloco').style.display = 'block';
+  document.getElementById('resumoBlocoContent').innerHTML = `
+    <div class="resumo-row">
+      <span class="resumo-label">Blocos selecionados</span>
+      <span class="resumo-val">${qtd} dia${qtd>1?'s':''} fixo${qtd>1?'s':''}/semana</span>
+    </div>
+    <div class="resumo-row">
+      <span class="resumo-label">Valor por bloco/semana</span>
+      <span class="resumo-val">R$ ${valorBase.toFixed(2)}</span>
+    </div>
+    ${desconto > 0 ? `
+    <div class="resumo-row">
+      <span class="resumo-label">Desconto aplicado</span>
+      <span class="resumo-val" style="color:var(--green-l)">
+        <span class="desconto-badge">−${desconto}%</span>
+      </span>
+    </div>` : ''}
+    <div class="resumo-row">
+      <span class="resumo-total-label">Total mensal estimado</span>
+      <span class="resumo-total-val">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:10px">
+      * Cobrança mensal fixa. O valor é devido mesmo em caso de ausência.
+    </div>
+  `;
+
+  reservaData.blocoQtd     = qtd;
+  reservaData.blocoValor   = total;
+  reservaData.blocoDesconto= desconto;
+}
+
+// ═══ TELA 2 → 3 ═══
+function irParaContrato() {
+  if (!tipoSelecionado) { toast('Selecione o tipo de sublocação', 'error'); return; }
+
+  if (tipoSelecionado === 'avulso' && !reservaData.horaAvulso) {
+    toast('Selecione um horário disponível', 'error'); return;
+  }
+
+  gerarContratoTexto();
+  irPara('screenContrato', 3);
+}
+
+function gerarContratoTexto() {
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const venc  = new Date(); venc.setFullYear(venc.getFullYear()+1);
+  const vencStr = venc.toLocaleDateString('pt-BR');
+  const cfg = CONFIG_CLINICA;
+
+  let clausulasEspecificas = '';
+
+  if (tipoSelecionado === 'avulso') {
+    const dia  = document.getElementById('avulso_dia')?.value  || '—';
+    const hora = reservaData.horaAvulso || '—';
+    clausulasEspecificas = `
+      <h4>CLÁUSULA 3ª — DO TIPO DE SUBLOCAÇÃO (AVULSO)</h4>
+      <p>A SUBLOCATÁRIA utilizará a sala de forma avulsa, sendo cobrado o valor de <strong>R$ ${cfg.precos.avulso.toFixed(2)}</strong> por sessão utilizada, conforme agenda previamente reservada.</p>
+      <p>Dia selecionado: <strong>${dia}</strong> — Horário: <strong>${hora}</strong>.</p>
+      <h4>CLÁUSULA 4ª — DO CANCELAMENTO</h4>
+      <p>O cancelamento de sessão avulsa deve ser comunicado com no mínimo <strong>${cfg.cancelamento.avulso_horas} horas</strong> de antecedência. Cancelamentos fora deste prazo acarretarão na cobrança integral da sessão.</p>
+    `;
+  } else {
+    const qtd    = reservaData.blocoQtd || 1;
+    const total  = (reservaData.blocoValor || 0).toLocaleString('pt-BR', {minimumFractionDigits:2});
+    const desc   = reservaData.blocoDesconto || 0;
+    clausulasEspecificas = `
+      <h4>CLÁUSULA 3ª — DO TIPO DE SUBLOCAÇÃO (BLOCO FIXO)</h4>
+      <p>A SUBLOCATÁRIA reservará <strong>${qtd} dia(s) fixo(s) por semana</strong> com desconto de <strong>${desc}%</strong>, totalizando o valor mensal de <strong>R$ ${total}</strong>, cobrado independentemente de uso.</p>
+      <p>O valor do bloco é devido integralmente mesmo que a SUBLOCATÁRIA não utilize os horários reservados, sendo este contrato de caráter irrevogável quanto à cobrança mensal.</p>
+      <h4>CLÁUSULA 4ª — DO CANCELAMENTO DO BLOCO</h4>
+      <p><strong>Cancelamento parcial:</strong> Para cancelar um dia específico do bloco, a SUBLOCATÁRIA deve comunicar com no mínimo <strong>${cfg.cancelamento.bloco_dias_parcial} dias</strong> de antecedência.</p>
+      <p><strong>Cancelamento total:</strong> Para rescisão total do contrato de bloco, é necessário comunicação formal com <strong>${cfg.cancelamento.bloco_dias_total} dias</strong> de antecedência. Cancelamentos sem aviso prévio incorrem em multa correspondente a <strong>1 (uma) mensalidade</strong>.</p>
+    `;
+  }
+
+  const html = `
+    <h3>CONTRATO DE SUBLOCAÇÃO DE SALA</h3>
+    <p>Este instrumento particular de sublocação de espaço clínico é celebrado entre:</p>
+    <p><strong>SUBLOCADORA:</strong> ${cfg.nome}, inscrita no CNPJ sob nº ${cfg.cpf_cnpj}, com sede em ${cfg.endereco}, neste ato representada por ${cfg.proprietaria}.</p>
+    <p><strong>SUBLOCATÁRIA:</strong> ${dadosPsi.nome}, inscrita no CPF sob nº ${dadosPsi.cpf}, portadora do CRP ${dadosPsi.crp}, residente em ${dadosPsi.end || '—'}.</p>
+
+    <h4>CLÁUSULA 1ª — DO OBJETO</h4>
+    <p>O presente contrato tem por objeto a sublocação de sala de atendimento psicológico, devidamente equipada, para uso exclusivo da SUBLOCATÁRIA durante os horários pactuados.</p>
+
+    <h4>CLÁUSULA 2ª — DA VIGÊNCIA</h4>
+    <p>O presente contrato vigorará pelo prazo de <strong>12 (doze) meses</strong>, com início em <strong>${hoje}</strong> e término em <strong>${vencStr}</strong>, podendo ser renovado mediante novo instrumento.</p>
+
+    ${clausulasEspecificas}
+
+    <h4>CLÁUSULA 5ª — DAS OBRIGAÇÕES DA SUBLOCATÁRIA</h4>
+    <p>A SUBLOCATÁRIA obriga-se a: (a) utilizar a sala exclusivamente para atendimentos de saúde mental; (b) zelar pela conservação do espaço e equipamentos; (c) cumprir as normas internas da SUBLOCADORA; (d) não sublocar o espaço a terceiros.</p>
+
+    <h4>CLÁUSULA 6ª — DO FORO</h4>
+    <p>As partes elegem o foro da comarca de São Paulo/SP para dirimir quaisquer controvérsias oriundas deste contrato.</p>
+
+    <p style="margin-top:20px;text-align:center;font-size:12px;color:var(--muted)">
+      Contrato gerado eletronicamente em ${hoje} — IP registrado no momento da assinatura
+    </p>
+  `;
+
+  document.getElementById('contratoTexto').innerHTML = html;
+}
+
+// ═══ TELA 3 → 4 ═══
+function irParaAssinatura() {
+  if (!document.getElementById('checkContrato').checked) { toast('Você precisa aceitar o contrato', 'error'); return; }
+  if (!document.getElementById('checkLGPD').checked)     { toast('Você precisa aceitar os termos da LGPD', 'error'); return; }
+  iniciarCanvas();
+  renderAssinaturaClinica();
+  irPara('screenAssinatura', 4);
+}
+
+// ═══ CANVAS ═══
+function iniciarCanvas() {
+  const canvas = document.getElementById('sigCanvas');
+  const ctx    = canvas.getContext('2d');
+  sigCtx = ctx;
+  ctx.strokeStyle = '#1a2332';
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  sigHasDraw      = false;
+
+  const getPos = (e) => {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * canvas.width/r.width, y: (src.clientY - r.top) * canvas.height/r.height };
+  };
+
+  canvas.addEventListener('mousedown', e => { sigDrawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); document.getElementById('sigPlaceholder').style.display='none'; });
+  canvas.addEventListener('mousemove', e => { if(!sigDrawing)return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); sigHasDraw=true; });
+  canvas.addEventListener('mouseup',   () => sigDrawing=false);
+  canvas.addEventListener('mouseleave',() => sigDrawing=false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); sigDrawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); document.getElementById('sigPlaceholder').style.display='none'; });
+  canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!sigDrawing)return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); sigHasDraw=true; });
+  canvas.addEventListener('touchend',   () => sigDrawing=false);
+}
+
+function limparAssinatura() {
+  const canvas = document.getElementById('sigCanvas');
+  sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+  sigHasDraw = false;
+  document.getElementById('sigPlaceholder').style.display = 'block';
+}
+
+function renderAssinaturaClinica() {
+  // Simula assinatura pré-registrada da proprietária
+  const canvas = document.getElementById('sigClinicaCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#0a7c5c';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  // Desenha assinatura cursiva simulada
+  ctx.beginPath();
+  ctx.moveTo(40, 70); ctx.bezierCurveTo(60, 40, 100, 40, 120, 60);
+  ctx.bezierCurveTo(140, 80, 150, 90, 180, 75);
+  ctx.bezierCurveTo(210, 60, 230, 50, 260, 65);
+  ctx.bezierCurveTo(290, 80, 300, 90, 330, 70);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(330, 70); ctx.bezierCurveTo(360, 50, 390, 55, 410, 70);
+  ctx.bezierCurveTo(430, 85, 440, 90, 460, 75);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(100, 85); ctx.lineTo(380, 85);
+  ctx.strokeStyle = 'rgba(10,124,92,.3)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+// ═══ FINALIZAR ═══
+function finalizarContrato() {
+  if (!sigHasDraw) { toast('Assine o contrato antes de finalizar', 'error'); return; }
+
+  const btn = document.getElementById('btnFinalizar');
+  btn.disabled = true; btn.textContent = '⏳ Gerando contrato...';
+
+  setTimeout(() => {
+    // Salvar no localStorage (demo)
+    const contrato = {
+      id: Date.now().toString(36),
+      psi: dadosPsi,
+      tipo: tipoSelecionado,
+      reserva: reservaData,
+      dataAssinatura: new Date().toISOString(),
+      validade: new Date(Date.now() + 365*24*60*60*1000).toISOString(),
+      status: 'ativo'
+    };
+    const contratos = JSON.parse(localStorage.getItem('hope_contratos_psi') || '[]');
+    contratos.push(contrato);
+    localStorage.setItem('hope_contratos_psi', JSON.stringify(contratos));
+    localStorage.setItem('hope_psi_logada', JSON.stringify(dadosPsi));
+
+    // Atualizar tela de sucesso
+    document.getElementById('sucessoBadgeTipo').textContent = tipoSelecionado === 'bloco' ? '📆 Bloco Fixo' : '📅 Avulso';
+    document.getElementById('sucessoBadgeValor').textContent = tipoSelecionado === 'bloco'
+      ? `R$ ${(reservaData.blocoValor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}/mês`
+      : `R$ ${CONFIG_CLINICA.precos.avulso.toFixed(2)}/sessão`;
+
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screenSucesso').classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }, 1500);
+}
+
+function irParaPainelPsi() { window.location.href = 'painel-psi.html'; }
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('bloco_qtd')?.addEventListener('change', () => { renderBlocoSlots(); calcularBloco(); });
+});
+</script>
+</body>
+</html>
