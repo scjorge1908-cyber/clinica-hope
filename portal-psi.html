@@ -6,6 +6,8 @@
 <title>Portal da Psicóloga — Clínica Hope</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <style>
 :root {
   --green:   #0a7c5c;
@@ -770,29 +772,77 @@ function renderAssinaturaClinica() {
 }
 
 // ═══ FINALIZAR ═══
-function finalizarContrato() {
+async function finalizarContrato() {
   if (!sigHasDraw) { toast('Assine o contrato antes de finalizar', 'error'); return; }
 
   const btn = document.getElementById('btnFinalizar');
   btn.disabled = true; btn.textContent = '⏳ Gerando contrato...';
 
-  setTimeout(() => {
-    // Salvar no localStorage (demo)
-    const contrato = {
-      id: Date.now().toString(36),
-      psi: dadosPsi,
-      tipo: tipoSelecionado,
-      reserva: reservaData,
-      dataAssinatura: new Date().toISOString(),
-      validade: new Date(Date.now() + 365*24*60*60*1000).toISOString(),
-      status: 'ativo'
-    };
-    const contratos = JSON.parse(localStorage.getItem('hope_contratos_psi') || '[]');
-    contratos.push(contrato);
-    localStorage.setItem('hope_contratos_psi', JSON.stringify(contratos));
-    localStorage.setItem('hope_psi_logada', JSON.stringify(dadosPsi));
+  try {
+    const db = getSupabase();
 
-    // Atualizar tela de sucesso
+    // 1. Pegar clínica ID da URL (ex: ?c=uuid-da-clinica)
+    const params = new URLSearchParams(window.location.search);
+    const clinicaId = params.get('c') || CONFIG_CLINICA.id;
+
+    // 2. Cadastrar psicóloga no banco
+    const psiData = await dbCadastrarPsiPortal(dadosPsi, clinicaId);
+    if (!psiData) throw new Error('Erro ao cadastrar psicóloga');
+
+    // 3. Salvar assinatura da psicóloga (canvas → base64)
+    const canvas = document.getElementById('sigCanvas');
+    const assinaturaPsi = canvas.toDataURL('image/png');
+
+    // 4. Buscar assinatura da clínica
+    const { data: cfg } = await db.from('config_clinica')
+      .select('assinatura_proprietaria')
+      .eq('clinica_id', clinicaId)
+      .single();
+
+    // 5. Calcular data de validade (1 ano)
+    const hoje = new Date();
+    const validade = new Date(hoje);
+    validade.setFullYear(validade.getFullYear() + 1);
+
+    // 6. Salvar contrato no banco
+    const contrato = await dbSalvarContrato({
+      psicolagaId: psiData.id,
+      clinicaId: clinicaId,
+      tipo: tipoSelecionado,
+      valor: tipoSelecionado === 'bloco' ? reservaData.blocoValor : CONFIG_CLINICA.precos.avulso,
+      blocoQtd: reservaData.blocoQtd || 1,
+      blocoDesconto: reservaData.blocoDesconto || 0,
+      dataInicio: hoje.toISOString().split('T')[0],
+      dataValidade: validade.toISOString().split('T')[0],
+      assinaturaPsi: assinaturaPsi,
+      assinaturaClinica: cfg?.assinatura_proprietaria || '',
+      texto: document.getElementById('contratoTexto').innerHTML,
+      ip: ''
+    });
+
+    if (!contrato) throw new Error('Erro ao salvar contrato');
+
+    // 7. Criar cobrança inicial
+    if (tipoSelecionado === 'bloco') {
+      await dbSalvarCobranca({
+        psiId: psiData.id,
+        contratoId: contrato.id,
+        descricao: `Bloco fixo — ${reservaData.blocoQtd} dia(s)/semana`,
+        valor: reservaData.blocoValor,
+        vencimento: new Date(hoje.getFullYear(), hoje.getMonth() + 1, 5).toISOString().split('T')[0]
+      });
+    }
+
+    // 8. Salvar psicóloga no localStorage para o painel dela
+    localStorage.setItem('hope_psi_logada', JSON.stringify({
+      id: psiData.id,
+      nome: dadosPsi.nome,
+      crp: dadosPsi.crp,
+      email: dadosPsi.email,
+      clinica_id: clinicaId
+    }));
+
+    // 9. Atualizar tela de sucesso
     document.getElementById('sucessoBadgeTipo').textContent = tipoSelecionado === 'bloco' ? '📆 Bloco Fixo' : '📅 Avulso';
     document.getElementById('sucessoBadgeValor').textContent = tipoSelecionado === 'bloco'
       ? `R$ ${(reservaData.blocoValor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}/mês`
@@ -801,7 +851,13 @@ function finalizarContrato() {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screenSucesso').classList.add('active');
     window.scrollTo({top:0,behavior:'smooth'});
-  }, 1500);
+
+  } catch(err) {
+    console.error(err);
+    toast('Erro ao salvar contrato. Tente novamente.', 'error');
+    btn.disabled = false;
+    btn.textContent = '✓ Finalizar e gerar contrato';
+  }
 }
 
 function irParaPainelPsi() { window.location.href = 'painel-psi.html'; }

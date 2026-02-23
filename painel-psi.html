@@ -6,6 +6,8 @@
 <title>Meu Painel — Psicóloga</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <style>
 :root {
   --green:#0a7c5c; --green-l:#10b981; --green-xl:#d1fae5;
@@ -383,9 +385,22 @@ function goTo(page) {
 }
 
 // ═══ INIT ═══
-function init() {
+async function init() {
   document.getElementById('sideNome').textContent = psiLogada.nome || 'Psicóloga';
   document.getElementById('sideCRP').textContent  = 'CRP ' + (psiLogada.crp || '—');
+
+  // Carregar dados reais do Supabase
+  if (psiLogada.id && psiLogada.clinica_id) {
+    try {
+      const dados = await dbGetDadosPsicologa(psiLogada.id, psiLogada.clinica_id);
+      if (dados.agendamentos.length) window._agendamentos = dados.agendamentos;
+      if (dados.contratos.length)    window._contratos    = dados.contratos;
+      if (dados.cobrancas.length)    window._cobrancas    = dados.cobrancas;
+    } catch(e) {
+      console.warn('Usando dados demo:', e);
+    }
+  }
+
   renderInicio();
 }
 
