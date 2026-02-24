@@ -15,7 +15,9 @@
 // ============================================================
 
 const SUPABASE_URL  = 'https://cobxcmsnypkngiszzxpp.supabase.co';
-const SUPABASE_KEY  = 'sb_publishable_C2ZK1G5JV8INtTEFh-NH9A_d0o2jqXd';
+// IMPORTANTE: Substitua pela sua anon key do Supabase
+// Supabase → Settings → API → Project API keys → anon public (começa com eyJ...)
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI_eyJ...';
 
 // Cliente Supabase (usando a CDN — não precisa instalar nada)
 // Adicione esta tag nos HTMLs: 
@@ -611,8 +613,8 @@ footer{background:#060f0c;padding:52px 52px 0;}
 .hero-cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
 .cta-hero-main{padding:13px 28px;background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;letter-spacing:.2px;text-transform:uppercase;}
 .cta-hero-main:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(13,158,133,.35);}
-.cta-hero-outline{padding:13px 24px;background:transparent;color:rgba(255,255,255,.7);border:1.5px solid rgba(255,255,255,.18);border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:500;cursor:pointer;transition:all .25s;}
-.cta-hero-outline:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.35);color:white;}
+
+
 
 /* VIDEO PLAYER */
 .video-hero{position:relative;z-index:1;display:flex;flex-direction:column;gap:14px;}
@@ -750,7 +752,6 @@ footer{background:#060f0c;padding:52px 52px 0;}
     </div>
     <div class="hero-cta-row">
       <button class="cta-hero-main" onclick="openCadastroModal('esp')">Cadastrar meu espaço</button>
-      <button class="cta-hero-outline" onclick="openCadastroModal('pro')">Sou profissional</button>
     </div>
   </div>
 
@@ -817,6 +818,11 @@ footer{background:#060f0c;padding:52px 52px 0;}
       <div class="hw-card"><div class="hw-num">2</div><h3>Encontre o espaço</h3><p>Filtre por cidade, especialidade e valor. Veja disponibilidade em tempo real.</p></div>
       <div class="hw-card"><div class="hw-num">3</div><h3>Assine o contrato</h3><p>Contrato digital gerado automaticamente com validade jurídica. Sem papel.</p></div>
       <div class="hw-card"><div class="hw-num">4</div><h3>Comece a atender</h3><p>Gerencie reservas e pagamentos em um único painel. Simples e ágil.</p></div>
+    </div>
+    <div style="text-align:center;margin-top:40px;padding:28px;background:linear-gradient(135deg,rgba(13,158,133,.07),rgba(10,110,92,.04));border:1px solid rgba(13,158,133,.15);border-radius:12px;">
+      <div style="font-family:var(--fh);font-size:22px;font-weight:600;color:var(--ink);margin-bottom:8px;">Você é profissional de saúde?</div>
+      <div style="font-size:14px;color:var(--mu);margin-bottom:18px;">Encontre consultórios verificados para atender hoje mesmo</div>
+      <button onclick="openCadastroProModal()" style="padding:13px 32px;background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.2px;transition:all .25s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">Cadastrar como profissional</button>
     </div>
   </div>
 </section>
@@ -953,17 +959,7 @@ document.addEventListener('DOMContentLoaded',loadRooms);
       <div class="cad-modal-title" id="cadModalTitle">Cadastrar meu espaço</div>
       <button class="cad-modal-close" onclick="closeCadModal()">&#10005;</button>
     </div>
-    <!-- TABS -->
-    <div class="stabs" style="margin:0 24px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.08);margin-top:16px;">
-      <div class="stab active" id="mTabEsp" onclick="switchCadTab('esp')">
-        <div class="stab-title">Tenho um espaço</div>
-        <div class="stab-desc">Quero anunciar e sublocar</div>
-      </div>
-      <div class="stab" id="mTabPro" onclick="switchCadTab('pro')">
-        <div class="stab-title">Sou profissional</div>
-        <div class="stab-desc">Quero sublocar um espaço</div>
-      </div>
-    </div>
+
 
     <!-- FORM ESPAÇO -->
     <div class="sform active" id="mFormEsp" style="padding:20px 24px 28px;">
@@ -972,7 +968,8 @@ document.addEventListener('DOMContentLoaded',loadRooms);
         <div class="tt-btn active" id="mTipoPJ" onclick="switchMTipo('PJ')"><div class="tt-title">Pessoa Jurídica</div><div class="tt-sub">CNPJ da empresa</div></div>
         <div class="tt-btn" id="mTipoPF" onclick="switchMTipo('PF')"><div class="tt-title">Pessoa Física</div><div class="tt-sub">CPF do responsável</div></div>
       </div>
-      <div class="fg"><label>Nome do espaço / clínica</label><input type="text" id="me_nome" placeholder="Ex: Clínica Bem Estar"/></div>
+      <div class="fg"><label>Nome fantasia / clínica</label><input type="text" id="me_nome" placeholder="Ex: Clínica Bem Estar"/></div>
+      <div class="fg"><label>Razão social</label><input type="text" id="me_razao" placeholder="Ex: Bem Estar Saúde Ltda"/></div>
       <div class="fg-row">
         <div class="fg"><label>Responsável</label><input type="text" id="me_resp" placeholder="Nome completo"/></div>
         <div class="fg"><label>WhatsApp</label><input type="text" id="me_tel" placeholder="(11) 99999-9999"/></div>
@@ -983,6 +980,20 @@ document.addEventListener('DOMContentLoaded',loadRooms);
         <div class="fg"><label id="mDocLabel">CNPJ</label><input type="text" id="me_doc" placeholder="00.000.000/0001-00"/></div>
       </div>
       <div class="fdiv"></div>
+      <!-- LINK PERSONALIZADO -->
+      <div class="fg" style="margin-bottom:6px;">
+        <label>Link da sua página pública</label>
+        <div style="display:flex;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;">
+          <span style="padding:10px 12px;font-size:12px;color:rgba(255,255,255,.3);white-space:nowrap;border-right:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2);">sublocafacil.com.br/</span>
+          <input type="text" id="me_slug" placeholder="clinicahope" oninput="updateSlugPreview()"
+            style="flex:1;padding:10px 12px;border:none;background:transparent;font-family:var(--fb);font-size:13px;color:white;outline:none;" />
+          <span id="slugStatus" style="padding:10px 12px;font-size:11px;color:rgba(255,255,255,.3);">—</span>
+        </div>
+      </div>
+      <div id="slugPreview" style="font-size:11px;color:rgba(13,158,133,.7);padding:4px 2px 10px;display:none;">
+        <span style="color:rgba(255,255,255,.25);">Seu link:</span> sublocafacil.com.br/<span id="slugVal"></span>
+      </div>
+      <div class="fdiv" style="margin-top:4px;"></div>
       <div class="up-sec">
         <div class="up-label" id="mUpLabel1">Contrato social (PJ) ou RG/CNH (PF)</div>
         <div class="up-zone" id="muz1">
@@ -1011,54 +1022,23 @@ document.addEventListener('DOMContentLoaded',loadRooms);
       <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeCadModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
     </div>
 
-    <!-- FORM PROFISSIONAL -->
-    <div class="sform" id="mFormPro" style="padding:20px 24px 28px;">
-      <div class="sform-sub" style="margin-bottom:16px;">Acesse espaços clínicos verificados em todo o Brasil</div>
-      <div class="fg"><label>Nome completo</label><input type="text" id="mp_nome" placeholder="Nome e sobrenome"/></div>
-      <div class="fg-row">
-        <div class="fg"><label>E-mail</label><input type="email" id="mp_email" placeholder="seu@email.com"/></div>
-        <div class="fg"><label>WhatsApp</label><input type="text" id="mp_tel" placeholder="(11) 99999-9999"/></div>
-      </div>
-      <div class="fg"><label>Senha</label><input type="password" id="mp_senha" placeholder="Mínimo 8 caracteres"/></div>
-      <div class="fg-row">
-        <div class="fg"><label>Conselho profissional</label>
-          <select id="mp_conselho">
-            <option value="">Selecione</option>
-            <option>CRP — Psicologia</option><option>CRM — Medicina</option>
-            <option>CRN — Nutrição</option><option>CREFITO — Fisioterapia</option>
-            <option>CFFa — Fonoaudiologia</option><option>CRO — Odontologia</option>
-            <option>COREN — Enfermagem</option><option>CFF — Farmácia</option>
-            <option>Outro conselho</option>
-          </select>
-        </div>
-        <div class="fg"><label>Número de registro</label><input type="text" id="mp_reg" placeholder="Ex: 06/123456"/></div>
-      </div>
-      <div class="fg"><label>CPF</label><input type="text" id="mp_cpf" placeholder="000.000.000-00"/></div>
-      <div class="fdiv"></div>
-      <div class="up-sec">
-        <div class="up-label">Documento com foto (RG ou CNH)</div>
-        <div class="up-zone" id="mpuz1">
-          <input type="file" id="mp_f1" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('mp_f1','mpuz1','mpuzd1')"/>
-          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg></div>
-          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="mpuzd1"></div></div>
-        </div>
-      </div>
-      <div class="up-sec">
-        <div class="up-label">Comprovante de registro no conselho</div>
-        <div class="up-zone" id="mpuz2">
-          <input type="file" id="mp_f2" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('mp_f2','mpuz2','mpuzd2')"/>
-          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-          <div class="up-text"><div class="up-main">Carteirinha, certidão ou comprovante</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="mpuzd2"></div></div>
-        </div>
-      </div>
-      <button class="btn-submit" id="mBtnPro" onclick="mCadastrarProfissional()">Criar minha conta</button>
-      <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeCadModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
-    </div>
   </div>
 </div>
 
 <script>
 // ── VIDEO ──
+// ── MODAL PROFISSIONAL (separado) ──
+function openCadastroProModal(){
+  // Reuse the cadastro modal but open on pro tab
+  // Since we removed pro form from main modal, open a dedicated one
+  document.getElementById('proModalOv').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeProModal(){
+  document.getElementById('proModalOv').classList.remove('open');
+  document.body.style.overflow='';
+}
+
 let videoPlaying = false;
 function toggleVideo(){
   const vid = document.getElementById('heroVideo');
@@ -1129,6 +1109,53 @@ function switchMTipo(t){
   document.getElementById('mUpLabel1').textContent=t==='PJ'?'Contrato social da empresa':'RG ou CNH do responsável';
 }
 
+function updateSlugPreview(){
+  const raw=document.getElementById('me_slug').value;
+  const clean=raw.toLowerCase().replace(/[^a-z0-9-]/g,'').replace(/--+/g,'-');
+  if(raw!==clean) document.getElementById('me_slug').value=clean;
+  const prev=document.getElementById('slugPreview');
+  const val=document.getElementById('slugVal');
+  const status=document.getElementById('slugStatus');
+  if(clean){
+    prev.style.display='block';
+    val.textContent=clean;
+    status.textContent='✓';
+    status.style.color='var(--gl)';
+  } else {
+    prev.style.display='none';
+    status.textContent='—';
+    status.style.color='rgba(255,255,255,.3)';
+  }
+}
+function openSuccessModalEsp(nome,email,slug){
+  const link='sublocafacil.com.br/'+slug;
+  document.getElementById('mTitle').textContent='Espaço cadastrado!';
+  document.getElementById('mBody').innerHTML=`
+    <div style="text-align:center">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--gx);border:2px solid rgba(10,110,92,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-family:var(--fh);font-size:22px;font-weight:600;margin-bottom:8px">Olá, ${nome}!</div>
+      <div style="font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:16px">
+        Cadastro recebido! Verificaremos seus documentos em até <strong>24 horas úteis</strong>.
+      </div>
+      <div style="background:var(--gx);border:1px solid rgba(13,158,133,.25);border-radius:10px;padding:16px;margin-bottom:18px;text-align:left;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--g);margin-bottom:8px;">Seu link personalizado</div>
+        <div style="display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--bo);border-radius:7px;padding:10px 13px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span style="font-size:13px;font-weight:600;color:var(--ink);flex:1;">${link}</span>
+          <button onclick="navigator.clipboard.writeText('https://${link}').then(()=>this.textContent='Copiado!').catch(()=>{})" style="background:var(--g);color:white;border:none;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;">Copiar</button>
+        </div>
+        <div style="font-size:11px;color:var(--mu);margin-top:6px;">Após aprovação, este link estará ativo e mostrará seus espaços disponíveis.</div>
+      </div>
+      <div style="background:#f8fffe;border:1px solid var(--bo);border-radius:8px;padding:13px 16px;font-size:13px;line-height:1.8;text-align:left;margin-bottom:18px">
+        Confirmação para <strong>${email}</strong><br>
+        Após aprovação, cadastre suas salas no painel
+      </div>
+      <button class="btn-submit" onclick="closeModal()" style="background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;padding:12px;border-radius:8px;width:100%;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.2px;">Entendido</button>
+    </div>`;
+  document.getElementById('modalOv').classList.add('open');
+}
 async function mCadastrarEspaco(){
   const n=document.getElementById('me_nome').value.trim(),resp=document.getElementById('me_resp').value.trim(),em=document.getElementById('me_email').value.trim(),s=document.getElementById('me_senha').value,d=document.getElementById('me_doc').value.trim(),f1=document.getElementById('me_f1').files[0],f2=document.getElementById('me_f2').files[0],f3=document.getElementById('me_f3').files[0];
   if(!n||!resp||!em||!s||!d){toast('Preencha todos os campos obrigatórios');return;}
@@ -1137,7 +1164,19 @@ async function mCadastrarEspaco(){
   const btn=document.getElementById('mBtnEsp');btn.disabled=true;btn.textContent='Enviando...';
   try{
     const db=getSupabase();
-    const{data:cl,error:insertErr}=await db.from('clinicas').insert({nome:n,proprietaria:resp,email:em,plano:'profissional',status:'pendente_aprovacao',whatsapp:document.getElementById('me_tel').value,cnpj:mTipoPessoa==='PJ'?d:null,cpf:mTipoPessoa==='PF'?d:null}).select().single();
+    const razao=document.getElementById('me_razao').value.trim();
+    const rawSlug=document.getElementById('me_slug').value.trim();
+    const slug=rawSlug||n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    const{data:cl,error:insertErr}=await db.from('clinicas').insert({
+      nome:n,
+      razao_social:razao||n,
+      slug:slug,
+      proprietaria:resp,email:em,
+      plano:'profissional',status:'pendente_aprovacao',
+      whatsapp:document.getElementById('me_tel').value,
+      cnpj:mTipoPessoa==='PJ'?d:null,
+      cpf:mTipoPessoa==='PF'?d:null
+    }).select().single();
     if(insertErr){
       if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')||insertErr.message?.toLowerCase().includes('unique')){toast('E-mail já cadastrado. Faça login.');}
       else{toast('Erro: '+(insertErr.message||'tente novamente'));}
@@ -1147,7 +1186,7 @@ async function mCadastrarEspaco(){
     await db.from('usuarios').insert({clinica_id:cl.id,nome:resp,email:em,senha_hash:btoa(s),role:'admin'});
     try{await db.from('config_clinica').insert({clinica_id:cl.id});}catch(_){}
     closeCadModal();
-    openSuccessModal('esp',resp.split(' ')[0],em);
+    openSuccessModalEsp(resp.split(' ')[0],em,cl.slug||slug);
   }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Cadastrar meu espaço';}
 }
 
@@ -1168,6 +1207,83 @@ async function mCadastrarProfissional(){
     try{await Promise.all([db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_foto',f1,{upsert:true}),db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_reg',f2,{upsert:true})]);}catch(_){}
     localStorage.setItem('hope_psi_logada',JSON.stringify({id:p.id,nome:n,email:em,crp:reg,conselho:cons,status:'pendente_aprovacao'}));
     closeCadModal();
+    openSuccessModal('pro',n.split(' ')[0],em);
+  }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Criar minha conta';}
+}
+</script>
+
+<!-- PROFISSIONAL MODAL -->
+<div class="cad-modal-ov" id="proModalOv">
+  <div class="cad-modal-box">
+    <div class="cad-modal-head">
+      <div class="cad-modal-title">Cadastro profissional</div>
+      <button class="cad-modal-close" onclick="closeProModal()">&#10005;</button>
+    </div>
+    <div style="padding:20px 24px 28px;">
+      <div class="sform-sub" style="margin-bottom:16px;">Acesse espaços clínicos verificados em todo o Brasil</div>
+      <div class="fg"><label>Nome completo</label><input type="text" id="mp_nome" placeholder="Nome e sobrenome"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>E-mail</label><input type="email" id="mp_email" placeholder="seu@email.com"/></div>
+        <div class="fg"><label>WhatsApp</label><input type="text" id="mp_tel" placeholder="(11) 99999-9999"/></div>
+      </div>
+      <div class="fg"><label>Senha</label><input type="password" id="mp_senha" placeholder="Mínimo 8 caracteres"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>Conselho profissional</label>
+          <select id="mp_conselho">
+            <option value="">Selecione</option>
+            <option>CRP — Psicologia</option><option>CRM — Medicina</option>
+            <option>CRN — Nutrição</option><option>CREFITO — Fisioterapia</option>
+            <option>CFFa — Fonoaudiologia</option><option>CRO — Odontologia</option>
+            <option>COREN — Enfermagem</option><option>CFF — Farmácia</option>
+            <option>Outro conselho</option>
+          </select>
+        </div>
+        <div class="fg"><label>Número de registro</label><input type="text" id="mp_reg" placeholder="Ex: 06/123456"/></div>
+      </div>
+      <div class="fg"><label>CPF</label><input type="text" id="mp_cpf" placeholder="000.000.000-00"/></div>
+      <div class="fdiv"></div>
+      <div class="up-sec">
+        <div class="up-label">Documento com foto (RG ou CNH)</div>
+        <div class="up-zone" id="mpuz1">
+          <input type="file" id="mp_f1" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('mp_f1','mpuz1','mpuzd1')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg></div>
+          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="mpuzd1"></div></div>
+        </div>
+      </div>
+      <div class="up-sec">
+        <div class="up-label">Comprovante de registro no conselho</div>
+        <div class="up-zone" id="mpuz2">
+          <input type="file" id="mp_f2" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('mp_f2','mpuz2','mpuzd2')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="up-text"><div class="up-main">Carteirinha, certidão ou comprovante</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="mpuzd2"></div></div>
+        </div>
+      </div>
+      <button class="btn-submit" id="mBtnPro" onclick="mCadastrarProfissional()">Criar minha conta</button>
+      <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeProModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('proModalOv').addEventListener('click',function(e){if(e.target===this)closeProModal();});
+
+async function mCadastrarProfissional(){
+  const n=document.getElementById('mp_nome').value.trim(),em=document.getElementById('mp_email').value.trim(),s=document.getElementById('mp_senha').value,cons=document.getElementById('mp_conselho').value,reg=document.getElementById('mp_reg').value.trim(),cpf=document.getElementById('mp_cpf').value.trim(),f1=document.getElementById('mp_f1').files[0],f2=document.getElementById('mp_f2').files[0];
+  if(!n||!em||!s||!cons||!reg||!cpf){toast('Preencha todos os campos obrigatórios');return;}
+  if(s.length<8){toast('Senha mínimo 8 caracteres');return;}
+  if(!f1||!f2){toast('Envie os documentos obrigatórios');return;}
+  const btn=document.getElementById('mBtnPro');btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    const db=getSupabase();
+    const{data:p,error:insertErr}=await db.from('psicologas').insert({nome:n,email:em,cpf,crp:reg,tipo_sub:'avulso',status:'pendente_aprovacao',telefone:document.getElementById('mp_tel').value,clinica_id:null}).select().single();
+    if(insertErr){
+      if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')){toast('E-mail já cadastrado. Faça login.');}
+      else{toast('Erro: '+(insertErr.message||'tente novamente'));}
+      btn.disabled=false;btn.textContent='Criar minha conta';return;
+    }
+    try{await Promise.all([db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_foto',f1,{upsert:true}),db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_reg',f2,{upsert:true})]);}catch(_){}
+    localStorage.setItem('hope_psi_logada',JSON.stringify({id:p.id,nome:n,email:em,crp:reg,conselho:cons,status:'pendente_aprovacao'}));
+    closeProModal();
     openSuccessModal('pro',n.split(' ')[0],em);
   }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Criar minha conta';}
 }
