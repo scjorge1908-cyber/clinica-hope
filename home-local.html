@@ -6,33 +6,25 @@
 <title>SublocaFacil — Cadastro e Espaços</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+
 <script>
-// ── supabase.js inline ──
 // ============================================================
 // CLÍNICA HOPE — Conexão com Supabase
 // Este arquivo é importado por todas as páginas do sistema
 // ============================================================
 
 const SUPABASE_URL  = 'https://cobxcmsnypkngiszzxpp.supabase.co';
-// IMPORTANTE: Substitua pela sua anon key do Supabase
-// Supabase → Settings → API → Project API keys → anon public (começa com eyJ...)
-const SUPABASE_KEY = 'sb_publishable_C2ZK1G5JV8INtTEFh-NH9A_dOo2jqXd'; // frontend key - safe
+const SUPABASE_KEY  = 'sb_publishable_C2ZK1G5JV8INtTEFh-NH9A_dOo2jqXd'; // frontend key - safe
 
 // Cliente Supabase (usando a CDN — não precisa instalar nada)
 // Adicione esta tag nos HTMLs: 
-// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+// 
 
 let _supabase = null;
 
 function getSupabase() {
   if (!_supabase) {
-    try {
-      _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      // try alternate namespace
-      _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
+    _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   }
   return _supabase;
 }
@@ -427,6 +419,8 @@ async function dbGetDadosPsicologa(psiId, clinicaId) {
 console.log('✅ Supabase conectado:', SUPABASE_URL);
 
 </script>
+
+
 <style>
 :root{
   --g:#0a6e5c;--gl:#0d9e85;--gx:#e8f5f2;
@@ -1161,6 +1155,18 @@ function openSuccessModalEsp(nome,email,slug){
     </div>`;
   document.getElementById('modalOv').classList.add('open');
 }
+// Aguarda SDK Supabase carregar (máx 5 segundos)
+function waitForSupabase(timeout=5000){
+  return new Promise((resolve,reject)=>{
+    if(typeof supabase!=='undefined'){resolve();return;}
+    const start=Date.now();
+    const check=setInterval(()=>{
+      if(typeof supabase!=='undefined'){clearInterval(check);resolve();}
+      else if(Date.now()-start>timeout){clearInterval(check);reject(new Error('SDK Supabase não carregou. Verifique sua conexão com internet.'));}
+    },100);
+  });
+}
+
 async function mCadastrarEspaco(){
   const n=document.getElementById('me_nome').value.trim(),resp=document.getElementById('me_resp').value.trim(),em=document.getElementById('me_email').value.trim(),s=document.getElementById('me_senha').value,d=document.getElementById('me_doc').value.trim(),f1=document.getElementById('me_f1').files[0],f2=document.getElementById('me_f2').files[0],f3=document.getElementById('me_f3').files[0];
   if(!n||!resp||!em||!s||!d){toast('Preencha todos os campos obrigatórios');return;}
@@ -1202,6 +1208,7 @@ async function mCadastrarProfissional(){
   if(!f1||!f2){toast('Envie os documentos obrigatórios');return;}
   const btn=document.getElementById('mBtnPro');btn.disabled=true;btn.textContent='Enviando...';
   try{
+    await waitForSupabase();
     const db=getSupabase();
     const{data:p,error:insertErr}=await db.from('psicologas').insert({nome:n,email:em,cpf,crp:reg,tipo_sub:'avulso',status:'pendente_aprovacao',telefone:document.getElementById('mp_tel').value,clinica_id:null}).select().single();
     if(insertErr){
@@ -1279,6 +1286,7 @@ async function mCadastrarProfissional(){
   if(!f1||!f2){toast('Envie os documentos obrigatórios');return;}
   const btn=document.getElementById('mBtnPro');btn.disabled=true;btn.textContent='Enviando...';
   try{
+    await waitForSupabase();
     const db=getSupabase();
     const{data:p,error:insertErr}=await db.from('psicologas').insert({nome:n,email:em,cpf,crp:reg,tipo_sub:'avulso',status:'pendente_aprovacao',telefone:document.getElementById('mp_tel').value,clinica_id:null}).select().single();
     if(insertErr){
@@ -1292,6 +1300,30 @@ async function mCadastrarProfissional(){
     openSuccessModal('pro',n.split(' ')[0],em);
   }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Criar minha conta';}
 }
+</script>
+<script>
+// Carrega SDK Supabase dinamicamente e inicializa
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js';
+  s.onload = function(){
+    console.log('✅ Supabase SDK carregado!');
+    // Testa conexão
+    try {
+      var db = getSupabase();
+      db.from('clinicas').select('id').limit(1).then(function(r){
+        if(r.error) console.warn('Supabase erro:', r.error.message);
+        else console.log('✅ Banco conectado! Registros:', r.data);
+      });
+    } catch(e) { console.warn('Init erro:', e.message); }
+  };
+  s.onerror = function(){
+    console.error('❌ Falha ao carregar SDK Supabase - verifique internet');
+    var t = document.getElementById('toast');
+    if(t){ t.textContent = 'Sem internet - SDK não carregou'; t.classList.add('show'); }
+  };
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>
