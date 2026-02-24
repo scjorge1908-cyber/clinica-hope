@@ -1,492 +1,930 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Clínica Hope — Gestão de Sublocação</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SublocaFacil — Transforme espaços ociosos em receita</title>
+<meta name="description" content="Plataforma de sublocação para clínicas, espaços terapêuticos e coworkings de saúde. Conectamos proprietários e profissionais."/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0a6e5c;
+  --green-l:#0d9e85;
+  --green-xl:#e8f5f2;
+  --ink:#0b1c18;
+  --ink2:#1a3028;
+  --ink3:#2a4038;
+  --muted:#5f7870;
+  --border:#d8e8e4;
+  --bg:#f5faf8;
+  --white:#ffffff;
+  --fh:'Cormorant Garamond',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fb);background:var(--white);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+/* ── NAVIGATION ── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:400;
+  height:64px;padding:0 56px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(11,28,24,.96);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.05);
+  transition:box-shadow .3s;
+}
+.nav.scrolled{box-shadow:0 4px 32px rgba(0,0,0,.2);}
+.nav-brand{display:flex;align-items:center;gap:11px;cursor:pointer;text-decoration:none;}
+.nav-mark{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,var(--green),var(--green-l));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-size:17px;font-weight:600;color:white;
+  letter-spacing:-.5px;
+}
+.nav-name{font-family:var(--fh);font-size:19px;font-weight:600;color:white;letter-spacing:-.3px;}
+.nav-links{display:flex;align-items:center;gap:36px;}
+.nav-links a{font-size:13px;font-weight:400;color:rgba(255,255,255,.45);text-decoration:none;transition:color .2s;letter-spacing:.1px;}
+.nav-links a:hover{color:rgba(255,255,255,.85);}
+.nav-actions{display:flex;align-items:center;gap:10px;}
+.btn-ghost{
+  padding:8px 20px;border:1px solid rgba(255,255,255,.15);
+  border-radius:6px;font-family:var(--fb);font-size:13px;
+  font-weight:500;color:rgba(255,255,255,.8);background:transparent;
+  cursor:pointer;transition:all .2s;
+}
+.btn-ghost:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.3);}
+.btn-solid{
+  padding:9px 22px;background:var(--green-l);border:none;
+  border-radius:6px;font-family:var(--fb);font-size:13px;
+  font-weight:600;color:white;cursor:pointer;transition:all .2s;
+}
+.btn-solid:hover{background:#0bb897;transform:translateY(-1px);}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  background:linear-gradient(155deg,#050e0b 0%,#0b1c18 40%,#0f2820 70%,#0a2e22 100%);
+  display:flex;align-items:center;justify-content:center;
+  padding:80px 56px 72px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.hero-glow{
+  position:absolute;
+  width:800px;height:800px;border-radius:50%;
+  background:radial-gradient(circle,rgba(13,158,133,.13) 0%,transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(13,158,133,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(13,158,133,.04) 1px,transparent 1px);
+  background-size:64px 64px;
+  pointer-events:none;
+  -webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%);
+}
+.hero-content{position:relative;z-index:1;max-width:780px;}
+.hero-kicker{
+  display:inline-block;
+  font-size:11px;font-weight:600;
+  color:var(--green-l);
+  text-transform:uppercase;letter-spacing:2px;
+  margin-bottom:24px;
+  opacity:.9;
+}
+.hero h1{
+  font-family:var(--fh);
+  font-size:clamp(40px,5.5vw,74px);
+  font-weight:700;color:white;
+  line-height:1.0;margin-bottom:12px;
+  letter-spacing:-.5px;
+}
+.hero h1 .thin{font-weight:400;font-style:italic;color:rgba(255,255,255,.75);}
+.hero h1 .outline{
+  font-style:italic;
+  -webkit-text-stroke:1.5px var(--green-l);
+  color:transparent;
+}
+.hero-sub{
+  font-family:var(--fh);
+  font-size:clamp(16px,2vw,22px);
+  font-weight:400;font-style:italic;
+  color:rgba(255,255,255,.35);
+  margin-bottom:20px;
+}
+.hero-desc{
+  font-size:clamp(14px,1.6vw,16px);
+  color:rgba(255,255,255,.45);
+  line-height:1.8;
+  max-width:580px;margin:0 auto 38px;
+}
+.hero-ctas{
+  display:flex;gap:12px;justify-content:center;
+  flex-wrap:wrap;margin-bottom:56px;
+}
+.cta-main{
+  padding:15px 34px;background:var(--green-l);color:white;border:none;
+  border-radius:7px;font-family:var(--fb);font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .25s;letter-spacing:.1px;
+}
+.cta-main:hover{background:#0bb897;transform:translateY(-2px);box-shadow:0 12px 32px rgba(13,158,133,.25);}
+.cta-outline{
+  padding:15px 34px;background:transparent;color:white;
+  border:1.5px solid rgba(255,255,255,.18);
+  border-radius:7px;font-family:var(--fb);font-size:14px;font-weight:500;
+  cursor:pointer;transition:all .25s;
+}
+.cta-outline:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.35);}
+.hero-stats{
+  display:flex;gap:52px;justify-content:center;flex-wrap:wrap;
+  padding-top:40px;border-top:1px solid rgba(255,255,255,.07);
+}
+.hs{text-align:center;}
+.hs-n{font-family:var(--fh);font-size:34px;font-weight:600;color:white;letter-spacing:-.5px;}
+.hs-l{font-size:12px;color:rgba(255,255,255,.3);margin-top:4px;letter-spacing:.2px;}
+
+/* ── DESTAQUE SALAS ── */
+.rooms-strip{padding:0;background:var(--ink);overflow:hidden;border-top:1px solid rgba(255,255,255,.05);}
+.rooms-header{
+  padding:36px 56px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1200px;margin:0 auto;
+}
+.rooms-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.3);}
+.rooms-nav{display:flex;gap:8px;}
+.rnav{
+  width:30px;height:30px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.1);
+  background:transparent;color:rgba(255,255,255,.5);
+  font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.rnav:hover{background:rgba(255,255,255,.07);color:white;}
+.carousel-viewport{overflow:hidden;padding:0 56px;position:relative;}
+.carousel-inner{display:flex;gap:16px;transition:transform .5s cubic-bezier(.4,0,.2,1);will-change:transform;}
+.carousel-footer{display:flex;align-items:center;justify-content:space-between;padding:20px 56px 36px;}
+.carousel-dots{display:flex;gap:6px;align-items:center;}
+.cdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .3s;cursor:pointer;border:none;padding:0;}
+.cdot.active{background:var(--green-l);width:20px;border-radius:3px;}
+.rooms-cta{display:inline-block;padding:10px 24px;border:1px solid rgba(255,255,255,.15);border-radius:6px;font-family:var(--fb);font-size:13px;font-weight:500;color:rgba(255,255,255,.65);text-decoration:none;transition:all .2s;letter-spacing:.2px;}
+.rooms-cta:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.3);color:white;}
+.room-card{
+  flex:0 0 280px;scroll-snap-align:start;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;overflow:hidden;cursor:pointer;
+  transition:all .25s;
+}
+.room-card:hover{background:rgba(13,158,133,.07);border-color:rgba(13,158,133,.18);transform:translateY(-2px);}
+.room-img{
+  height:140px;
+  background:linear-gradient(135deg,var(--ink2),var(--ink3));
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.room-img-icon{font-size:0;} /* sem emoji na imagem */
+.room-img-bg{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.room-img-label{
+  position:absolute;top:10px;left:10px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(8px);
+  border-radius:4px;padding:3px 9px;
+  font-size:9px;font-weight:600;color:rgba(255,255,255,.7);
+  text-transform:uppercase;letter-spacing:1px;
+}
+.room-price{
+  position:absolute;top:10px;right:10px;
+  background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(8px);
+  border-radius:5px;padding:4px 10px;
+  font-family:var(--fh);font-size:16px;font-weight:600;color:white;
+}
+.room-price span{font-size:10px;font-family:var(--fb);font-weight:400;color:rgba(255,255,255,.5);}
+.room-body{padding:14px 16px;}
+.room-clinic{font-size:10px;font-weight:600;color:var(--green-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;}
+.room-name{font-size:14px;font-weight:600;color:white;margin-bottom:4px;line-height:1.3;}
+.room-loc{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:8px;}
+.room-chips{display:flex;gap:5px;flex-wrap:wrap;}
+.rchip{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:4px;padding:2px 7px;
+  font-size:10px;color:rgba(255,255,255,.4);
+}
+
+/* ── SEÇÃO PARA CLÍNICAS ── */
+.for-clinics{
+  padding:100px 56px;
+  background:linear-gradient(150deg,#060e0b 0%,#0b1c18 50%,#102a20 100%);
+  position:relative;overflow:hidden;
+}
+.fc-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.fc-tag{
+  display:inline-block;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:3px;padding:4px 12px;
+  font-size:10px;font-weight:600;
+  text-transform:uppercase;letter-spacing:1.5px;
+  color:rgba(255,255,255,.3);margin-bottom:18px;
+}
+.fc-left h2{
+  font-family:var(--fh);
+  font-size:clamp(28px,3.5vw,50px);
+  font-weight:600;color:white;
+  line-height:1.05;margin-bottom:14px;
+  letter-spacing:-.3px;
+}
+.fc-left h2 em{font-style:italic;font-weight:400;}
+.fc-left .lead{
+  font-size:16px;color:rgba(255,255,255,.4);
+  line-height:1.8;margin-bottom:28px;
+}
+.check-list{display:flex;flex-direction:column;gap:13px;margin-bottom:28px;}
+.check-item{display:flex;align-items:flex-start;gap:12px;}
+.ci-mark{
+  width:20px;height:20px;border-radius:5px;
+  background:rgba(13,158,133,.15);
+  border:1px solid rgba(13,158,133,.25);
+  color:var(--green-l);font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:2px;
+}
+.ci-text{font-size:15px;color:rgba(255,255,255,.7);line-height:1.45;}
+.ci-text strong{color:white;font-weight:600;}
+.fc-quote{
+  border-left:2px solid var(--green-l);
+  padding:12px 0 12px 18px;
+  font-family:var(--fh);font-size:16px;font-style:italic;
+  color:rgba(255,255,255,.45);
+  margin-bottom:28px;line-height:1.6;
+}
+.fc-quote strong{color:var(--green-l);font-style:normal;}
+
+/* MÉTRICA CARD */
+.metric-card{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:16px;padding:32px;
+}
+.metric-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05);
+}
+.metric-row:last-child{border:none;padding-top:20px;}
+.mr-label{font-size:13px;color:rgba(255,255,255,.4);}
+.mr-value{font-size:14px;font-weight:600;color:rgba(255,255,255,.75);}
+.metric-highlight{
+  font-family:var(--fh);
+  font-size:44px;font-weight:600;
+  color:var(--green-l);letter-spacing:-1px;
+}
+.metric-sub{font-size:12px;color:rgba(255,255,255,.25);margin-top:4px;}
+
+/* ── PARA PROFISSIONAIS ── */
+.for-profs{padding:100px 56px;background:var(--bg);}
+.fp-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.fp-tag{display:inline-block;border:1px solid var(--border);border-radius:3px;padding:4px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:18px;}
+.fp-right h2{font-family:var(--fh);font-size:clamp(28px,3.5vw,50px);font-weight:600;color:var(--ink);line-height:1.05;margin-bottom:14px;letter-spacing:-.3px;}
+.fp-right h2 em{font-style:italic;font-weight:400;color:var(--green);}
+.fp-right .lead{font-size:16px;color:var(--muted);line-height:1.8;margin-bottom:28px;}
+.check-item.light .ci-mark{background:var(--green-xl);border-color:rgba(10,110,92,.2);color:var(--green);}
+.check-item.light .ci-text{color:var(--ink);}
+.check-item.light .ci-text strong{color:var(--ink);}
+.fp-quote{border-left:2px solid var(--green);padding:12px 0 12px 18px;font-family:var(--fh);font-size:16px;font-style:italic;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+.councils-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:28px;}
+.council-tag{
+  background:white;border:1.5px solid var(--border);
+  border-radius:5px;padding:5px 12px;
+  font-size:11px;font-weight:600;color:var(--green);
+  transition:all .2s;cursor:default;letter-spacing:.3px;
+}
+.council-tag:hover{border-color:var(--green-l);background:var(--green-xl);}
+
+/* AVAILABILITY CARD */
+.avail-card{background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,.07);}
+.avail-head{background:linear-gradient(135deg,var(--green),var(--green-l));padding:22px 24px;}
+.avail-head-title{font-family:var(--fh);font-size:16px;font-weight:600;color:white;}
+.avail-head-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:3px;}
+.avail-body{padding:4px 0;}
+.avail-row{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 22px;border-bottom:1px solid var(--bg);
+  transition:background .2s;cursor:pointer;
+}
+.avail-row:last-child{border:none;}
+.avail-row:hover{background:var(--bg);}
+.avail-dot{width:8px;height:8px;border-radius:50%;background:var(--green-l);flex-shrink:0;}
+.avail-info{flex:1;}
+.avail-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px;}
+.avail-detail{font-size:11px;color:var(--muted);}
+.avail-price{font-family:var(--fh);font-size:16px;font-weight:600;color:var(--green);}
+
+/* ── FECHAMENTO ── */
+.closing{
+  padding:112px 56px;text-align:center;
+  background:linear-gradient(155deg,#040b08 0%,#0b1c18 50%,#0a2e22 100%);
+  position:relative;overflow:hidden;
+}
+.closing-glow{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(13,158,133,.11) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.closing-content{position:relative;z-index:1;max-width:680px;margin:0 auto;}
+.closing h2{font-family:var(--fh);font-size:clamp(28px,4vw,58px);font-weight:600;color:white;line-height:1.0;margin-bottom:14px;letter-spacing:-.5px;}
+.closing h2 em{font-style:italic;font-weight:400;color:var(--green-l);}
+.closing p{font-size:17px;color:rgba(255,255,255,.38);line-height:1.75;margin-bottom:36px;}
+.closing p strong{color:rgba(255,255,255,.7);}
+.closing-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.closing-pills{
+  display:flex;gap:10px;justify-content:center;
+  flex-wrap:wrap;margin-top:32px;
+}
+.cpill{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;padding:6px 16px;
+  font-size:12px;color:rgba(255,255,255,.4);
+  letter-spacing:.2px;
+}
+
+/* ── LOGIN ── */
+.login-sec{padding:88px 56px;background:var(--white);}
+.login-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+.ll-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-bottom:12px;}
+.ll-title{font-family:var(--fh);font-size:clamp(24px,3vw,38px);font-weight:600;color:var(--ink);margin-bottom:12px;letter-spacing:-.3px;}
+.ll-desc{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:24px;}
+.ll-features{display:flex;flex-direction:column;gap:10px;}
+.llf{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink);}
+.llf-mark{width:18px;height:18px;border-radius:4px;background:var(--green-xl);border:1px solid rgba(10,110,92,.2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--green);flex-shrink:0;}
+
+/* LOGIN FORM */
+.login-form-card{
+  background:white;border:1px solid var(--border);
+  border-radius:14px;padding:32px;
+  box-shadow:0 4px 28px rgba(0,0,0,.07);
+}
+.form-tabs{
+  display:flex;
+  border:1.5px solid var(--border);
+  border-radius:8px;overflow:hidden;margin-bottom:24px;
+}
+.ftab{
+  flex:1;padding:10px;text-align:center;
+  font-size:13px;font-weight:500;cursor:pointer;
+  transition:all .2s;color:var(--muted);background:var(--bg);
+  border:none;
+}
+.ftab.active{background:var(--green);color:white;font-weight:600;}
+.form-title{font-family:var(--fh);font-size:21px;font-weight:600;color:var(--ink);margin-bottom:4px;}
+.form-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:5px;}
+.fg input{
+  width:100%;padding:10px 14px;
+  border:1.5px solid var(--border);border-radius:7px;
+  font-family:var(--fb);font-size:14px;color:var(--ink);
+  outline:none;transition:all .2s;background:white;
+}
+.fg input:focus{border-color:var(--green-l);box-shadow:0 0 0 3px rgba(13,158,133,.08);}
+.btn-login{
+  width:100%;background:var(--green);color:white;border:none;
+  padding:12px;border-radius:8px;font-family:var(--fb);
+  font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;
+  margin-bottom:12px;letter-spacing:.1px;
+}
+.btn-login:hover{background:#086649;transform:translateY(-1px);}
+.form-footer{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);}
+.form-footer a{color:var(--green);font-weight:500;cursor:pointer;}
+.form-divider{height:1px;background:var(--border);margin:16px 0;}
+.form-register{text-align:center;font-size:13px;color:var(--muted);}
+.form-register a{color:var(--green);font-weight:600;cursor:pointer;}
+
+/* ── FOOTER ── */
+footer{background:#060f0c;padding:52px 56px 0;}
+.foot-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;}
+.foot-brand-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.foot-brand-name{font-family:var(--fh);font-size:18px;font-weight:600;color:white;letter-spacing:-.2px;}
+.foot-desc{font-size:13px;color:rgba(255,255,255,.28);line-height:1.75;margin-bottom:20px;}
+.foot-quick{display:flex;flex-direction:column;gap:8px;}
+.fq-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.22);}
+.fq-row{display:flex;gap:7px;}
+.fq-row input{
+  flex:1;padding:8px 11px;
+  border:1px solid rgba(255,255,255,.08);border-radius:6px;
+  font-family:var(--fb);font-size:12px;color:white;
+  background:rgba(255,255,255,.04);outline:none;
+  transition:border-color .2s;
+}
+.fq-row input::placeholder{color:rgba(255,255,255,.22);}
+.fq-row input:focus{border-color:var(--green-l);}
+.fq-btn{
+  background:var(--green);color:white;border:none;
+  padding:8px 16px;border-radius:6px;font-family:var(--fb);
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.fq-btn:hover{background:var(--green-l);}
+.foot-col h4{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.22);margin-bottom:14px;}
+.foot-col a{display:block;font-size:13px;color:rgba(255,255,255,.38);text-decoration:none;margin-bottom:8px;transition:color .2s;cursor:pointer;}
+.foot-col a:hover{color:rgba(255,255,255,.8);}
+.foot-bottom{
+  max-width:1100px;margin:0 auto;
+  padding:20px 0;
+  border-top:1px solid rgba(255,255,255,.05);
+  display:flex;justify-content:space-between;
+  font-size:12px;color:rgba(255,255,255,.18);
+}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--ink2);color:white;padding:12px 18px;border-radius:8px;font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .3s;border-left:3px solid var(--green-l);}
+.toast.show{opacity:1;}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .nav{padding:0 24px;}
+  .nav-links{display:none;}
+  .hero{padding:80px 24px 60px;}
+  .rooms-header,.carousel-viewport,.carousel-footer{padding-left:24px;padding-right:24px;}
+  .for-clinics,.for-profs,.login-sec{padding:72px 24px;}
+  .fc-inner,.fp-inner,.login-inner{grid-template-columns:1fr;}
+  .closing{padding:80px 24px;}
+  footer{padding:48px 24px 0;}
+  .foot-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:480px){
+  .hero-ctas,.closing-ctas{flex-direction:column;align-items:center;}
+  .cta-main,.cta-outline{width:100%;max-width:320px;text-align:center;}
+}
+</style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════
-     LOGIN / CADASTRO
-══════════════════════════════════════════════ -->
-<div id="authScreen" class="auth-screen">
-  <div class="auth-left">
-    <div class="auth-brand">
-      <span class="brand-mark">H</span>
-      <span class="brand-name">Clínica Hope</span>
+<!-- NAVIGATION -->
+<nav class="nav" id="nav">
+  <div class="nav-brand" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <div class="nav-mark">S</div>
+    <div class="nav-name">SublocaFacil</div>
+  </div>
+  <div class="nav-links">
+    <a href="#clinicas">Para clínicas</a>
+    <a href="#profissionais">Para profissionais</a>
+    <a href="#salas">Espaços disponíveis</a>
+  </div>
+  <div class="nav-actions">
+    <button class="btn-ghost" onclick="scrollLogin()">Entrar</button>
+    <button class="btn-solid" onclick="window.location.href='home.html'">Criar conta</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-kicker">Plataforma de sublocação para a área da saúde</div>
+    <h1>Transforme espaços ociosos<br>em <span class="outline">faturamento.</span></h1>
+    <div class="hero-sub">Ou encontre o consultório ideal para atender hoje mesmo.</div>
+    <p class="hero-desc">
+      O SublocaFacil conecta clínicas, espaços terapêuticos e coworkings de saúde que desejam aumentar a receita com profissionais que precisam de salas prontas para atender, por hora, turno ou mês.
+    </p>
+    <div class="hero-ctas">
+      <button class="cta-main" onclick="window.location.href='home.html'">Quero anunciar minha sala</button>
+      <button class="cta-outline" onclick="window.location.href='home.html#salas'">Quero encontrar uma sala</button>
     </div>
-    <h1 class="auth-headline">Gestão de<br><em>Sublocação</em><br>sem planilhas.</h1>
-    <p class="auth-sub">Salas, psicólogas, agendamentos e pagamentos — tudo em um lugar só.</p>
-    <div class="auth-features">
-      <div class="feat">✦ Painel de salas em tempo real</div>
-      <div class="feat">✦ Cobrança automática via Mercado Pago</div>
-      <div class="feat">✦ Relatórios gerenciais completos</div>
-      <div class="feat">✦ Multi-clínica, dados isolados</div>
+    <div class="hero-stats">
+      <div class="hs"><div class="hs-n">200+</div><div class="hs-l">Espaços cadastrados</div></div>
+      <div class="hs"><div class="hs-n">1.800+</div><div class="hs-l">Profissionais ativos</div></div>
+      <div class="hs"><div class="hs-n">15</div><div class="hs-l">Cidades atendidas</div></div>
+      <div class="hs"><div class="hs-n">24h</div><div class="hs-l">Aprovação de cadastro</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SALAS EM DESTAQUE -->
+<section class="rooms-strip" id="salas">
+  <div class="rooms-header">
+    <div class="rooms-title">Salas em destaque</div>
+    <div class="rooms-nav">
+      <button class="rnav" id="rnavPrev" onclick="carouselStep(-1)">&#8249;</button>
+      <button class="rnav" id="rnavNext" onclick="carouselStep(1)">&#8250;</button>
     </div>
   </div>
 
-  <div class="auth-right">
-    <div class="auth-card">
-      <div class="auth-tabs">
-        <button class="auth-tab active" onclick="switchTab('login')">Entrar</button>
-        <button class="auth-tab" onclick="switchTab('register')">Criar conta</button>
+  <!-- VIEWPORT -->
+  <div class="carousel-viewport" id="carouselViewport">
+    <div class="carousel-inner" id="carouselInner">
+      <div class="room-card" onclick="window.location.href='home.html#salas'">
+        <div class="room-img" style="background:linear-gradient(135deg,#1a3a30,#0a2d26)">
+          <div class="room-img-label">Psicologia</div>
+          <div class="room-price">R$ 35<span>/sessão</span></div>
+        </div>
+        <div class="room-body">
+          <div class="room-clinic">Clínica Esperança</div>
+          <div class="room-name">Sala de Acolhimento — Vila Mariana</div>
+          <div class="room-loc">São Paulo, SP</div>
+          <div class="room-chips"><span class="rchip">Seg–Sex</span><span class="rchip">08h–21h</span><span class="rchip">Verificado</span></div>
+        </div>
       </div>
-
-      <!-- LOGIN -->
-      <div id="tabLogin" class="auth-form active">
-        <h2>Bem-vindo de volta</h2>
-        <p class="form-hint">Acesse o painel da sua clínica</p>
-        <div class="field">
-          <label>E-mail</label>
-          <input type="email" id="loginEmail" placeholder="seuemail@clinica.com" />
+      <div class="room-card" onclick="window.location.href='home.html#salas'">
+        <div class="room-img" style="background:linear-gradient(135deg,#1a2d3a,#0a2030)">
+          <div class="room-img-label">Medicina</div>
+          <div class="room-price">R$ 55<span>/sessão</span></div>
         </div>
-        <div class="field">
-          <label>Senha</label>
-          <input type="password" id="loginPass" placeholder="••••••••" />
+        <div class="room-body">
+          <div class="room-clinic">Instituto Integra</div>
+          <div class="room-name">Consultório Médico — Pinheiros</div>
+          <div class="room-loc">São Paulo, SP</div>
+          <div class="room-chips"><span class="rchip">Seg–Sex</span><span class="rchip">07h–22h</span><span class="rchip">Verificado</span></div>
         </div>
-        <button class="btn-primary full" onclick="doLogin()">Entrar no painel</button>
-        <p class="form-hint center"><a href="#" onclick="forgotPass()">Esqueci minha senha</a></p>
       </div>
-
-      <!-- REGISTRO -->
-      <div id="tabRegister" class="auth-form">
-        <h2>Criar sua conta</h2>
-        <p class="form-hint">Comece gratuitamente por 14 dias</p>
-        <div class="field">
-          <label>Nome da clínica</label>
-          <input type="text" id="regClinica" placeholder="Clínica Esperança Ltda" />
+      <div class="room-card" onclick="window.location.href='home.html#salas'">
+        <div class="room-img" style="background:linear-gradient(135deg,#2a1a3a,#1a0d2a)">
+          <div class="room-img-label">Fisioterapia</div>
+          <div class="room-price">R$ 38<span>/sessão</span></div>
         </div>
-        <div class="field">
-          <label>Seu nome</label>
-          <input type="text" id="regNome" placeholder="Dra. Ana Lima" />
+        <div class="room-body">
+          <div class="room-clinic">Clínica Viver</div>
+          <div class="room-name">Consultório de Fisioterapia — Batel</div>
+          <div class="room-loc">Curitiba, PR</div>
+          <div class="room-chips"><span class="rchip">Seg–Sáb</span><span class="rchip">08h–20h</span><span class="rchip">Verificado</span></div>
         </div>
-        <div class="field">
-          <label>E-mail</label>
-          <input type="email" id="regEmail" placeholder="seuemail@clinica.com" />
+      </div>
+      <div class="room-card" onclick="window.location.href='home.html#salas'">
+        <div class="room-img" style="background:linear-gradient(135deg,#1a3020,#0a2416)">
+          <div class="room-img-label">Nutrição</div>
+          <div class="room-price">R$ 28<span>/sessão</span></div>
         </div>
-        <div class="field">
-          <label>Senha</label>
-          <input type="password" id="regPass" placeholder="Mín. 8 caracteres" />
+        <div class="room-body">
+          <div class="room-clinic">Espaço Saúde+</div>
+          <div class="room-name">Sala Multiuso — Cambuí</div>
+          <div class="room-loc">Campinas, SP</div>
+          <div class="room-chips"><span class="rchip">Ter e Qui</span><span class="rchip">08h–18h</span><span class="rchip">Verificado</span></div>
         </div>
-        <button class="btn-primary full" onclick="doRegister()">Criar conta grátis</button>
-        <p class="form-hint center">Ao criar, você concorda com os <a href="#">termos de uso</a></p>
+      </div>
+      <div class="room-card" onclick="window.location.href='home.html#salas'">
+        <div class="room-img" style="background:linear-gradient(135deg,#2a2a1a,#1a1a0a)">
+          <div class="room-img-label">Odontologia</div>
+          <div class="room-price">R$ 80<span>/sessão</span></div>
+        </div>
+        <div class="room-body">
+          <div class="room-clinic">OdontoPlus Centro</div>
+          <div class="room-name">Consultório Odontológico — Centro</div>
+          <div class="room-loc">Porto Alegre, RS</div>
+          <div class="room-chips"><span class="rchip">Seg–Sáb</span><span class="rchip">08h–20h</span><span class="rchip">Verificado</span></div>
+        </div>
+      </div>
+      <div class="room-card" onclick="window.location.href='home.html#salas'">
+        <div class="room-img" style="background:linear-gradient(135deg,#3a1a1a,#2a0a0a)">
+          <div class="room-img-label">Terapia</div>
+          <div class="room-price">R$ 42<span>/sessão</span></div>
+        </div>
+        <div class="room-body">
+          <div class="room-clinic">Centro Saúde Sul</div>
+          <div class="room-name">Sala Terapêutica — Moinhos de Vento</div>
+          <div class="room-loc">Porto Alegre, RS</div>
+          <div class="room-chips"><span class="rchip">Seg–Sex</span><span class="rchip">09h–20h</span><span class="rchip">Verificado</span></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ══════════════════════════════════════════════
-     APP PRINCIPAL
-══════════════════════════════════════════════ -->
-<div id="appScreen" class="app-screen hidden">
+  <!-- DOTS + CTA -->
+  <div class="carousel-footer">
+    <div class="carousel-dots" id="carouselDots"></div>
+    <a class="rooms-cta" href="home.html#salas">Ver todas as disponibilidades</a>
+  </div>
+</section>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <span class="brand-mark">H</span>
-      <div>
-        <div class="sidebar-clinic-name" id="sideClinicName">Clínica Hope</div>
-        <div class="sidebar-plan">Plano Profissional</div>
+<!-- PARA CLÍNICAS -->
+<section class="for-clinics" id="clinicas">
+  <div class="fc-inner">
+    <div class="fc-left">
+      <div class="fc-tag">Para clínicas e proprietários</div>
+      <h2>Sua estrutura pode<br><em>faturar mais.</em></h2>
+      <p class="lead">Cada hora que sua sala fica vazia é receita perdida. O SublocaFacil transforma esse tempo ocioso em uma nova fonte de renda recorrente, sem complicação operacional.</p>
+      <div class="check-list">
+        <div class="check-item">
+          <div class="ci-mark">&#10003;</div>
+          <div class="ci-text">Reduza a ociosidade e <strong>gere receita imediata</strong> dos seus espaços</div>
+        </div>
+        <div class="check-item">
+          <div class="ci-mark">&#10003;</div>
+          <div class="ci-text"><strong>Nova fonte de renda recorrente</strong> sem esforço operacional adicional</div>
+        </div>
+        <div class="check-item">
+          <div class="ci-mark">&#10003;</div>
+          <div class="ci-text">Contratos digitais e recebimentos <strong>organizados em um só lugar</strong></div>
+        </div>
+        <div class="check-item">
+          <div class="ci-mark">&#10003;</div>
+          <div class="ci-text">Verificação completa dos profissionais — <strong>você decide quem entra</strong></div>
+        </div>
+      </div>
+      <div class="fc-quote">
+        Sua sala parada é custo. Com o SublocaFacil,<br><strong>ela vira faturamento.</strong>
+      </div>
+      <button class="cta-main" onclick="window.location.href='home.html'">Anunciar meu espaço</button>
+    </div>
+    <div class="metric-card">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.25);margin-bottom:18px;">Simulação de receita · 2 salas · 4 profissionais</div>
+
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(13,158,133,.55);margin-bottom:8px;">Bloco fixo</div>
+      <div class="metric-row">
+        <div class="mr-label">4 profissionais · 1 dia/sem · 2 blocos por dia</div>
+        <div class="mr-value">8 blocos/mês cada</div>
+      </div>
+      <div class="metric-row">
+        <div class="mr-label">Valor por bloco</div>
+        <div class="mr-value">R$ 240 cada</div>
+      </div>
+      <div class="metric-row">
+        <div class="mr-label">Por profissional (8 blocos × R$ 240)</div>
+        <div class="mr-value">R$ 1.920 / mês</div>
+      </div>
+
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(13,158,133,.55);margin:14px 0 8px;">Sublocação avulsa</div>
+      <div class="metric-row">
+        <div class="mr-label">16 sessões avulsas/semana por sala</div>
+        <div class="mr-value">32 sessões/sem</div>
+      </div>
+      <div class="metric-row">
+        <div class="mr-label">Receita avulsa (32 × R$ 35 × 4 sem)</div>
+        <div class="mr-value">R$ 4.480 / mês</div>
+      </div>
+
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:14px 0 14px;"></div>
+
+      <div class="metric-row" style="padding-top:0">
+        <div class="mr-label" style="font-weight:600;color:rgba(255,255,255,.55)">Receita total mensal</div>
+        <div class="mr-value" style="font-size:18px;color:white;font-weight:700;">R$ 12.160</div>
+      </div>
+
+      <div class="metric-row">
+        <div>
+          <div style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:8px;">Potencial de faturamento anual</div>
+          <div class="metric-highlight">R$ 145.920</div>
+          <div class="metric-sub">com apenas 4 profissionais · 2 salas · bloco fixo + avulso</div>
+        </div>
       </div>
     </div>
+  </div>
+</section>
 
-    <nav class="sidebar-nav">
-      <a href="#" class="nav-item active" onclick="goTo('painel')">
-        <span class="nav-icon">⬡</span> Painel de Salas
-      </a>
-      <a href="#" class="nav-item" onclick="goTo('salas')">
-        <span class="nav-icon">⬛</span> Salas
-      </a>
-      <a href="#" class="nav-item" onclick="goTo('psicologas')">
-        <span class="nav-icon">◎</span> Psicólogas
-      </a>
-      <a href="#" class="nav-item" onclick="goTo('agendamentos')">
-        <span class="nav-icon">◈</span> Agendamentos
-      </a>
-      <a href="#" class="nav-item" onclick="goTo('financeiro')">
-        <span class="nav-icon">◇</span> Financeiro
-      </a>
-      <a href="#" class="nav-item" onclick="goTo('relatorios')">
-        <span class="nav-icon">⊞</span> Relatórios
-      </a>
-    </nav>
-
-    <div class="sidebar-bottom">
-      <a href="#" class="nav-item" onclick="goTo('config')">
-        <span class="nav-icon">⚙</span> Configurações
-      </a>
-      <a href="#" class="nav-item" onclick="doLogout()">
-        <span class="nav-icon">→</span> Sair
-      </a>
-    </div>
-  </aside>
-
-  <!-- CONTEÚDO PRINCIPAL -->
-  <main class="main-content">
-
-    <!-- ── PAINEL DE SALAS ── -->
-    <section id="pagePainel" class="page active">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Painel de Salas</h2>
-          <p class="page-sub">Visão geral de ocupação em tempo real</p>
-        </div>
-        <div class="header-actions">
-          <select id="painelFiltroTurno" onchange="renderPainel()" class="select-sm">
-            <option value="">Todos os turnos</option>
-            <option value="manha">Manhã</option>
-            <option value="tarde">Tarde</option>
-            <option value="noite">Noite</option>
-          </select>
-          <select id="painelFiltroDia" onchange="renderPainel()" class="select-sm">
-            <option value="">Todos os dias</option>
-            <option value="segunda">Segunda</option>
-            <option value="terca">Terça</option>
-            <option value="quarta">Quarta</option>
-            <option value="quinta">Quinta</option>
-            <option value="sexta">Sexta</option>
-          </select>
-          <button class="btn-primary" onclick="exportPainelPDF()">↓ PDF Disponibilidade</button>
-        </div>
+<!-- PARA PROFISSIONAIS -->
+<section class="for-profs" id="profissionais">
+  <div class="fp-inner">
+    <div class="avail-card">
+      <div class="avail-head">
+        <div class="avail-head-title">Espaços disponíveis agora</div>
+        <div class="avail-head-sub">Prontos para atender hoje</div>
       </div>
-
-      <div class="stats-row" id="statsRow"></div>
-      <div class="painel-wrap" id="painelWrap"></div>
-    </section>
-
-    <!-- ── SALAS ── -->
-    <section id="pageSalas" class="page hidden">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Salas</h2>
-          <p class="page-sub">Cadastre e gerencie as salas da clínica</p>
-        </div>
-        <button class="btn-primary" onclick="openModal('modalSala')">+ Nova Sala</button>
-      </div>
-      <div class="cards-grid" id="salasGrid"></div>
-    </section>
-
-    <!-- ── PSICÓLOGAS ── -->
-    <section id="pagePsicologas" class="page hidden">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Psicólogas</h2>
-          <p class="page-sub">Profissionais que sublocam salas</p>
-        </div>
-        <button class="btn-primary" onclick="openModal('modalPsi')">+ Nova Psicóloga</button>
-      </div>
-      <div class="cards-grid" id="psiGrid"></div>
-    </section>
-
-    <!-- ── AGENDAMENTOS ── -->
-    <section id="pageAgendamentos" class="page hidden">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Agendamentos</h2>
-          <p class="page-sub">Controle de uso das salas</p>
-        </div>
-        <button class="btn-primary" onclick="openModal('modalAgend')">+ Novo Agendamento</button>
-      </div>
-      <div class="filter-bar">
-        <select id="agendFiltroSala" onchange="renderAgendamentos()" class="select-sm">
-          <option value="">Todas as salas</option>
-        </select>
-        <select id="agendFiltroPsi" onchange="renderAgendamentos()" class="select-sm">
-          <option value="">Todas as psicólogas</option>
-        </select>
-        <select id="agendFiltroStatus" onchange="renderAgendamentos()" class="select-sm">
-          <option value="">Todos os status</option>
-          <option value="agendado">Agendado</option>
-          <option value="confirmado">Confirmado</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-      </div>
-      <div class="table-card">
-        <table class="data-table" id="agendTable">
-          <thead>
-            <tr>
-              <th>Paciente</th><th>Psicóloga</th><th>Sala</th>
-              <th>Data</th><th>Horário</th><th>Valor</th><th>Status</th><th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="agendBody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ── FINANCEIRO ── -->
-    <section id="pageFinanceiro" class="page hidden">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Financeiro</h2>
-          <p class="page-sub">Cobranças de sublocação via Mercado Pago</p>
-        </div>
-        <button class="btn-primary" onclick="openModal('modalCobranca')">+ Gerar Cobrança</button>
-      </div>
-
-      <div class="stats-row" id="statsFinanceiro"></div>
-
-      <div class="mp-config-banner" id="mpBanner">
-        <div class="mp-banner-icon">💳</div>
-        <div>
-          <strong>Configure o Mercado Pago</strong>
-          <p>Adicione suas credenciais para cobrar automaticamente por PIX e cartão.</p>
-        </div>
-        <button class="btn-outline" onclick="goTo('config')">Configurar agora</button>
-      </div>
-
-      <div class="table-card">
-        <table class="data-table">
-          <thead>
-            <tr><th>Psicóloga</th><th>Referência</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr>
-          </thead>
-          <tbody id="finBody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ── RELATÓRIOS ── -->
-    <section id="pageRelatorios" class="page hidden">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Relatórios</h2>
-          <p class="page-sub">Análises de ocupação e desempenho</p>
-        </div>
-      </div>
-      <div class="relatorios-grid">
-        <div class="relatorio-card" onclick="gerarRelatorioOcupacao()">
-          <div class="rel-icon">⬡</div>
-          <h3>Ocupação de Salas</h3>
-          <p>Taxa de uso por sala, dia e turno</p>
-          <span class="rel-link">Gerar relatório →</span>
-        </div>
-        <div class="relatorio-card" onclick="gerarRelatorioFinanceiro()">
-          <div class="rel-icon">◇</div>
-          <h3>Financeiro Mensal</h3>
-          <p>Receita por psicóloga e sala</p>
-          <span class="rel-link">Gerar relatório →</span>
-        </div>
-        <div class="relatorio-card" onclick="gerarRelatorioDisponibilidade()">
-          <div class="rel-icon">◎</div>
-          <h3>Disponibilidade PDF</h3>
-          <p>Horários livres para enviar às psicólogas</p>
-          <span class="rel-link">Gerar PDF →</span>
-        </div>
-        <div class="relatorio-card" onclick="gerarRelatorioAssiduidade()">
-          <div class="rel-icon">⊞</div>
-          <h3>Assiduidade</h3>
-          <p>Presença e cancelamentos por psicóloga</p>
-          <span class="rel-link">Gerar relatório →</span>
-        </div>
-      </div>
-      <div id="relatorioOutput" class="relatorio-output hidden"></div>
-    </section>
-
-    <!-- ── CONFIGURAÇÕES ── -->
-    <section id="pageConfig" class="page hidden">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Configurações</h2>
-          <p class="page-sub">Clínica, assinatura e integrações</p>
-        </div>
-      </div>
-      <div class="config-grid">
-        <div class="config-section">
-          <h3>Dados da Clínica</h3>
-          <div class="field"><label>Nome da clínica</label><input type="text" id="cfgNome" /></div>
-          <div class="field"><label>CNPJ</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0001-00" /></div>
-          <div class="field"><label>Endereço</label><input type="text" id="cfgEndereco" /></div>
-          <div class="field"><label>Telefone</label><input type="text" id="cfgTel" /></div>
-          <button class="btn-primary" onclick="salvarConfig()">Salvar dados</button>
-        </div>
-
-        <div class="config-section">
-          <h3>Mercado Pago</h3>
-          <p class="form-hint">Suas credenciais são criptografadas e nunca compartilhadas.</p>
-          <div class="field"><label>Access Token (Produção)</label><input type="password" id="cfgMPToken" placeholder="APP_USR-..." /></div>
-          <div class="field"><label>Public Key</label><input type="text" id="cfgMPPubKey" placeholder="APP_USR-..." /></div>
-          <button class="btn-primary" onclick="salvarMP()">Salvar integração</button>
-          <div id="mpStatus" class="mp-status"></div>
-        </div>
-
-        <div class="config-section">
-          <h3>Sua Assinatura</h3>
-          <div class="plan-card active-plan">
-            <div class="plan-name">Plano Profissional</div>
-            <div class="plan-price">R$ 97<span>/mês</span></div>
-            <ul class="plan-features">
-              <li>✓ Salas ilimitadas</li>
-              <li>✓ Psicólogas ilimitadas</li>
-              <li>✓ Cobranças via Mercado Pago</li>
-              <li>✓ Relatórios completos</li>
-              <li>✓ Suporte prioritário</li>
-            </ul>
-            <div class="plan-status">Ativa — próxima cobrança em <strong>15/03/2026</strong></div>
+      <div class="avail-body">
+        <div class="avail-row" onclick="window.location.href='home.html#salas'">
+          <div class="avail-dot"></div>
+          <div class="avail-info">
+            <div class="avail-name">Sala Psicologia — Vila Mariana, SP</div>
+            <div class="avail-detail">Seg–Sex · 08h–21h · Contrato digital incluso</div>
           </div>
-          <button class="btn-outline" onclick="gerenciarAssinatura()">Gerenciar assinatura</button>
+          <div class="avail-price">R$ 35</div>
+        </div>
+        <div class="avail-row" onclick="window.location.href='home.html#salas'">
+          <div class="avail-dot"></div>
+          <div class="avail-info">
+            <div class="avail-name">Consultório Médico — Pinheiros, SP</div>
+            <div class="avail-detail">Seg–Sex · 07h–22h · Contrato digital incluso</div>
+          </div>
+          <div class="avail-price">R$ 55</div>
+        </div>
+        <div class="avail-row" onclick="window.location.href='home.html#salas'">
+          <div class="avail-dot"></div>
+          <div class="avail-info">
+            <div class="avail-name">Sala Fisioterapia — Batel, PR</div>
+            <div class="avail-detail">Seg–Sáb · 08h–20h · Contrato digital incluso</div>
+          </div>
+          <div class="avail-price">R$ 38</div>
+        </div>
+        <div class="avail-row" onclick="window.location.href='home.html#salas'">
+          <div class="avail-dot"></div>
+          <div class="avail-info">
+            <div class="avail-name">Consultório Nutrição — Cambuí, SP</div>
+            <div class="avail-detail">Ter e Qui · 08h–18h · Contrato digital incluso</div>
+          </div>
+          <div class="avail-price">R$ 28</div>
         </div>
       </div>
-    </section>
-
-  </main>
-</div>
-
-<!-- ══════════════════════════════════════════════
-     MODAIS
-══════════════════════════════════════════════ -->
-
-<!-- Modal Sala -->
-<div id="modalSala" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h3 id="modalSalaTitle">Nova Sala</h3>
-      <button onclick="closeModal('modalSala')">✕</button>
     </div>
-    <div class="modal-body">
-      <input type="hidden" id="salaId" />
-      <div class="field"><label>Nome da sala</label><input type="text" id="salaNome" placeholder="Ex: Sala 01, Sala Azul..." /></div>
-      <div class="field"><label>Endereço / localização</label><input type="text" id="salaEndereco" placeholder="Ex: 2º andar, sala 201" /></div>
-      <div class="field-row">
-        <div class="field"><label>Hora início</label><input type="time" id="salaHoraInicio" value="08:00" /></div>
-        <div class="field"><label>Hora fim</label><input type="time" id="salaHoraFim" value="21:00" /></div>
-      </div>
-      <div class="field">
-        <label>Dias disponíveis</label>
-        <div class="days-picker" id="daysPicker">
-          <button type="button" class="day-btn" data-day="segunda" onclick="toggleDay(this)">SEG</button>
-          <button type="button" class="day-btn" data-day="terca" onclick="toggleDay(this)">TER</button>
-          <button type="button" class="day-btn" data-day="quarta" onclick="toggleDay(this)">QUA</button>
-          <button type="button" class="day-btn" data-day="quinta" onclick="toggleDay(this)">QUI</button>
-          <button type="button" class="day-btn" data-day="sexta" onclick="toggleDay(this)">SEX</button>
-          <button type="button" class="day-btn" data-day="sabado" onclick="toggleDay(this)">SÁB</button>
+
+    <div>
+      <div class="fp-tag">Para profissionais de saúde</div>
+      <h2>Cresça sua agenda sem assumir <em>aluguel fixo.</em></h2>
+      <p class="lead">Expanda seus atendimentos sem comprometer o caixa. Reserve apenas quando precisar e atenda com toda a estrutura pronta, em qualquer cidade.</p>
+      <div class="check-list">
+        <div class="check-item light">
+          <div class="ci-mark">&#10003;</div>
+          <div class="ci-text">Expanda atendimentos <strong>sem custo fixo elevado</strong></div>
+        </div>
+        <div class="check-item light">
+          <div class="ci-mark">&#10003;</div>
+          <div class="ci-text">Reserve salas profissionais <strong>sob demanda</strong></div>
+        </div>
+        <div class="check-item light">
+          <div class="ci-mark">&#10003;</div>
+          <div class="ci-text">Atenda com <strong>estrutura pronta</strong>, foco total no paciente</div>
+        </div>
+        <div class="check-item light">
+          <div class="ci-mark">&#10003;</div>
+          <div class="ci-text"><strong>Contratos digitais automáticos</strong> com validade jurídica</div>
         </div>
       </div>
-      <div class="field">
-        <label>Valor da sublocação (por sessão)</label>
-        <div class="input-prefix"><span>R$</span><input type="number" id="salaValor" placeholder="150.00" step="0.01" /></div>
+      <div class="fp-quote">Mais liberdade. Mais flexibilidade. Mais resultado.</div>
+      <div class="councils-row">
+        <span class="council-tag">CRP</span>
+        <span class="council-tag">CRM</span>
+        <span class="council-tag">CRN</span>
+        <span class="council-tag">CREFITO</span>
+        <span class="council-tag">CFFa</span>
+        <span class="council-tag">CRO</span>
+        <span class="council-tag">COREN</span>
+        <span class="council-tag">CFF</span>
+        <span class="council-tag">+ outros</span>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-outline" onclick="closeModal('modalSala')">Cancelar</button>
-      <button class="btn-primary" onclick="salvarSala()">Salvar sala</button>
+      <button class="cta-main" onclick="window.location.href='home.html#salas'" style="background:var(--green)">Encontrar minha sala</button>
     </div>
   </div>
-</div>
+</section>
 
-<!-- Modal Psicóloga -->
-<div id="modalPsi" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h3 id="modalPsiTitle">Nova Psicóloga</h3>
-      <button onclick="closeModal('modalPsi')">✕</button>
+<!-- FECHAMENTO -->
+<section class="closing">
+  <div class="closing-glow"></div>
+  <div class="closing-content">
+    <h2>Alugue. Subloque.<br><em>Aumente seu faturamento.</em></h2>
+    <p>O SublocaFacil é a plataforma que conecta oferta e demanda na área da saúde de forma <strong>simples, segura e profissional.</strong> Do cadastro ao primeiro atendimento em menos de 24 horas.</p>
+    <div class="closing-ctas">
+      <button class="cta-main" onclick="window.location.href='home.html'">Anunciar minha sala</button>
+      <button class="cta-outline" onclick="window.location.href='home.html#salas'">Encontrar uma sala</button>
     </div>
-    <div class="modal-body">
-      <input type="hidden" id="psiId" />
-      <div class="field"><label>Nome completo</label><input type="text" id="psiNome" placeholder="Dra. Maria Silva" /></div>
-      <div class="field"><label>CRP</label><input type="text" id="psiCRP" placeholder="06/12345" /></div>
-      <div class="field"><label>E-mail</label><input type="email" id="psiEmail" placeholder="maria@email.com" /></div>
-      <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" /></div>
-      <div class="field">
-        <label>Tipo de sublocação</label>
-        <select id="psiTipoSub">
-          <option value="avulso">Avulso (por sessão)</option>
-          <option value="semanal">Semanal</option>
-          <option value="quinzenal">Quinzenal</option>
-          <option value="mensal">Mensal fixo</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-outline" onclick="closeModal('modalPsi')">Cancelar</button>
-      <button class="btn-primary" onclick="salvarPsi()">Salvar</button>
+    <div class="closing-pills">
+      <span class="cpill">Contratos digitais</span>
+      <span class="cpill">Pagamento via PIX e cartão</span>
+      <span class="cpill">Verificação de documentos</span>
+      <span class="cpill">Sem taxa de adesão</span>
+      <span class="cpill">Aprovação em 24h</span>
     </div>
   </div>
-</div>
+</section>
 
-<!-- Modal Agendamento -->
-<div id="modalAgend" class="modal-overlay hidden">
-  <div class="modal-box modal-lg">
-    <div class="modal-head">
-      <h3 id="modalAgendTitle">Novo Agendamento</h3>
-      <button onclick="closeModal('modalAgend')">✕</button>
+<!-- LOGIN -->
+<section class="login-sec" id="loginSec">
+  <div class="login-inner">
+    <div>
+      <div class="ll-eyebrow">Acesso à plataforma</div>
+      <div class="ll-title">Bem-vindo de volta.</div>
+      <div class="ll-desc">Gerencie reservas, contratos e pagamentos. Tudo que você precisa em um único painel.</div>
+      <div class="ll-features">
+        <div class="llf"><div class="llf-mark">&#10003;</div>Agenda de reservas em tempo real</div>
+        <div class="llf"><div class="llf-mark">&#10003;</div>Contratos digitais e assinados</div>
+        <div class="llf"><div class="llf-mark">&#10003;</div>Cobranças automáticas via Mercado Pago</div>
+        <div class="llf"><div class="llf-mark">&#10003;</div>Relatórios financeiros completos</div>
+      </div>
     </div>
-    <div class="modal-body">
-      <input type="hidden" id="agendId" />
-      <div class="field-row">
-        <div class="field"><label>Psicóloga</label>
-          <select id="agendPsi"><option value="">Selecione...</option></select>
-        </div>
-        <div class="field"><label>Sala</label>
-          <select id="agendSala"><option value="">Selecione...</option></select>
-        </div>
+    <div class="login-form-card">
+      <div class="form-tabs">
+        <button class="ftab active" onclick="activateTab(this)">Entrar</button>
+        <button class="ftab" onclick="window.location.href='home.html'">Criar conta</button>
       </div>
-      <div class="field"><label>Nome do paciente</label><input type="text" id="agendPaciente" placeholder="Nome completo" /></div>
-      <div class="field-row">
-        <div class="field"><label>Data</label><input type="date" id="agendData" /></div>
-        <div class="field"><label>Hora início</label><input type="time" id="agendHoraI" /></div>
-        <div class="field"><label>Hora fim</label><input type="time" id="agendHoraF" /></div>
+      <div class="form-title">Acesse sua conta</div>
+      <div class="form-sub">Entre com seu e-mail e senha cadastrados</div>
+      <div class="fg"><label>E-mail</label><input type="email" id="lEmail" placeholder="seuemail@exemplo.com"/></div>
+      <div class="fg"><label>Senha</label><input type="password" id="lSenha" placeholder="Sua senha" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn-login" onclick="doLogin()">Entrar no painel</button>
+      <div class="form-footer">
+        <a onclick="alert('Recuperação de senha em breve')">Esqueci minha senha</a>
       </div>
-      <div class="field-row">
-        <div class="field"><label>Valor (R$)</label>
-          <div class="input-prefix"><span>R$</span><input type="number" id="agendValor" placeholder="150.00" step="0.01" /></div>
-        </div>
-        <div class="field"><label>Frequência</label>
-          <select id="agendFreq">
-            <option value="avulso">Avulso</option>
-            <option value="semanal">Semanal</option>
-            <option value="quinzenal">Quinzenal</option>
-          </select>
-        </div>
-      </div>
-      <div class="field"><label>Observações</label><textarea id="agendObs" rows="2" placeholder="Informações adicionais..."></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-outline" onclick="closeModal('modalAgend')">Cancelar</button>
-      <button class="btn-primary" onclick="salvarAgendamento()">Salvar agendamento</button>
+      <div class="form-divider"></div>
+      <div class="form-register">Não tem conta? <a onclick="window.location.href='home.html'">Cadastre-se gratuitamente</a></div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- Modal Cobrança MP -->
-<div id="modalCobranca" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h3>Gerar Cobrança</h3>
-      <button onclick="closeModal('modalCobranca')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="field"><label>Psicóloga</label>
-        <select id="cobPsi"><option value="">Selecione...</option></select>
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="foot-brand-row">
+        <div class="nav-mark">S</div>
+        <div class="foot-brand-name">SublocaFacil</div>
       </div>
-      <div class="field-row">
-        <div class="field"><label>Valor (R$)</label>
-          <div class="input-prefix"><span>R$</span><input type="number" id="cobValor" placeholder="0.00" step="0.01" /></div>
+      <div class="foot-desc">A plataforma que conecta oferta e demanda de espaços clínicos em todo o Brasil. Simples, seguro e profissional.</div>
+      <div class="foot-quick">
+        <div class="fq-label">Acesso rápido</div>
+        <div class="fq-row">
+          <input type="email" id="fEmail" placeholder="E-mail"/>
+          <input type="password" id="fSenha" placeholder="Senha"/>
+          <button class="fq-btn" onclick="doLoginFooter()">Entrar</button>
         </div>
-        <div class="field"><label>Vencimento</label><input type="date" id="cobVenc" /></div>
-      </div>
-      <div class="field"><label>Descrição</label><input type="text" id="cobDesc" placeholder="Ex: Sublocação sala 01 — fevereiro/2026" /></div>
-      <div class="mp-methods">
-        <div class="mp-method active"><span>PIX</span><small>Pagamento imediato</small></div>
-        <div class="mp-method"><span>Cartão</span><small>Débito/crédito</small></div>
-        <div class="mp-method"><span>Boleto</span><small>3 dias úteis</small></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-outline" onclick="closeModal('modalCobranca')">Cancelar</button>
-      <button class="btn-primary" onclick="gerarCobranca()">Gerar e enviar link</button>
+    <div class="foot-col">
+      <h4>Plataforma</h4>
+      <a href="#clinicas">Para clínicas</a>
+      <a href="#profissionais">Para profissionais</a>
+      <a href="#salas">Ver espaços</a>
+      <a onclick="window.location.href='home.html'">Cadastrar</a>
+    </div>
+    <div class="foot-col">
+      <h4>Suporte</h4>
+      <a>Central de ajuda</a>
+      <a>Fale conosco</a>
+      <a>Como funciona</a>
+    </div>
+    <div class="foot-col">
+      <h4>Legal</h4>
+      <a>Termos de uso</a>
+      <a>Privacidade</a>
+      <a>LGPD</a>
     </div>
   </div>
-</div>
+  <div class="foot-bottom">
+    <span>© 2026 SublocaFacil — Todos os direitos reservados</span>
+    <span>Plataforma verificada · Segura · Profissional</span>
+  </div>
+</footer>
 
-<!-- Toast -->
-<div id="toast" class="toast hidden"></div>
+<div class="toast" id="toast"></div>
 
-<script src="app.js"></script>
+<script>
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>40));
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+function scrollLogin(){document.getElementById('loginSec').scrollIntoView({behavior:'smooth',block:'center'});}
+function activateTab(el){el.parentElement.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+function doLogin(){
+  const e=document.getElementById('lEmail').value.trim();
+  const s=document.getElementById('lSenha').value;
+  if(!e||!s){toast('Preencha e-mail e senha');return;}
+  window.location.href='painel-psi.html';
+}
+function doLoginFooter(){
+  const e=document.getElementById('fEmail').value.trim();
+  const s=document.getElementById('fSenha').value;
+  if(!e||!s){toast('Preencha e-mail e senha');return;}
+  window.location.href='painel-psi.html';
+}
+// CAROUSEL AUTOMÁTICO
+(function(){
+  const cards = document.querySelectorAll('#carouselInner .room-card');
+  const inner = document.getElementById('carouselInner');
+  const dotsEl = document.getElementById('carouselDots');
+  const VISIBLE = () => window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3;
+  let cur = 0, total, timer;
+
+  function setup(){
+    total = cards.length;
+    // Criar dots
+    dotsEl.innerHTML='';
+    const pages = Math.ceil(total / VISIBLE());
+    for(let i=0;i<pages;i++){
+      const d = document.createElement('button');
+      d.className = 'cdot' + (i===0?' active':'');
+      d.onclick = ()=>{ clearInterval(timer); goTo(i); startAuto(); };
+      dotsEl.appendChild(d);
+    }
+    goTo(0);
+  }
+
+  function goTo(page){
+    cur = page;
+    const pages = Math.ceil(total / VISIBLE());
+    const cardW = cards[0].offsetWidth + 16;
+    inner.style.transform = 'translateX(-' + (page * VISIBLE() * cardW) + 'px)';
+    document.querySelectorAll('.cdot').forEach((d,i)=>{
+      d.classList.toggle('active', i===page%pages);
+    });
+    document.getElementById('rnavPrev').style.opacity = page===0 ? '0.3' : '1';
+    document.getElementById('rnavNext').style.opacity = page>=(pages-1) ? '0.3' : '1';
+  }
+
+  window.carouselStep = function(dir){
+    clearInterval(timer);
+    const pages = Math.ceil(total / VISIBLE());
+    cur = (cur + dir + pages) % pages;
+    goTo(cur);
+    startAuto();
+  };
+
+  function startAuto(){
+    clearInterval(timer);
+    timer = setInterval(()=>{
+      const pages = Math.ceil(total / VISIBLE());
+      cur = (cur + 1) % pages;
+      goTo(cur);
+    }, 3500);
+  }
+
+  window.addEventListener('resize', setup);
+  setup();
+  startAuto();
+})();
+</script>
 </body>
 </html>
