@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Meu Painel — Psicóloga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<style>
+:root {
+  --green:#0a7c5c; --green-l:#10b981; --green-xl:#d1fae5;
+  --ink:#1a2332; --muted:#6b7a94; --border:#e2e8f2;
+  --bg:#f6f8fc; --white:#fff; --danger:#dc2626; --warn:#d97706;
+  --radius:12px; --font-h:'Lora',serif; --font-b:'DM Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-b);background:var(--bg);color:var(--ink);font-size:14px;}
+
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+
+/* SIDEBAR */
+.side{background:var(--ink);padding:24px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.side-brand{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:0 8px;}
+.side-mark{width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:18px;color:white;font-weight:bold;}
+.side-clinic{font-size:12px;font-weight:700;color:white;}
+.side-subtitle{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:24px;padding-left:8px;}
+.nav-a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:rgba(255,255,255,.5);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;margin-bottom:2px;text-decoration:none;}
+.nav-a:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.9);}
+.nav-a.active{background:var(--green);color:white;}
+.nav-icon{font-size:15px;width:18px;text-align:center;}
+.side-bottom{margin-top:auto;}
+.psi-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:12px;}
+.psi-name{font-size:14px;font-weight:700;color:white;margin-bottom:2px;}
+.psi-crp{font-size:11px;color:rgba(255,255,255,.4);}
+.contrato-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;}
+.contrato-dot{width:7px;height:7px;border-radius:50%;background:var(--green-l);}
+.contrato-txt{color:rgba(255,255,255,.5);}
+
+/* MAIN */
+.main{padding:28px 32px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* PAGE HEAD */
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.ph h1{font-family:var(--font-h);font-size:24px;}
+.ph p{color:var(--muted);font-size:13px;margin-top:3px;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px;}
+.sc{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.sc-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:8px;}
+.sc-val{font-family:var(--font-h);font-size:26px;font-weight:700;color:var(--ink);}
+.sc-val.green{color:var(--green);}
+.sc-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* TABLE */
+.tcard{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:18px;}
+.tcard-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);}
+.tcard-title{font-size:14px;font-weight:700;}
+table{width:100%;border-collapse:collapse;}
+th{padding:11px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);background:var(--bg);}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle;}
+tr:last-child td{border:none;}
+tr:hover td{background:#fafbfc;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-green{background:var(--green-xl);color:var(--green);}
+.badge-warn{background:#fef3c7;color:var(--warn);}
+.badge-red{background:#fee2e2;color:var(--danger);}
+.badge-gray{background:var(--bg);color:var(--muted);}
+
+/* CONTRATO VIEWER */
+.contrato-viewer{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.contrato-viewer h2{font-family:var(--font-h);font-size:20px;margin-bottom:4px;}
+.contrato-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;margin-top:10px;}
+.meta-tag{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted);}
+.meta-tag strong{color:var(--ink);}
+.contrato-body{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:13px;line-height:1.8;color:var(--ink);max-height:320px;overflow-y:auto;margin-bottom:16px;}
+.assinaturas-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+.sig-box{border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.sig-box canvas{display:block;margin:0 auto;}
+.sig-box-name{font-size:12px;font-weight:600;color:var(--muted);margin-top:8px;}
+.sig-box-label{font-size:11px;color:var(--muted);}
+
+/* CANCELAR MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,35,50,.5);backdrop-filter:blur(3px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:white;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.14);width:100%;max-width:480px;animation:mIn .25s ease;}
+@keyframes mIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:18px 22px 14px;border-bottom:1px solid var(--border);}
+.mhead h3{font-size:16px;font-weight:700;}
+.mhead button{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:6px;}
+.mhead button:hover{background:var(--bg);}
+.mbody{padding:18px 22px;}
+.mfooter{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.aviso-box{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:14px;font-size:13px;color:#92400e;margin-bottom:14px;}
+
+/* BUTTONS */
+.btn-p{background:var(--green);color:white;border:none;padding:10px 20px;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-p:hover{background:#086649;}
+.btn-o{background:transparent;color:var(--ink);border:1.5px solid var(--border);padding:9px 18px;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-o:hover{border-color:var(--green-l);color:var(--green);}
+.btn-d{background:#fee2e2;color:var(--danger);border:1px solid #fca5a5;padding:9px 18px;border-radius:8px;font-family:var(--font-b);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-d:hover{background:#fecaca;}
+.btn-icon{background:none;border:none;padding:6px 8px;cursor:pointer;border-radius:6px;font-size:14px;transition:background .15s;}
+.btn-icon:hover{background:var(--bg);}
+
+/* FIELD */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px;}
+.field select,.field input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-b);font-size:14px;color:var(--ink);background:white;outline:none;}
+.field select:focus,.field input:focus{border-color:var(--green-l);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--ink);color:white;padding:13px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .3s;}
+.toast.show{opacity:1;}
+.toast.success{border-left:4px solid var(--green-l);}
+.toast.error{border-left:4px solid var(--danger);}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="side">
+  <div class="side-brand">
+    <div class="side-mark">H</div>
+    <div>
+      <div class="side-clinic">Clínica Esperança</div>
+    </div>
+  </div>
+  <div class="side-subtitle">Painel da Psicóloga</div>
+
+  <a class="nav-a active" onclick="goTo('inicio')"><span class="nav-icon">⬡</span> Início</a>
+  <a class="nav-a" onclick="goTo('reservas')"><span class="nav-icon">📅</span> Minhas Reservas</a>
+  <a class="nav-a" onclick="goTo('contrato')"><span class="nav-icon">📄</span> Meu Contrato</a>
+  <a class="nav-a" onclick="goTo('pagamentos')"><span class="nav-icon">◇</span> Pagamentos</a>
+
+  <div class="side-bottom">
+    <div class="psi-card">
+      <div class="psi-name" id="sideNome">Carregando...</div>
+      <div class="psi-crp" id="sideCRP">CRP —</div>
+      <div class="contrato-status">
+        <div class="contrato-dot"></div>
+        <div class="contrato-txt" id="sideContrato">Contrato ativo</div>
+      </div>
+    </div>
+    <a class="nav-a" onclick="sair()"><span class="nav-icon">→</span> Sair</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- INÍCIO -->
+  <section id="pageInicio" class="page active">
+    <div class="ph">
+      <div>
+        <h1 id="bemVindo">Olá! 👋</h1>
+        <p>Aqui está o resumo da sua sublocação</p>
+      </div>
+      <button class="btn-p" onclick="goTo('reservas')">+ Nova reserva avulsa</button>
+    </div>
+
+    <div class="stats" id="statsInicio"></div>
+
+    <div class="tcard">
+      <div class="tcard-head">
+        <div class="tcard-title">Próximas sessões</div>
+      </div>
+      <table>
+        <thead><tr><th>Data</th><th>Horário</th><th>Sala</th><th>Tipo</th><th>Status</th></tr></thead>
+        <tbody id="proximasSessoes"></tbody>
+      </table>
+    </div>
+
+    <div class="tcard">
+      <div class="tcard-head">
+        <div class="tcard-title">Resumo financeiro</div>
+      </div>
+      <table>
+        <thead><tr><th>Referência</th><th>Tipo</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr></thead>
+        <tbody id="resumoFinanceiro"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RESERVAS -->
+  <section id="pageReservas" class="page">
+    <div class="ph">
+      <div>
+        <h1>Minhas Reservas</h1>
+        <p>Sessões avulsas e blocos fixos</p>
+      </div>
+    </div>
+
+    <div class="tcard">
+      <div class="tcard-head">
+        <div class="tcard-title">Blocos Fixos Ativos</div>
+        <span class="badge badge-green">Contrato vigente</span>
+      </div>
+      <table>
+        <thead><tr><th>Dia fixo</th><th>Horário</th><th>Sala</th><th>Valor/mês</th><th>Desconto</th><th>Ação</th></tr></thead>
+        <tbody id="tblBlocos"></tbody>
+      </table>
+    </div>
+
+    <div class="tcard">
+      <div class="tcard-head">
+        <div class="tcard-title">Sessões Avulsas</div>
+        <button class="btn-p" style="font-size:12px;padding:7px 14px" onclick="abrirModalReserva()">+ Reservar horário</button>
+      </div>
+      <table>
+        <thead><tr><th>Data</th><th>Horário</th><th>Sala</th><th>Valor</th><th>Status</th><th>Ação</th></tr></thead>
+        <tbody id="tblAvulsos"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CONTRATO -->
+  <section id="pageContrato" class="page">
+    <div class="ph">
+      <div>
+        <h1>Meu Contrato</h1>
+        <p>Contrato de sublocação vigente</p>
+      </div>
+    </div>
+    <div class="contrato-viewer">
+      <h2>Contrato de Sublocação de Sala</h2>
+      <div class="contrato-meta" id="contratoMeta"></div>
+      <div class="contrato-body" id="contratoBody">
+        <p style="color:var(--muted);text-align:center;padding:20px">Nenhum contrato ativo encontrado.<br>Acesse o <a href="portal-psi.html" style="color:var(--green)">portal de cadastro</a> para gerar seu contrato.</p>
+      </div>
+      <div class="assinaturas-row">
+        <div class="sig-box">
+          <canvas id="sigPsiView" width="240" height="80"></canvas>
+          <div class="sig-box-name" id="sigPsiName">—</div>
+          <div class="sig-box-label">Psicóloga</div>
+        </div>
+        <div class="sig-box">
+          <canvas id="sigClinicaView" width="240" height="80"></canvas>
+          <div class="sig-box-name">Dra. Ana Lima</div>
+          <div class="sig-box-label">Proprietária — Clínica Esperança</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <button class="btn-o" onclick="downloadContrato()">↓ Baixar PDF</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGAMENTOS -->
+  <section id="pagePagamentos" class="page">
+    <div class="ph">
+      <div>
+        <h1>Pagamentos</h1>
+        <p>Histórico e cobranças pendentes</p>
+      </div>
+    </div>
+    <div class="stats" id="statsPag"></div>
+    <div class="tcard">
+      <table>
+        <thead><tr><th>Referência</th><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ação</th></tr></thead>
+        <tbody id="tblPagamentos"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<!-- MODAL RESERVA AVULSA -->
+<div id="modalReserva" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="mhead"><h3>Reservar horário avulso</h3><button onclick="fecharModal('modalReserva')">✕</button></div>
+    <div class="mbody">
+      <div class="field"><label>Dia</label>
+        <select id="res_dia">
+          <option value="">Selecione...</option>
+          <option value="segunda">Segunda-feira</option>
+          <option value="terca">Terça-feira</option>
+          <option value="quarta">Quarta-feira</option>
+          <option value="quinta">Quinta-feira</option>
+          <option value="sexta">Sexta-feira</option>
+        </select>
+      </div>
+      <div class="field"><label>Horário</label>
+        <select id="res_hora">
+          <option value="">Selecione...</option>
+          <option>08:00</option><option>09:00</option><option>10:00</option><option>11:00</option>
+          <option>14:00</option><option>15:00</option><option>16:00</option><option>17:00</option>
+          <option>18:00</option><option>19:00</option><option>20:00</option>
+        </select>
+      </div>
+      <div class="field"><label>Sala</label>
+        <select id="res_sala">
+          <option value="">Selecione...</option>
+          <option value="s1">Sala 01 — R$ 31,90</option>
+          <option value="s2">Sala 02 — R$ 31,90</option>
+          <option value="s3">Sala 03 (ampla) — R$ 45,00</option>
+        </select>
+      </div>
+      <div class="aviso-box">
+        ⚠ Lembre: cancelamentos com menos de <strong>24 horas</strong> de antecedência serão cobrados integralmente.
+      </div>
+    </div>
+    <div class="mfooter">
+      <button class="btn-o" onclick="fecharModal('modalReserva')">Cancelar</button>
+      <button class="btn-p" onclick="confirmarReserva()">Confirmar reserva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CANCELAMENTO -->
+<div id="modalCancelar" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="mhead"><h3>Cancelar reserva</h3><button onclick="fecharModal('modalCancelar')">✕</button></div>
+    <div class="mbody">
+      <div class="aviso-box" id="avisoCancel"></div>
+      <div class="field"><label>Motivo (opcional)</label>
+        <select id="cancelMotivo">
+          <option value="">Selecione um motivo...</option>
+          <option value="emergencia">Emergência pessoal</option>
+          <option value="doenca">Doença</option>
+          <option value="paciente">Paciente cancelou</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="mfooter">
+      <button class="btn-o" onclick="fecharModal('modalCancelar')">Voltar</button>
+      <button class="btn-d" onclick="confirmarCancelamento()">Confirmar cancelamento</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ DADOS DEMO ═══
+let psiLogada = JSON.parse(localStorage.getItem('hope_psi_logada') || 'null');
+
+// Fallback demo
+if (!psiLogada) {
+  psiLogada = { nome:'Psi. Michelle Santos', crp:'06/87654', email:'michelle@email.com' };
+}
+
+const CONTRATO_DEMO = {
+  tipo: 'bloco',
+  dataAssinatura: '01/02/2026',
+  validade: '31/01/2027',
+  status: 'ativo',
+  blocoQtd: 2,
+  blocoValor: 448,
+  blocoDesconto: 30,
+};
+
+const RESERVAS_DEMO = [
+  { id:'r1', dia:'Segunda', hora:'09:00', sala:'Sala 01', tipo:'bloco', valor:80, status:'confirmado', data:'10/03/2026' },
+  { id:'r2', dia:'Quarta',  hora:'14:00', sala:'Sala 01', tipo:'bloco', valor:80, status:'confirmado', data:'12/03/2026' },
+  { id:'r3', dia:'Sexta',   hora:'10:00', sala:'Sala 02', tipo:'avulso', valor:31.90, status:'agendado', data:'14/03/2026' },
+];
+
+const PAGAMENTOS_DEMO = [
+  { ref:'Mar/2026', desc:'Bloco fixo — 2 dias/semana', valor:448, venc:'05/03/2026', status:'pendente', mpLink:'#' },
+  { ref:'Fev/2026', desc:'Bloco fixo — 2 dias/semana', valor:448, venc:'05/02/2026', status:'pago', mpLink:'' },
+  { ref:'Jan/2026', desc:'Bloco fixo — 2 dias/semana', valor:448, venc:'05/01/2026', status:'pago', mpLink:'' },
+];
+
+let cancelId = null;
+
+// ═══ NAVEGAÇÃO ═══
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-a').forEach(n => n.classList.remove('active'));
+  document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
+  event?.currentTarget?.classList.add('active');
+  const r = { inicio:renderInicio, reservas:renderReservas, contrato:renderContrato, pagamentos:renderPagamentos };
+  if (r[page]) r[page]();
+}
+
+// ═══ INIT ═══
+async function init() {
+  document.getElementById('sideNome').textContent = psiLogada.nome || 'Psicóloga';
+  document.getElementById('sideCRP').textContent  = 'CRP ' + (psiLogada.crp || '—');
+
+  // Carregar dados reais do Supabase
+  if (psiLogada.id && psiLogada.clinica_id) {
+    try {
+      const dados = await dbGetDadosPsicologa(psiLogada.id, psiLogada.clinica_id);
+      if (dados.agendamentos.length) window._agendamentos = dados.agendamentos;
+      if (dados.contratos.length)    window._contratos    = dados.contratos;
+      if (dados.cobrancas.length)    window._cobrancas    = dados.cobrancas;
+    } catch(e) {
+      console.warn('Usando dados demo:', e);
+    }
+  }
+
+  renderInicio();
+}
+
+// ═══ INÍCIO ═══
+function renderInicio() {
+  document.getElementById('bemVindo').textContent = 'Olá, ' + (psiLogada.nome || 'Psicóloga') + '! 👋';
+
+  const totalMes = PAGAMENTOS_DEMO.filter(p=>p.status==='pago').reduce((s,p)=>s+p.valor,0);
+  const pendente = PAGAMENTOS_DEMO.filter(p=>p.status==='pendente').reduce((s,p)=>s+p.valor,0);
+
+  document.getElementById('statsInicio').innerHTML = `
+    <div class="sc"><div class="sc-lbl">Sessões este mês</div><div class="sc-val">${RESERVAS_DEMO.length}</div><div class="sc-sub">agendadas</div></div>
+    <div class="sc"><div class="sc-lbl">Tipo de contrato</div><div class="sc-val" style="font-size:16px;margin-top:4px">${CONTRATO_DEMO.tipo === 'bloco' ? 'Bloco Fixo' : 'Avulso'}</div><div class="sc-sub">${CONTRATO_DEMO.blocoQtd || 1} dia(s)/semana</div></div>
+    <div class="sc"><div class="sc-lbl">Pago este ano</div><div class="sc-val green">R$ ${totalMes.toLocaleString('pt-BR')}</div></div>
+    <div class="sc"><div class="sc-lbl">A pagar</div><div class="sc-val" style="color:var(--warn)">R$ ${pendente.toLocaleString('pt-BR')}</div><div class="sc-sub">vence em breve</div></div>
+  `;
+
+  document.getElementById('proximasSessoes').innerHTML = RESERVAS_DEMO.map(r => `
+    <tr>
+      <td>${r.data}</td>
+      <td>${r.hora}</td>
+      <td>${r.sala}</td>
+      <td><span class="badge ${r.tipo==='bloco'?'badge-green':'badge-gray'}">${r.tipo}</span></td>
+      <td><span class="badge ${r.status==='confirmado'?'badge-green':'badge-warn'}">${r.status}</span></td>
+    </tr>
+  `).join('');
+
+  document.getElementById('resumoFinanceiro').innerHTML = PAGAMENTOS_DEMO.slice(0,3).map(p => {
+    const sm = {pago:'badge-green',pendente:'badge-warn'};
+    return `
+      <tr>
+        <td>${p.ref}</td>
+        <td>${p.desc}</td>
+        <td class="fw700" style="font-weight:700;color:var(--green)">R$ ${p.valor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        <td>${p.venc}</td>
+        <td><span class="badge ${sm[p.status]||'badge-gray'}">${p.status}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ═══ RESERVAS ═══
+function renderReservas() {
+  const blocos  = RESERVAS_DEMO.filter(r=>r.tipo==='bloco');
+  const avulsos = RESERVAS_DEMO.filter(r=>r.tipo==='avulso');
+
+  document.getElementById('tblBlocos').innerHTML = blocos.length ? blocos.map(r=>`
+    <tr>
+      <td><strong>${r.dia}</strong></td>
+      <td>${r.hora}</td>
+      <td>${r.sala}</td>
+      <td style="color:var(--green);font-weight:700">R$ ${r.valor.toFixed(2)}/bloco</td>
+      <td><span class="badge badge-green">${CONTRATO_DEMO.blocoDesconto}% off</span></td>
+      <td>
+        <button class="btn-icon" title="Cancelar dia" onclick="abrirCancelar('${r.id}','parcial')">✕</button>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Nenhum bloco fixo ativo</td></tr>';
+
+  document.getElementById('tblAvulsos').innerHTML = avulsos.length ? avulsos.map(r=>`
+    <tr>
+      <td>${r.data}</td>
+      <td>${r.hora}</td>
+      <td>${r.sala}</td>
+      <td>R$ ${r.valor.toFixed(2)}</td>
+      <td><span class="badge badge-warn">${r.status}</span></td>
+      <td>
+        <button class="btn-icon" title="Cancelar" onclick="abrirCancelar('${r.id}','avulso')">✕</button>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Nenhuma sessão avulsa agendada</td></tr>';
+}
+
+// ═══ CONTRATO ═══
+function renderContrato() {
+  const c = CONTRATO_DEMO;
+  document.getElementById('contratoMeta').innerHTML = `
+    <div class="meta-tag">Tipo: <strong>${c.tipo === 'bloco' ? 'Bloco Fixo' : 'Avulso'}</strong></div>
+    <div class="meta-tag">Assinado: <strong>${c.dataAssinatura}</strong></div>
+    <div class="meta-tag">Válido até: <strong>${c.validade}</strong></div>
+    <div class="meta-tag"><span class="badge badge-green" style="font-size:11px">✓ Ativo</span></div>
+  `;
+
+  document.getElementById('contratoBody').innerHTML = `
+    <p><strong>CONTRATO DE SUBLOCAÇÃO DE SALA</strong></p>
+    <p><strong>SUBLOCADORA:</strong> Clínica Esperança — CNPJ 12.345.678/0001-90</p>
+    <p><strong>SUBLOCATÁRIA:</strong> ${psiLogada.nome}, CRP ${psiLogada.crp}</p>
+    <p><strong>Vigência:</strong> ${c.dataAssinatura} a ${c.validade}</p>
+    <p><strong>Tipo:</strong> Bloco fixo — ${c.blocoQtd} dia(s)/semana com ${c.blocoDesconto}% de desconto</p>
+    <p><strong>Valor mensal:</strong> R$ ${c.blocoValor.toLocaleString('pt-BR',{minimumFractionDigits:2})} (cobrança mesmo sem uso)</p>
+    <p><strong>Cancelamento parcial:</strong> com 7 dias de aviso prévio</p>
+    <p><strong>Cancelamento total:</strong> com 30 dias de aviso prévio + multa de 1 mensalidade</p>
+  `;
+
+  document.getElementById('sigPsiName').textContent = psiLogada.nome;
+
+  // Assinatura da psicóloga (simulada)
+  const cp = document.getElementById('sigPsiView');
+  const ctxP = cp.getContext('2d');
+  ctxP.strokeStyle = '#1a2332'; ctxP.lineWidth = 2; ctxP.lineCap = 'round';
+  ctxP.beginPath();
+  ctxP.moveTo(20,50); ctxP.bezierCurveTo(40,25,70,25,90,45);
+  ctxP.bezierCurveTo(110,65,120,70,150,55);
+  ctxP.bezierCurveTo(180,40,200,45,220,60);
+  ctxP.stroke();
+  ctxP.beginPath(); ctxP.moveTo(40,62); ctxP.lineTo(200,62);
+  ctxP.strokeStyle='rgba(26,35,50,.2)'; ctxP.lineWidth=1; ctxP.stroke();
+
+  // Assinatura da clínica
+  const cc = document.getElementById('sigClinicaView');
+  const ctxC = cc.getContext('2d');
+  ctxC.strokeStyle = '#0a7c5c'; ctxC.lineWidth = 2; ctxC.lineCap = 'round';
+  ctxC.beginPath();
+  ctxC.moveTo(20,50); ctxC.bezierCurveTo(40,25,70,25,90,45);
+  ctxC.bezierCurveTo(110,65,130,65,160,50);
+  ctxC.bezierCurveTo(185,35,205,40,220,55);
+  ctxC.stroke();
+  ctxC.beginPath(); ctxC.moveTo(40,62); ctxC.lineTo(200,62);
+  ctxC.strokeStyle='rgba(10,124,92,.2)'; ctxC.lineWidth=1; ctxC.stroke();
+}
+
+// ═══ PAGAMENTOS ═══
+function renderPagamentos() {
+  const pago = PAGAMENTOS_DEMO.filter(p=>p.status==='pago').reduce((s,p)=>s+p.valor,0);
+  const pend = PAGAMENTOS_DEMO.filter(p=>p.status==='pendente').reduce((s,p)=>s+p.valor,0);
+
+  document.getElementById('statsPag').innerHTML = `
+    <div class="sc"><div class="sc-lbl">Total pago</div><div class="sc-val green">R$ ${pago.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+    <div class="sc"><div class="sc-lbl">Pendente</div><div class="sc-val" style="color:var(--warn)">R$ ${pend.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+    <div class="sc"><div class="sc-lbl">Mensalidade</div><div class="sc-val">R$ ${CONTRATO_DEMO.blocoValor}</div><div class="sc-sub">bloco fixo</div></div>
+  `;
+
+  const sm = { pago:'badge-green', pendente:'badge-warn', vencido:'badge-red' };
+  document.getElementById('tblPagamentos').innerHTML = PAGAMENTOS_DEMO.map(p=>`
+    <tr>
+      <td><strong>${p.ref}</strong></td>
+      <td>${p.desc}</td>
+      <td style="font-weight:700;color:var(--green)">R$ ${p.valor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td>${p.venc}</td>
+      <td><span class="badge ${sm[p.status]||'badge-gray'}">${p.status}</span></td>
+      <td>
+        ${p.status==='pendente' ? `<button class="btn-p" style="font-size:12px;padding:7px 14px" onclick="pagarAgora()">💳 Pagar agora</button>` : ''}
+        ${p.status==='pago' ? `<button class="btn-o" style="font-size:12px;padding:6px 12px" onclick="verRecibo()">🧾 Recibo</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ═══ MODAIS ═══
+function abrirModalReserva() { document.getElementById('modalReserva').classList.remove('hidden'); }
+function fecharModal(id)     { document.getElementById(id).classList.add('hidden'); }
+
+function confirmarReserva() {
+  const dia  = document.getElementById('res_dia').value;
+  const hora = document.getElementById('res_hora').value;
+  const sala = document.getElementById('res_sala').value;
+  if (!dia || !hora || !sala) { toast('Preencha todos os campos', 'error'); return; }
+  fecharModal('modalReserva');
+  toast('✓ Reserva confirmada! Você receberá um e-mail de confirmação.', 'success');
+}
+
+function abrirCancelar(id, tipo) {
+  cancelId = id;
+  const cfg = 24; // horas
+  let aviso = '';
+  if (tipo === 'avulso') {
+    aviso = `⚠ Atenção: cancelamentos com menos de <strong>${cfg} horas</strong> de antecedência serão cobrados integralmente (R$ 31,90).`;
+  } else {
+    aviso = `⚠ Cancelamento parcial de bloco exige <strong>7 dias</strong> de aviso prévio. Cancelamentos sem aviso são cobrados normalmente.`;
+  }
+  document.getElementById('avisoCancel').innerHTML = aviso;
+  document.getElementById('modalCancelar').classList.remove('hidden');
+}
+
+function confirmarCancelamento() {
+  fecharModal('modalCancelar');
+  toast('Cancelamento registrado. A clínica será notificada.', 'success');
+}
+
+function pagarAgora() { toast('Redirecionando para o Mercado Pago...', 'success'); }
+function verRecibo()   { toast('Recibo gerado! (PDF em produção)', 'success'); }
+function downloadContrato() { toast('Download do contrato iniciado! (PDF em produção)', 'success'); }
+function sair() { localStorage.removeItem('hope_psi_logada'); window.location.href = 'portal-psi.html'; }
+
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show ' + type;
+  setTimeout(()=>el.classList.remove('show'), 3500);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

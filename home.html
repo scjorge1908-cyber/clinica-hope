@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SublocaFacil — Cadastro e Espaços</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+
+<script>
+// ============================================================
+// CLÍNICA HOPE — Conexão com Supabase
+// Este arquivo é importado por todas as páginas do sistema
+// ============================================================
+
+const SUPABASE_URL  = 'https://cobxcmsnypkngiszzxpp.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_C2ZK1G5JV8INtTEFh-NH9A_dOo2jqXd'; // frontend key - safe
+
+// Cliente Supabase (usando a CDN — não precisa instalar nada)
+// Adicione esta tag nos HTMLs: 
+// 
+
+let _supabase = null;
+
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+  return _supabase;
+}
+
+// ============================================================
+// CLÍNICA ID ATIVA (salva após login)
+// ============================================================
+function getClinicaId() {
+  const user = JSON.parse(localStorage.getItem('hope_user') || 'null');
+  return user?.clinica_id || null;
+}
+
+function getPsiId() {
+  const psi = JSON.parse(localStorage.getItem('hope_psi_logada') || 'null');
+  return psi?.id || null;
+}
+
+// ============================================================
+// SALAS
+// ============================================================
+async function dbGetSalas() {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+  const { data, error } = await db
+    .from('salas')
+    .select('*')
+    .eq('clinica_id', clinicaId)
+    .eq('ativa', true)
+    .order('nome');
+  if (error) { console.error('Erro salas:', error); return []; }
+  return data || [];
+}
+
+async function dbSalvarSala(sala) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  if (sala.id) {
+    const { error } = await db.from('salas').update({
+      nome: sala.nome, endereco: sala.endereco,
+      hora_inicio: sala.horaInicio, hora_fim: sala.horaFim,
+      dias: sala.dias, valor_avulso: sala.valor
+    }).eq('id', sala.id);
+    return !error;
+  } else {
+    const { error } = await db.from('salas').insert({
+      clinica_id: clinicaId, nome: sala.nome,
+      endereco: sala.endereco, hora_inicio: sala.horaInicio,
+      hora_fim: sala.horaFim, dias: sala.dias, valor_avulso: sala.valor
+    });
+    return !error;
+  }
+}
+
+async function dbDeletarSala(id) {
+  const db = getSupabase();
+  const { error } = await db.from('salas').update({ ativa: false }).eq('id', id);
+  return !error;
+}
+
+// ============================================================
+// PSICÓLOGAS
+// ============================================================
+async function dbGetPsicologas() {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+  const { data, error } = await db
+    .from('psicologas')
+    .select('*')
+    .eq('clinica_id', clinicaId)
+    .eq('status', 'ativa')
+    .order('nome');
+  if (error) { console.error('Erro psicologas:', error); return []; }
+  return data || [];
+}
+
+async function dbSalvarPsicologa(psi) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  if (psi.id) {
+    const { error } = await db.from('psicologas').update({
+      nome: psi.nome, crp: psi.crp, cpf: psi.cpf,
+      email: psi.email, telefone: psi.tel, tipo_sub: psi.tipoSub
+    }).eq('id', psi.id);
+    return !error;
+  } else {
+    const { error } = await db.from('psicologas').insert({
+      clinica_id: clinicaId, nome: psi.nome, crp: psi.crp,
+      cpf: psi.cpf, email: psi.email, telefone: psi.tel,
+      endereco: psi.end, tipo_sub: psi.tipoSub
+    });
+    return !error;
+  }
+}
+
+async function dbDeletarPsicologa(id) {
+  const db = getSupabase();
+  const { error } = await db.from('psicologas').update({ status: 'inativa' }).eq('id', id);
+  return !error;
+}
+
+// ============================================================
+// AGENDAMENTOS
+// ============================================================
+async function dbGetAgendamentos(filtros = {}) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  let query = db.from('agendamentos')
+    .select(`*, psicologas(nome), salas(nome)`)
+    .eq('clinica_id', clinicaId)
+    .order('data', { ascending: true });
+
+  if (filtros.salaId)    query = query.eq('sala_id', filtros.salaId);
+  if (filtros.psiId)     query = query.eq('psicologa_id', filtros.psiId);
+  if (filtros.status)    query = query.eq('status', filtros.status);
+  if (filtros.dataInicio) query = query.gte('data', filtros.dataInicio);
+  if (filtros.dataFim)   query = query.lte('data', filtros.dataFim);
+
+  const { data, error } = await query;
+  if (error) { console.error('Erro agendamentos:', error); return []; }
+  return data || [];
+}
+
+async function dbSalvarAgendamento(ag) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  if (ag.id) {
+    const { error } = await db.from('agendamentos').update({
+      psicologa_id: ag.psiId, sala_id: ag.salaId,
+      paciente: ag.paciente, data: ag.data,
+      hora_inicio: ag.horaI, hora_fim: ag.horaF,
+      valor: ag.valor, tipo: ag.tipo, status: ag.status
+    }).eq('id', ag.id);
+    return !error;
+  } else {
+    const { error } = await db.from('agendamentos').insert({
+      clinica_id: clinicaId, psicologa_id: ag.psiId,
+      sala_id: ag.salaId, contrato_id: ag.contratoId || null,
+      paciente: ag.paciente, data: ag.data,
+      hora_inicio: ag.horaI, hora_fim: ag.horaF,
+      valor: ag.valor, tipo: ag.tipo || 'avulso', status: 'agendado'
+    });
+    return !error;
+  }
+}
+
+async function dbCancelarAgendamento(id, motivo) {
+  const db = getSupabase();
+  const { error } = await db.from('agendamentos')
+    .update({ status: 'cancelado', motivo_cancelamento: motivo })
+    .eq('id', id);
+  return !error;
+}
+
+// ============================================================
+// CONTRATOS
+// ============================================================
+async function dbGetContratos(psiId = null) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  let query = db.from('contratos')
+    .select(`*, psicologas(nome, crp, email), salas(nome)`)
+    .eq('clinica_id', clinicaId)
+    .order('criado_em', { ascending: false });
+
+  if (psiId) query = query.eq('psicologa_id', psiId);
+
+  const { data, error } = await query;
+  if (error) { console.error('Erro contratos:', error); return []; }
+  return data || [];
+}
+
+async function dbSalvarContrato(contrato) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  const { data, error } = await db.from('contratos').insert({
+    clinica_id: clinicaId,
+    psicologa_id: contrato.psicolagaId,
+    sala_id: contrato.salaId || null,
+    tipo: contrato.tipo,
+    valor: contrato.valor,
+    bloco_qtd: contrato.blocoQtd || 1,
+    bloco_desconto: contrato.blocoDesconto || 0,
+    bloco_dias: contrato.blocoDias || [],
+    bloco_horarios: contrato.blocoHorarios || [],
+    data_inicio: contrato.dataInicio || new Date().toISOString().split('T')[0],
+    data_validade: contrato.dataValidade,
+    assinatura_psi: contrato.assinaturaPsi,
+    assinatura_clinica: contrato.assinaturaClinica,
+    assinado_em: new Date().toISOString(),
+    ip_assinatura: contrato.ip || '',
+    texto_contrato: contrato.texto,
+    status: 'ativo'
+  }).select().single();
+
+  if (error) { console.error('Erro salvar contrato:', error); return null; }
+  return data;
+}
+
+async function dbVerificarContratoAtivo(psicolagaId) {
+  const db = getSupabase();
+  const hoje = new Date().toISOString().split('T')[0];
+  const { data, error } = await db.from('contratos')
+    .select('*')
+    .eq('psicologa_id', psicolagaId)
+    .eq('status', 'ativo')
+    .gte('data_validade', hoje)
+    .limit(1);
+  if (error) return null;
+  return data?.[0] || null;
+}
+
+// ============================================================
+// COBRANÇAS / FINANCEIRO
+// ============================================================
+async function dbGetCobrancas(psiId = null) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  let query = db.from('cobrancas')
+    .select(`*, psicologas(nome)`)
+    .eq('clinica_id', clinicaId)
+    .order('vencimento', { ascending: false });
+
+  if (psiId) query = query.eq('psicologa_id', psiId);
+
+  const { data, error } = await query;
+  if (error) { console.error('Erro cobranças:', error); return []; }
+  return data || [];
+}
+
+async function dbSalvarCobranca(cob) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  const { data, error } = await db.from('cobrancas').insert({
+    clinica_id: clinicaId,
+    psicologa_id: cob.psiId,
+    contrato_id: cob.contratoId || null,
+    descricao: cob.descricao,
+    valor: cob.valor,
+    vencimento: cob.vencimento,
+    status: 'pendente'
+  }).select().single();
+
+  if (error) { console.error('Erro salvar cobrança:', error); return null; }
+  return data;
+}
+
+async function dbMarcarPago(id) {
+  const db = getSupabase();
+  const { error } = await db.from('cobrancas')
+    .update({ status: 'pago', pago_em: new Date().toISOString() })
+    .eq('id', id);
+  return !error;
+}
+
+// ============================================================
+// CONFIGURAÇÕES DA CLÍNICA
+// ============================================================
+async function dbGetConfig() {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+  const { data, error } = await db.from('config_clinica')
+    .select('*')
+    .eq('clinica_id', clinicaId)
+    .single();
+  if (error) return null;
+  return data;
+}
+
+async function dbSalvarConfig(cfg) {
+  const db = getSupabase();
+  const clinicaId = getClinicaId();
+
+  // Upsert: atualiza se existe, cria se não existe
+  const { error } = await db.from('config_clinica').upsert({
+    clinica_id: clinicaId,
+    ...cfg,
+    atualizado_em: new Date().toISOString()
+  }, { onConflict: 'clinica_id' });
+
+  return !error;
+}
+
+// ============================================================
+// AUTENTICAÇÃO SIMPLES (sem Supabase Auth por ora)
+// ============================================================
+async function dbLogin(email, senha) {
+  const db = getSupabase();
+  const senhaHash = btoa(senha); // Em produção: usar bcrypt
+
+  const { data, error } = await db.from('usuarios')
+    .select(`*, clinicas(*)`)
+    .eq('email', email)
+    .eq('senha_hash', senhaHash)
+    .single();
+
+  if (error || !data) return null;
+
+  const user = {
+    id: data.id,
+    nome: data.nome,
+    email: data.email,
+    role: data.role,
+    clinica_id: data.clinica_id,
+    clinica_nome: data.clinicas?.nome || ''
+  };
+
+  localStorage.setItem('hope_user', JSON.stringify(user));
+  return user;
+}
+
+async function dbRegistrar(dados) {
+  const db = getSupabase();
+
+  // 1. Criar clínica
+  const { data: clinica, error: errClinica } = await db.from('clinicas').insert({
+    nome: dados.clinica, proprietaria: dados.nome,
+    email: dados.email, plano: 'profissional', status: 'trial'
+  }).select().single();
+
+  if (errClinica) return { erro: 'E-mail já cadastrado ou erro ao criar clínica.' };
+
+  // 2. Criar config padrão
+  await db.from('config_clinica').insert({ clinica_id: clinica.id });
+
+  // 3. Criar usuário admin
+  const { error: errUser } = await db.from('usuarios').insert({
+    clinica_id: clinica.id, nome: dados.nome,
+    email: dados.email, senha_hash: btoa(dados.senha), role: 'admin'
+  });
+
+  if (errUser) return { erro: 'Erro ao criar usuário.' };
+
+  return { sucesso: true, clinica_id: clinica.id };
+}
+
+async function dbLogout() {
+  localStorage.removeItem('hope_user');
+  localStorage.removeItem('hope_psi_logada');
+}
+
+// ============================================================
+// PSICÓLOGA — CADASTRO PELO PORTAL PÚBLICO
+// ============================================================
+async function dbCadastrarPsiPortal(dadosPsi, clinicaId) {
+  const db = getSupabase();
+
+  // Verifica se já existe pelo email
+  const { data: existe } = await db.from('psicologas')
+    .select('id').eq('email', dadosPsi.email).eq('clinica_id', clinicaId).single();
+
+  if (existe) return { id: existe.id, jaExistia: true };
+
+  const { data, error } = await db.from('psicologas').insert({
+    clinica_id: clinicaId,
+    nome: dadosPsi.nome, crp: dadosPsi.crp,
+    cpf: dadosPsi.cpf, email: dadosPsi.email,
+    telefone: dadosPsi.tel, endereco: dadosPsi.end,
+    tipo_sub: 'avulso'
+  }).select().single();
+
+  if (error) return null;
+  return data;
+}
+
+// ============================================================
+// PAINEL DA PSICÓLOGA — busca seus próprios dados
+// ============================================================
+async function dbGetDadosPsicologa(psiId, clinicaId) {
+  const db = getSupabase();
+
+  const [agendamentos, contratos, cobrancas] = await Promise.all([
+    db.from('agendamentos').select(`*, salas(nome)`).eq('psicologa_id', psiId).eq('clinica_id', clinicaId).order('data'),
+    db.from('contratos').select(`*, salas(nome)`).eq('psicologa_id', psiId).eq('status', 'ativo'),
+    db.from('cobrancas').select('*').eq('psicologa_id', psiId).eq('clinica_id', clinicaId).order('vencimento', {ascending: false})
+  ]);
+
+  return {
+    agendamentos: agendamentos.data || [],
+    contratos: contratos.data || [],
+    cobrancas: cobrancas.data || []
+  };
+}
+
+console.log('✅ Supabase conectado:', SUPABASE_URL);
+
+</script>
+
+
+<style>
+:root{
+  --g:#0a6e5c;--gl:#0d9e85;--gx:#e8f5f2;
+  --ink:#0b1c18;--ink2:#1a3028;--ink3:#0f2820;
+  --mu:#5f7870;--bo:#d8e8e4;--bg:#f5faf8;--w:#fff;
+  --fh:'Cormorant Garamond',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+.nav{position:fixed;top:0;left:0;right:0;z-index:300;height:64px;padding:0 52px;display:flex;align-items:center;justify-content:space-between;background:rgba(11,28,24,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05);}
+.nav-brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.nav-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:17px;font-weight:600;color:white;}
+.nav-name{font-family:var(--fh);font-size:19px;font-weight:600;color:white;letter-spacing:-.3px;}
+.nav-right{display:flex;gap:10px;}
+.btn-ghost{padding:8px 20px;border:1px solid rgba(255,255,255,.15);border-radius:6px;font-family:var(--fb);font-size:13px;font-weight:500;color:rgba(255,255,255,.8);background:transparent;cursor:pointer;transition:all .2s;}
+.btn-ghost:hover{background:rgba(255,255,255,.07);}
+.btn-solid{padding:9px 22px;background:var(--gl);border:none;border-radius:6px;font-family:var(--fb);font-size:13px;font-weight:600;color:white;cursor:pointer;transition:all .2s;}
+.btn-solid:hover{background:#0bb897;transform:translateY(-1px);}
+.hero{min-height:100vh;background:linear-gradient(155deg,#050e0b 0%,var(--ink) 45%,var(--ink3) 100%);display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:80px 52px 64px;gap:48px;position:relative;overflow:hidden;}
+.hero-glow{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(13,158,133,.11) 0%,transparent 65%);top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(13,158,133,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(13,158,133,.03) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;-webkit-mask-image:radial-gradient(ellipse 80% 90% at 25% 50%,black 20%,transparent 75%);}
+.hero-left{position:relative;z-index:1;}
+.hero-kicker{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--gl);margin-bottom:20px;display:flex;align-items:center;gap:8px;opacity:.9;}
+.kicker-line{width:24px;height:1px;background:var(--gl);}
+.hero h1{font-family:var(--fh);font-size:clamp(34px,4.2vw,58px);font-weight:700;color:white;line-height:1.0;margin-bottom:14px;letter-spacing:-.5px;}
+.hero h1 em{font-style:italic;font-weight:400;-webkit-text-stroke:1.5px var(--gl);color:transparent;}
+.hero-sub{font-family:var(--fh);font-size:clamp(15px,1.8vw,20px);font-weight:400;font-style:italic;color:rgba(255,255,255,.38);margin-bottom:16px;}
+.hero-desc{font-size:15px;color:rgba(255,255,255,.4);line-height:1.8;margin-bottom:32px;max-width:420px;}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap;}
+.hs-n{font-family:var(--fh);font-size:28px;font-weight:600;color:white;}
+.hs-l{font-size:11px;color:rgba(255,255,255,.28);margin-top:3px;}
+/* SIGNUP CARD */
+.signup-card{
+  position:relative;z-index:1;
+  background:rgba(10,24,20,.75);
+  border:1px solid rgba(13,158,133,.2);
+  border-radius:20px;
+  backdrop-filter:blur(32px);
+  -webkit-backdrop-filter:blur(32px);
+  overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.signup-card::before{
+  content:'';position:absolute;top:-1px;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(13,158,133,.5),transparent);
+  pointer-events:none;
+}
+.stabs{display:grid;grid-template-columns:1fr 1fr;}
+.stab{padding:18px 16px;text-align:center;cursor:pointer;border-bottom:2px solid rgba(255,255,255,.06);background:transparent;transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.stab.active{border-bottom-color:var(--gl);background:rgba(13,158,133,.08);}
+.stab-title{font-size:13px;font-weight:600;color:rgba(255,255,255,.4);transition:color .25s;}
+.stab-desc{font-size:10px;color:rgba(255,255,255,.2);transition:color .25s;letter-spacing:.2px;}
+.stab.active .stab-title{color:white;}
+.stab.active .stab-desc{color:var(--gl);}
+.sform{padding:22px 26px;display:none;max-height:74vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;}
+.sform::-webkit-scrollbar{width:3px;}
+.sform::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+.sform.active{display:block;}
+.sform-title{font-family:var(--fh);font-size:21px;font-weight:600;color:white;margin-bottom:2px;letter-spacing:-.2px;}
+.sform-sub{font-size:12px;color:rgba(255,255,255,.3);margin-bottom:18px;}
+/* TYPE TOGGLE */
+.type-toggle{display:flex;background:rgba(0,0,0,.2);border-radius:8px;padding:3px;gap:3px;margin-bottom:16px;border:1px solid rgba(255,255,255,.06);}
+.tt-btn{flex:1;padding:8px 10px;border-radius:6px;border:none;background:transparent;cursor:pointer;transition:all .22s;text-align:center;}
+.tt-btn.active{background:rgba(13,158,133,.22);border:1px solid rgba(13,158,133,.28);}
+.tt-title{font-size:12px;font-weight:600;color:rgba(255,255,255,.35);transition:color .22s;}
+.tt-sub{font-size:10px;color:rgba(255,255,255,.18);margin-top:1px;transition:color .22s;}
+.tt-btn.active .tt-title{color:white;}
+.tt-btn.active .tt-sub{color:var(--gl);}
+/* FIELDS dark */
+.fg{margin-bottom:11px;}
+.fg label{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.28);margin-bottom:4px;}
+.fg input,.fg select{width:100%;padding:10px 13px;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:var(--fb);font-size:13.5px;color:white;background:rgba(255,255,255,.06);outline:none;transition:all .22s;-webkit-appearance:none;letter-spacing:.1px;}
+.fg input::placeholder{color:rgba(255,255,255,.18);}
+.fg input:focus,.fg select:focus{border-color:var(--gl);background:rgba(13,158,133,.08);box-shadow:0 0 0 3px rgba(13,158,133,.12),0 2px 8px rgba(0,0,0,.2);}
+.fg select option{background:#1a3028;color:white;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.fg-row .fg{margin-bottom:0;}
+/* DIVIDER */
+.fdiv{height:1px;background:rgba(255,255,255,.06);margin:12px 0;}
+/* UPLOAD dark */
+.up-sec{margin-bottom:10px;}
+.up-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.28);display:block;margin-bottom:4px;}
+.up-zone{border:1.5px dashed rgba(255,255,255,.1);border-radius:8px;padding:10px 13px;background:rgba(255,255,255,.025);cursor:pointer;transition:all .22s;position:relative;overflow:hidden;display:flex;align-items:center;gap:11px;}
+.up-zone:hover{border-color:var(--gl);background:rgba(13,158,133,.06);}
+.up-zone.done{border-color:var(--gl);border-style:solid;background:rgba(13,158,133,.09);}
+.up-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.up-icon{width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.up-zone:hover .up-icon,.up-zone.done .up-icon{border-color:var(--gl);background:rgba(13,158,133,.12);}
+.up-icon svg{width:13px;height:13px;stroke:rgba(255,255,255,.35);}
+.up-zone.done .up-icon svg{stroke:var(--gl);}
+.up-text{flex:1;min-width:0;}
+.up-main{font-size:12px;font-weight:500;color:rgba(255,255,255,.5);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.up-sub{font-size:10px;color:rgba(255,255,255,.18);}
+.up-done{font-size:11px;font-weight:600;color:var(--gl);display:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.up-zone.done .up-done{display:block;}
+.up-zone.done .up-sub{display:none;}
+/* SUBMIT */
+.btn-submit{
+  width:100%;
+  background:linear-gradient(135deg,#0a6e5c 0%,#0d9e85 50%,#0bb897 100%);
+  background-size:200% auto;
+  color:white;border:none;padding:13px;border-radius:9px;
+  font-family:var(--fb);font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .3s;margin-top:8px;
+  letter-spacing:.3px;text-transform:uppercase;font-size:12px;
+  box-shadow:0 4px 20px rgba(13,158,133,.25);
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(13,158,133,.4);background-position:right center;}
+.btn-submit:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.flink{text-align:center;font-size:11px;color:rgba(255,255,255,.22);margin-top:9px;}
+.flink a{color:var(--gl);font-weight:600;cursor:pointer;}
+/* SALAS */
+.rooms-sec{padding:80px 52px;background:var(--w);}
+.rooms-inner{max-width:1200px;margin:0 auto;}
+.sec-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.sec-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--g);margin-bottom:5px;}
+.sec-title{font-family:var(--fh);font-size:clamp(22px,3vw,34px);font-weight:600;color:var(--ink);letter-spacing:-.3px;}
+.btn-refresh{padding:9px 20px;border:1.5px solid var(--bo);border-radius:6px;font-family:var(--fb);font-size:13px;font-weight:500;color:var(--ink);background:transparent;cursor:pointer;transition:all .2s;}
+.btn-refresh:hover{border-color:var(--gl);color:var(--g);}
+.filters{display:flex;gap:10px;flex-wrap:wrap;padding:14px 18px;background:var(--bg);border:1px solid var(--bo);border-radius:8px;margin-bottom:22px;align-items:flex-end;}
+.fg2{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px;}
+.fg2 label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);}
+.fg2 select{padding:8px 11px;border:1.5px solid var(--bo);border-radius:6px;font-family:var(--fb);font-size:13px;color:var(--ink);background:white;outline:none;cursor:pointer;-webkit-appearance:none;}
+.fg2 select:focus{border-color:var(--gl);}
+.btn-buscar{padding:9px 22px;background:var(--g);color:white;border:none;border-radius:6px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;align-self:flex-end;}
+.btn-buscar:hover{background:#086649;}
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;}
+.room-card{background:white;border:1px solid var(--bo);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.room-card:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.09);border-color:var(--gl);}
+.rc-img{height:168px;background:linear-gradient(135deg,var(--gx),#d0eeea);position:relative;}
+.rc-esp{position:absolute;top:10px;left:10px;background:white;border-radius:4px;padding:3px 9px;font-size:10px;font-weight:600;color:var(--g);}
+.rc-ver{position:absolute;top:10px;right:10px;background:var(--g);border-radius:4px;padding:3px 9px;font-size:10px;font-weight:600;color:white;}
+.rc-body{padding:15px 17px;}
+.rc-clin{font-size:10px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.rc-name{font-family:var(--fh);font-size:16px;font-weight:600;color:var(--ink);margin-bottom:3px;line-height:1.3;}
+.rc-loc{font-size:12px;color:var(--mu);margin-bottom:9px;}
+.rc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px;}
+.rc-tag{background:var(--bg);border:1px solid var(--bo);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--mu);}
+.rc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:11px;border-top:1px solid var(--bg);}
+.rc-price{font-family:var(--fh);font-size:22px;font-weight:600;color:var(--g);}
+.rc-price span{font-size:12px;color:var(--mu);font-family:var(--fb);font-weight:400;}
+.btn-view{padding:7px 15px;background:var(--gx);color:var(--g);border:none;border-radius:6px;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-view:hover{background:var(--g);color:white;}
+.loading-state{text-align:center;padding:52px;color:var(--mu);}
+.spinner{width:26px;height:26px;border:2.5px solid var(--bo);border-top-color:var(--gl);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* HOW */
+.how{padding:80px 52px;background:var(--bg);}
+.how-inner{max-width:1100px;margin:0 auto;}
+.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:36px;}
+.hw-card{background:white;border:1px solid var(--bo);border-radius:12px;padding:26px 20px;text-align:center;transition:all .25s;}
+.hw-card:hover{transform:translateY(-3px);border-color:var(--gl);box-shadow:0 8px 24px rgba(0,0,0,.06);}
+.hw-num{width:36px;height:36px;border-radius:7px;background:var(--gx);color:var(--g);font-family:var(--fh);font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.hw-card h3{font-family:var(--fh);font-size:16px;font-weight:600;margin-bottom:7px;}
+.hw-card p{font-size:13px;color:var(--mu);line-height:1.65;}
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(11,28,24,.65);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-ov.open{opacity:1;pointer-events:all;}
+.modal-box{background:white;border-radius:16px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.25);transform:translateY(16px);transition:transform .3s;}
+.modal-ov.open .modal-box{transform:translateY(0);}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--bo);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h2{font-family:var(--fh);font-size:20px;font-weight:600;}
+.modal-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--bo);background:transparent;cursor:pointer;font-size:14px;color:var(--mu);display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px 24px 28px;}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--ink2);color:white;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.22);opacity:0;pointer-events:none;transition:opacity .3s;border-left:3px solid var(--gl);}
+.toast.show{opacity:1;}
+/* FOOTER */
+footer{background:#060f0c;padding:52px 52px 0;}
+.fi{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;}
+.fb{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.fb-name{font-family:var(--fh);font-size:18px;font-weight:600;color:white;letter-spacing:-.2px;}
+.fdesc{font-size:13px;color:rgba(255,255,255,.28);line-height:1.7;margin-bottom:18px;}
+.fq-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.22);margin-bottom:8px;}
+.fq-row{display:flex;gap:7px;}
+.fq-row input{flex:1;padding:8px 11px;border:1px solid rgba(255,255,255,.08);border-radius:6px;font-family:var(--fb);font-size:12px;color:white;background:rgba(255,255,255,.04);outline:none;}
+.fq-row input::placeholder{color:rgba(255,255,255,.22);}
+.fq-row input:focus{border-color:var(--gl);}
+.fq-btn{background:var(--g);color:white;border:none;padding:8px 16px;border-radius:6px;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;}
+.fq-btn:hover{background:var(--gl);}
+.fcol h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.22);margin-bottom:12px;}
+.fcol a{display:block;font-size:13px;color:rgba(255,255,255,.38);text-decoration:none;margin-bottom:7px;cursor:pointer;transition:color .2s;}
+.fcol a:hover{color:rgba(255,255,255,.8);}
+.fbot{max-width:1100px;margin:0 auto;padding:20px 0;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.18);}
+/* HERO CTA BUTTONS */
+.hero-cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cta-hero-main{padding:13px 28px;background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;letter-spacing:.2px;text-transform:uppercase;}
+.cta-hero-main:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(13,158,133,.35);}
+
+
+
+/* VIDEO PLAYER */
+.video-hero{position:relative;z-index:1;display:flex;flex-direction:column;gap:14px;}
+.video-wrapper{
+  position:relative;
+  border-radius:18px;overflow:hidden;
+  background:#080f0d;
+  border:1px solid rgba(13,158,133,.2);
+  box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.06);
+  aspect-ratio:16/9;
+}
+.video-wrapper::before{content:'';position:absolute;top:-1px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(13,158,133,.5),transparent);pointer-events:none;z-index:3;}
+.video-wrapper video{width:100%;height:100%;object-fit:cover;display:block;}
+.video-badge{
+  position:absolute;top:14px;left:14px;z-index:4;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:5px;padding:4px 11px;
+  font-size:10px;font-weight:600;color:rgba(255,255,255,.7);
+  letter-spacing:1px;text-transform:uppercase;
+}
+/* VIDEO OVERLAY */
+.video-overlay{
+  position:absolute;inset:0;z-index:2;
+  background:linear-gradient(155deg,rgba(5,14,11,.9) 0%,rgba(11,28,24,.85) 60%,rgba(10,46,34,.8) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;transition:opacity .4s;
+  padding:32px;text-align:center;
+}
+.video-overlay.hidden{opacity:0;pointer-events:none;}
+.vo-logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:24px;font-weight:600;color:white;margin-bottom:4px;box-shadow:0 8px 24px rgba(13,158,133,.3);}
+.vo-title{font-family:var(--fh);font-size:clamp(18px,2.5vw,26px);font-weight:600;color:white;letter-spacing:-.3px;}
+.vo-sub{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:8px;}
+.vo-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 28px;
+  background:rgba(13,158,133,.2);
+  border:1.5px solid rgba(13,158,133,.4);
+  border-radius:40px;color:white;
+  font-family:var(--fb);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .25s;
+  backdrop-filter:blur(8px);
+}
+.vo-btn:hover{background:rgba(13,158,133,.35);border-color:var(--gl);transform:scale(1.04);}
+.vo-btn svg{flex-shrink:0;}
+/* PLAY BTN (when video is playing) */
+.video-play-btn{
+  position:absolute;bottom:14px;right:14px;z-index:4;
+  display:none;align-items:center;gap:8px;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.15);border-radius:24px;
+  padding:7px 14px;cursor:pointer;transition:all .2s;
+}
+.video-play-btn.visible{display:flex;}
+.video-play-btn:hover{background:rgba(13,158,133,.25);border-color:var(--gl);}
+.vpb-inner{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;}
+#playLabel{font-size:11px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.3px;}
+/* VIDEO CAPTION */
+.video-caption{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.3);padding:0 4px;letter-spacing:.2px;}
+.vc-dot{width:6px;height:6px;border-radius:50%;background:var(--gl);flex-shrink:0;}
+
+/* ── CADASTRO MODAL ── */
+.cad-modal-ov{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(5,12,10,.75);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.cad-modal-ov.open{opacity:1;pointer-events:all;}
+.cad-modal-box{
+  background:rgba(10,22,18,.92);
+  border:1px solid rgba(13,158,133,.2);
+  border-radius:20px;
+  width:100%;max-width:580px;max-height:92vh;
+  overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;
+  box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
+  transform:translateY(20px);transition:transform .3s;
+  position:relative;
+}
+.cad-modal-box::before{content:'';position:absolute;top:-1px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(13,158,133,.5),transparent);pointer-events:none;border-radius:20px;}
+.cad-modal-ov.open .cad-modal-box{transform:translateY(0);}
+.cad-modal-box::-webkit-scrollbar{width:3px;}
+.cad-modal-box::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);}
+.cad-modal-head{
+  padding:20px 24px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;background:rgba(10,22,18,.95);
+  backdrop-filter:blur(12px);z-index:2;padding-bottom:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.cad-modal-title{font-family:var(--fh);font-size:22px;font-weight:600;color:white;letter-spacing:-.2px;}
+.cad-modal-close{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:transparent;cursor:pointer;color:rgba(255,255,255,.4);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.cad-modal-close:hover{background:rgba(255,255,255,.08);color:white;}
+
+@media(max-width:960px){
+  .nav{padding:0 20px;}
+  .hero{grid-template-columns:1fr;padding:82px 20px 52px;text-align:center;}
+  .hero-stats{justify-content:center;}
+  .rooms-sec,.how{padding:64px 20px;}
+  .how-grid{grid-template-columns:1fr 1fr;}
+  .fi{grid-template-columns:1fr 1fr;}
+  footer{padding:44px 20px 0;}
+}
+@media(max-width:600px){
+  .filters,.fg-row{flex-direction:column;}
+  .fg-row{display:flex;}
+  .sform{padding:18px 16px;}
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">
+    <div class="nav-mark">S</div>
+    <div class="nav-name">SublocaFacil</div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-ghost" onclick="window.location.href='index.html#loginSec'">Entrar</button>
+    <button class="btn-solid" onclick="scrollToSignup()">Criar conta</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-left">
+    <div class="hero-kicker"><span class="kicker-line"></span>Tenha na sua mão a gestão completa da sua sala<span class="kicker-line"></span></div>
+    <h1>Transforme espaços<br>ociosos em<br><em>faturamento.</em></h1>
+    <div class="hero-sub">Do agendamento ao faturamento, tudo em um só lugar.</div>
+    <p class="hero-desc">Conectamos clínicas, espaços terapêuticos e coworkings de saúde que desejam aumentar a receita com profissionais que precisam de salas prontas para atender.</p>
+    <div class="hero-stats">
+      <div><div class="hs-n">200+</div><div class="hs-l">Espaços disponíveis</div></div>
+      <div><div class="hs-n">1.800+</div><div class="hs-l">Profissionais ativos</div></div>
+      <div><div class="hs-n">15</div><div class="hs-l">Cidades atendidas</div></div>
+    </div>
+    <div class="hero-cta-row">
+      <button class="cta-hero-main" onclick="openCadastroModal('esp')">Cadastrar meu espaço</button>
+    </div>
+  </div>
+
+  <!-- VIDEO PLAYER -->
+  <div class="video-hero">
+    <div class="video-wrapper">
+      <div class="video-badge">SublocaFacil.com.br</div>
+      <div class="video-play-btn" id="videoPlayBtn" onclick="toggleVideo()">
+        <div class="vpb-inner">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="white" width="28" height="28"><polygon points="5,3 19,12 5,21"/></svg>
+          <svg id="pauseIcon" viewBox="0 0 24 24" fill="white" width="28" height="28" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </div>
+        <span id="playLabel">Assista ao vídeo</span>
+      </div>
+      <video id="heroVideo" loop playsinline preload="metadata"
+        poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450'%3E%3Crect fill='%230b1c18' width='800' height='450'/%3E%3C/svg%3E">
+        <!-- Quando tiver o vídeo, coloque a URL aqui: -->
+        <!-- <source src="video-institucional.mp4" type="video/mp4"> -->
+        <!-- Ou YouTube embed abaixo via iframe -->
+      </video>
+      <!-- YouTube embed (ativar quando tiver o link) -->
+      <iframe id="ytFrame" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:16px;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+      <div class="video-overlay" id="videoOverlay">
+        <div class="vo-logo">S</div>
+        <div class="vo-title">SublocaFacil.com.br</div>
+        <div class="vo-sub">Gestão completa de sublocação clínica</div>
+        <button class="vo-btn" onclick="toggleVideo()">
+          <svg viewBox="0 0 24 24" fill="white" width="22" height="22"><polygon points="5,3 19,12 5,21"/></svg>
+          Assistir apresentação
+        </button>
+      </div>
+    </div>
+    <div class="video-caption">
+      <div class="vc-dot"></div>
+      Do agendamento ao faturamento — uma plataforma, resultado real
+    </div>
+  </div></section>
+
+<section class="rooms-sec" id="salas">
+  <div class="rooms-inner">
+    <div class="sec-top">
+      <div>
+        <div class="sec-eyebrow">SublocaFacil.com.br</div>
+        <div class="sec-title">Espaços disponíveis</div>
+      </div>
+      <button class="btn-refresh" onclick="loadRooms()">Atualizar listagem</button>
+    </div>
+    <div class="filters">
+      <div class="fg2"><label>Estado</label><select id="fEst" onchange="loadCities()"><option value="">Todos os estados</option><option value="SP">São Paulo</option><option value="RJ">Rio de Janeiro</option><option value="MG">Minas Gerais</option><option value="PR">Paraná</option><option value="RS">Rio Grande do Sul</option><option value="SC">Santa Catarina</option><option value="BA">Bahia</option><option value="DF">Distrito Federal</option></select></div>
+      <div class="fg2"><label>Município</label><select id="fCid"><option value="">Todos os municípios</option></select></div>
+      <div class="fg2"><label>Especialidade</label><select id="fEsp2"><option value="">Todas</option><option value="Psicologia">Psicologia</option><option value="Medicina">Medicina</option><option value="Nutrição">Nutrição</option><option value="Fisioterapia">Fisioterapia</option><option value="Odontologia">Odontologia</option><option value="Multiuso">Multiuso</option></select></div>
+      <div class="fg2"><label>Valor máx. / sessão</label><select id="fVal"><option value="">Qualquer valor</option><option value="50">Até R$ 50</option><option value="100">Até R$ 100</option><option value="150">Até R$ 150</option></select></div>
+      <button class="btn-buscar" onclick="applyFilters()">Buscar</button>
+    </div>
+    <div id="roomsGrid"><div class="loading-state"><div class="spinner"></div>Carregando espaços...</div></div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="how-inner">
+    <div style="text-align:center"><div class="sec-eyebrow">Processo simples</div><div class="sec-title">Como funciona</div></div>
+    <div class="how-grid">
+      <div class="hw-card"><div class="hw-num">1</div><h3>Cadastro verificado</h3><p>Envie seus documentos e registro profissional. Nossa equipe valida em até 24 horas.</p></div>
+      <div class="hw-card"><div class="hw-num">2</div><h3>Encontre o espaço</h3><p>Filtre por cidade, especialidade e valor. Veja disponibilidade em tempo real.</p></div>
+      <div class="hw-card"><div class="hw-num">3</div><h3>Assine o contrato</h3><p>Contrato digital gerado automaticamente com validade jurídica. Sem papel.</p></div>
+      <div class="hw-card"><div class="hw-num">4</div><h3>Comece a atender</h3><p>Gerencie reservas e pagamentos em um único painel. Simples e ágil.</p></div>
+    </div>
+    <div style="text-align:center;margin-top:40px;padding:28px;background:linear-gradient(135deg,rgba(13,158,133,.07),rgba(10,110,92,.04));border:1px solid rgba(13,158,133,.15);border-radius:12px;">
+      <div style="font-family:var(--fh);font-size:22px;font-weight:600;color:var(--ink);margin-bottom:8px;">Você é profissional de saúde?</div>
+      <div style="font-size:14px;color:var(--mu);margin-bottom:18px;">Encontre consultórios verificados para atender hoje mesmo</div>
+      <button onclick="openCadastroProModal()" style="padding:13px 32px;background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.2px;transition:all .25s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">Cadastrar como profissional</button>
+    </div>
+  </div>
+</section>
+
+<div class="modal-ov" id="modalOv">
+  <div class="modal-box">
+    <div class="modal-head"><h2 id="mTitle">Cadastro recebido</h2><button class="modal-close" onclick="closeModal()">&#10005;</button></div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="fi">
+    <div>
+      <div class="fb"><div class="nav-mark">S</div><div class="fb-name">SublocaFacil</div></div>
+      <div class="fdesc">A plataforma que conecta espaços ociosos a profissionais de saúde. Simples, seguro e profissional.</div>
+      <div class="fq-label">Acesso rápido</div>
+      <div class="fq-row"><input type="email" id="fEmail" placeholder="E-mail"/><input type="password" id="fSenha" placeholder="Senha"/><button class="fq-btn" onclick="footerLogin()">Entrar</button></div>
+    </div>
+    <div class="fcol"><h4>Plataforma</h4><a href="#salas">Ver espaços</a><a onclick="switchTab('pro');scrollToSignup()">Sou profissional</a><a onclick="switchTab('esp');scrollToSignup()">Anunciar espaço</a><a href="index.html">Página inicial</a></div>
+    <div class="fcol"><h4>Suporte</h4><a>Central de ajuda</a><a>Fale conosco</a></div>
+    <div class="fcol"><h4>Legal</h4><a>Termos de uso</a><a>Privacidade</a><a>LGPD</a></div>
+  </div>
+  <div class="fbot"><span>© 2026 SublocaFacil — Todos os direitos reservados</span><span>Plataforma verificada · Segura · Profissional</span></div>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const CITIES={SP:['São Paulo','Campinas','Santos','Guarulhos','Osasco','Ribeirão Preto'],RJ:['Rio de Janeiro','Niterói','São Gonçalo','Duque de Caxias'],MG:['Belo Horizonte','Uberlândia','Contagem','Juiz de Fora'],PR:['Curitiba','Londrina','Maringá','Ponta Grossa'],RS:['Porto Alegre','Caxias do Sul','Pelotas','Canoas'],SC:['Florianópolis','Joinville','Blumenau','São José'],BA:['Salvador','Feira de Santana'],DF:['Brasília','Taguatinga']};
+const DEMOS=[{id:'s1',clinica:'Clínica Esperança',nome:'Sala de Acolhimento',cidade:'São Paulo',estado:'SP',bairro:'Vila Mariana',valor:31.90,esp:'Psicologia',hI:'08:00',hF:'21:00',dias:'Seg–Sex'},{id:'s2',clinica:'Instituto Integra',nome:'Consultório Médico',cidade:'São Paulo',estado:'SP',bairro:'Pinheiros',valor:55.00,esp:'Medicina',hI:'09:00',hF:'20:00',dias:'Seg–Sex'},{id:'s3',clinica:'Espaço Saúde+',nome:'Sala Multiuso',cidade:'Campinas',estado:'SP',bairro:'Cambuí',valor:28.00,esp:'Multiuso',hI:'08:00',hF:'18:00',dias:'Ter e Qui'},{id:'s4',clinica:'Clínica Viver',nome:'Consultório de Fisioterapia',cidade:'Curitiba',estado:'PR',bairro:'Batel',valor:38.00,esp:'Fisioterapia',hI:'08:00',hF:'22:00',dias:'Seg–Sex'},{id:'s5',clinica:'Centro Saúde Sul',nome:'Sala Terapêutica',cidade:'Porto Alegre',estado:'RS',bairro:'Moinhos de Vento',valor:42.00,esp:'Psicologia',hI:'09:00',hF:'20:00',dias:'Seg–Sex'},{id:'s6',clinica:'Nutri Rio',nome:'Consultório de Nutrição',cidade:'Rio de Janeiro',estado:'RJ',bairro:'Ipanema',valor:48.00,esp:'Nutrição',hI:'08:00',hF:'21:00',dias:'Seg–Sex'}];
+let tipoPessoa='PJ';
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+function scrollToSignup(){document.getElementById('signupCard').scrollIntoView({behavior:'smooth',block:'center'});}
+function switchTab(tab){['Esp','Pro'].forEach(k=>{document.getElementById('tab'+k).classList.remove('active');document.getElementById('form'+k).classList.remove('active');});const k=tab==='esp'?'Esp':'Pro';document.getElementById('tab'+k).classList.add('active');document.getElementById('form'+k).classList.add('active');}
+function switchTipo(t){tipoPessoa=t;document.getElementById('tipoPJ').classList.toggle('active',t==='PJ');document.getElementById('tipoPF').classList.toggle('active',t==='PF');document.getElementById('docLabel').textContent=t==='PJ'?'CNPJ':'CPF';document.getElementById('e_doc').placeholder=t==='PJ'?'00.000.000/0001-00':'000.000.000-00';document.getElementById('upLabel1').textContent=t==='PJ'?'Contrato social da empresa':'RG ou CNH do responsável';}
+function handleUpload(inputId,zoneId,doneId){const f=document.getElementById(inputId).files[0];if(!f)return;document.getElementById(zoneId).classList.add('done');document.getElementById(doneId).textContent=f.name;}
+function loadCities(){const e=document.getElementById('fEst').value;const s=document.getElementById('fCid');s.innerHTML='<option value="">Todos os municípios</option>';(CITIES[e]||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;s.appendChild(o);});}
+function applyFilters(){const e=document.getElementById('fEst').value;const c=document.getElementById('fCid').value;const esp=document.getElementById('fEsp2').value;const v=parseFloat(document.getElementById('fVal').value)||Infinity;let r=[...DEMOS];if(e)r=r.filter(s=>s.estado===e);if(c)r=r.filter(s=>s.cidade===c);if(esp)r=r.filter(s=>s.esp===esp);r=r.filter(s=>s.valor<=v);renderRooms(r);}
+function loadRooms(){renderRooms(DEMOS);}
+function renderRooms(list){if(!list.length){document.getElementById('roomsGrid').innerHTML='<div class="loading-state" style="opacity:.5">Nenhum espaço encontrado.</div>';return;}document.getElementById('roomsGrid').innerHTML='<div class="rooms-grid">'+list.map(s=>`<div class="room-card" onclick="window.location.href='sala-detalhe.html?id=${s.id}'"><div class="rc-img"><div class="rc-esp">${s.esp}</div><div class="rc-ver">Verificado</div></div><div class="rc-body"><div class="rc-clin">${s.clinica}</div><div class="rc-name">${s.nome}</div><div class="rc-loc">${s.bairro} · ${s.cidade}, ${s.estado}</div><div class="rc-tags"><span class="rc-tag">${s.dias}</span><span class="rc-tag">${s.hI} – ${s.hF}</span></div><div class="rc-foot"><div class="rc-price">R$ ${s.valor.toFixed(2)}<span> / sessão</span></div><button class="btn-view">Ver espaço</button></div></div></div>`).join('')+'</div>';}
+
+async function cadastrarEspaco(){
+  const n=document.getElementById('e_nome').value.trim(),resp=document.getElementById('e_resp').value.trim(),em=document.getElementById('e_email').value.trim(),s=document.getElementById('e_senha').value,d=document.getElementById('e_doc').value.trim(),f1=document.getElementById('e_f1').files[0],f2=document.getElementById('e_f2').files[0],f3=document.getElementById('e_f3').files[0];
+  if(!n||!resp||!em||!s||!d){toast('Preencha todos os campos obrigatórios');return;}
+  if(s.length<8){toast('Senha mínimo 8 caracteres');return;}
+  if(!f1||!f2||!f3){toast('Envie todos os documentos obrigatórios');return;}
+  const btn=document.getElementById('btnEsp');btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    const db=getSupabase();
+    // Inserir direto — tratar duplicidade pelo código de erro do Supabase
+    const{data:cl,error:insertErr}=await db.from('clinicas').insert({
+      nome:n,proprietaria:resp,email:em,
+      plano:'profissional',status:'pendente_aprovacao',
+      WhatsApp:document.getElementById('e_tel').value.trim()||null,
+      cnpj:tipoPessoa==='PJ'?d:null,cpf:tipoPessoa==='PF'?d:null
+    }).select().single();
+    if(insertErr){
+      // Código 23505 = unique_violation (email duplicado no Postgres/Supabase)
+      if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')||insertErr.message?.toLowerCase().includes('unique')){
+        toast('E-mail já cadastrado. Acesse seu painel.');
+      } else {
+        toast('Erro: '+(insertErr.message||'tente novamente'));
+      }
+      btn.disabled=false;btn.textContent='Cadastrar meu espaço';return;
+    }
+    // Upload documentos (não bloqueia cadastro se bucket ainda não existe)
+    try{
+      await Promise.all([
+        db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_social',f1,{upsert:true}),
+        db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_foto',f2,{upsert:true}),
+        db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_end',f3,{upsert:true}),
+      ]);
+    }catch(uploadErr){console.warn('Upload docs (criar bucket "documentos" no Supabase):',uploadErr);}
+    await db.from('usuarios').insert({clinica_id:cl.id,nome:resp,email:em,senha_hash:btoa(s),role:'admin'});
+    try{await db.from('config_clinica').insert({clinica_id:cl.id});}catch(_){}
+    openSuccessModal('esp',resp.split(' ')[0],em);
+  }catch(err){
+    console.error('Cadastro espaço erro:',err);
+    toast(err.message||'Erro inesperado. Tente novamente.');
+    btn.disabled=false;btn.textContent='Cadastrar meu espaço';
+  }
+}
+
+async function cadastrarProfissional(){
+  const n=document.getElementById('p_nome').value.trim(),em=document.getElementById('p_email').value.trim(),s=document.getElementById('p_senha').value,cons=document.getElementById('p_conselho').value,reg=document.getElementById('p_reg').value.trim(),cpf=document.getElementById('p_cpf').value.trim(),f1=document.getElementById('p_f1').files[0],f2=document.getElementById('p_f2').files[0];
+  if(!n||!em||!s||!cons||!reg||!cpf){toast('Preencha todos os campos obrigatórios');return;}
+  if(s.length<8){toast('Senha mínimo 8 caracteres');return;}
+  if(!f1||!f2){toast('Envie os documentos obrigatórios');return;}
+  const btn=document.getElementById('btnPro');btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    const db=getSupabase();
+    const{data:p,error:insertErr}=await db.from('psicologas').insert({
+      nome:n,email:em,cpf,crp:reg,
+      tipo_sub:'avulso',status:'pendente_aprovacao',
+      telefone:document.getElementById('p_tel').value,clinica_id:null
+    }).select().single();
+    if(insertErr){
+      if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')||insertErr.message?.toLowerCase().includes('unique')){
+        toast('E-mail já cadastrado. Acesse seu painel.');
+      } else {
+        toast('Erro: '+(insertErr.message||'tente novamente'));
+      }
+      btn.disabled=false;btn.textContent='Criar minha conta';return;
+    }
+    try{
+      await Promise.all([
+        db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_foto',f1,{upsert:true}),
+        db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_reg',f2,{upsert:true}),
+      ]);
+    }catch(uploadErr){console.warn('Upload docs (criar bucket "documentos" no Supabase):',uploadErr);}
+    localStorage.setItem('hope_psi_logada',JSON.stringify({id:p.id,nome:n,email:em,crp:reg,conselho:cons,status:'pendente_aprovacao'}));
+    openSuccessModal('pro',n.split(' ')[0],em);
+  }catch(err){
+    console.error('Cadastro prof erro:',err);
+    toast(err.message||'Erro inesperado. Tente novamente.');
+    btn.disabled=false;btn.textContent='Criar minha conta';
+  }
+}
+
+function openSuccessModal(tipo,nome,email){
+  const isEsp=tipo==='esp';
+  document.getElementById('mTitle').textContent=isEsp?'Espaço cadastrado!':'Cadastro realizado!';
+  document.getElementById('mBody').innerHTML=`<div style="text-align:center"><div style="width:52px;height:52px;border-radius:50%;background:var(--gx);border:2px solid rgba(10,110,92,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-family:var(--fh);font-size:22px;font-weight:600;margin-bottom:8px">Olá, ${nome}!</div><div style="font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:16px">Seu cadastro foi recebido. Nossa equipe verificará seus documentos em até <strong>24 horas úteis</strong>.</div><div style="background:var(--gx);border:1px solid rgba(13,158,133,.2);border-radius:8px;padding:13px 16px;font-size:13px;line-height:1.8;text-align:left;margin-bottom:18px">Confirmação para <strong>${email}</strong><br>${isEsp?'Após aprovação, cadastre suas salas no painel':'Após aprovação, você poderá reservar espaços'}</div><button class="btn-submit" onclick="closeModal()" style="background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;padding:12px;border-radius:8px;width:100%;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer">Entendido</button></div>`;
+  document.getElementById('modalOv').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOv').classList.remove('open');}
+function footerLogin(){const e=document.getElementById('fEmail').value.trim(),s=document.getElementById('fSenha').value;if(!e||!s){toast('Preencha e-mail e senha');return;}window.location.href='painel-psi.html';}
+document.addEventListener('DOMContentLoaded',loadRooms);
+</script>
+<!-- CADASTRO MODAL -->
+<div class="cad-modal-ov" id="cadModalOv">
+  <div class="cad-modal-box" id="cadModalBox">
+    <div class="cad-modal-head">
+      <div class="cad-modal-title" id="cadModalTitle">Cadastrar meu espaço</div>
+      <button class="cad-modal-close" onclick="closeCadModal()">&#10005;</button>
+    </div>
+
+
+    <!-- FORM ESPAÇO -->
+    <div class="sform active" id="mFormEsp" style="padding:20px 24px 28px;">
+      <div class="sform-sub" style="margin-bottom:16px;">Preencha os dados para anunciar suas salas na plataforma</div>
+      <div class="type-toggle">
+        <div class="tt-btn active" id="mTipoPJ" onclick="switchMTipo('PJ')"><div class="tt-title">Pessoa Jurídica</div><div class="tt-sub">CNPJ da empresa</div></div>
+        <div class="tt-btn" id="mTipoPF" onclick="switchMTipo('PF')"><div class="tt-title">Pessoa Física</div><div class="tt-sub">CPF do responsável</div></div>
+      </div>
+      <div class="fg"><label>Nome fantasia / clínica</label><input type="text" id="me_nome" placeholder="Ex: Clínica Bem Estar"/></div>
+      <div class="fg"><label>Razão social</label><input type="text" id="me_razao" placeholder="Ex: Bem Estar Saúde Ltda"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>Responsável</label><input type="text" id="me_resp" placeholder="Nome completo"/></div>
+        <div class="fg"><label>WhatsApp</label><input type="text" id="me_tel" placeholder="(11) 99999-9999"/></div>
+      </div>
+      <div class="fg"><label>E-mail</label><input type="email" id="me_email" placeholder="contato@espaco.com"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>Senha</label><input type="password" id="me_senha" placeholder="Mínimo 8 caracteres"/></div>
+        <div class="fg"><label id="mDocLabel">CNPJ</label><input type="text" id="me_doc" placeholder="00.000.000/0001-00"/></div>
+      </div>
+      <div class="fdiv"></div>
+      <!-- LINK PERSONALIZADO -->
+      <div class="fg" style="margin-bottom:6px;">
+        <label>Link da sua página pública</label>
+        <div style="display:flex;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;">
+          <span style="padding:10px 12px;font-size:12px;color:rgba(255,255,255,.3);white-space:nowrap;border-right:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2);">sublocafacil.com.br/</span>
+          <input type="text" id="me_slug" placeholder="clinicahope" oninput="updateSlugPreview()"
+            style="flex:1;padding:10px 12px;border:none;background:transparent;font-family:var(--fb);font-size:13px;color:white;outline:none;" />
+          <span id="slugStatus" style="padding:10px 12px;font-size:11px;color:rgba(255,255,255,.3);">—</span>
+        </div>
+      </div>
+      <div id="slugPreview" style="font-size:11px;color:rgba(13,158,133,.7);padding:4px 2px 10px;display:none;">
+        <span style="color:rgba(255,255,255,.25);">Seu link:</span> sublocafacil.com.br/<span id="slugVal"></span>
+      </div>
+      <div class="fdiv" style="margin-top:4px;"></div>
+      <div class="up-sec">
+        <div class="up-label" id="mUpLabel1">Contrato social (PJ) ou RG/CNH (PF)</div>
+        <div class="up-zone" id="muz1">
+          <input type="file" id="me_f1" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('me_f1','muz1','muzd1')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="muzd1"></div></div>
+        </div>
+      </div>
+      <div class="up-sec">
+        <div class="up-label">Documento com foto do responsável (RG ou CNH)</div>
+        <div class="up-zone" id="muz2">
+          <input type="file" id="me_f2" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('me_f2','muz2','muzd2')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg></div>
+          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="muzd2"></div></div>
+        </div>
+      </div>
+      <div class="up-sec">
+        <div class="up-label">Comprovante de endereço do espaço</div>
+        <div class="up-zone" id="muz3">
+          <input type="file" id="me_f3" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('me_f3','muz3','muzd3')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="up-text"><div class="up-main">Conta de luz, água ou IPTU</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="muzd3"></div></div>
+        </div>
+      </div>
+      <button class="btn-submit" id="mBtnEsp" onclick="mCadastrarEspaco()">Cadastrar meu espaço</button>
+      <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeCadModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── VIDEO ──
+// ── MODAL PROFISSIONAL (separado) ──
+function openCadastroProModal(){
+  // Reuse the cadastro modal but open on pro tab
+  // Since we removed pro form from main modal, open a dedicated one
+  document.getElementById('proModalOv').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeProModal(){
+  document.getElementById('proModalOv').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+let videoPlaying = false;
+function toggleVideo(){
+  const vid = document.getElementById('heroVideo');
+  const overlay = document.getElementById('videoOverlay');
+  const playBtn = document.getElementById('videoPlayBtn');
+  const playIcon = document.getElementById('playIcon');
+  const pauseIcon = document.getElementById('pauseIcon');
+  const playLabel = document.getElementById('playLabel');
+  if(!videoPlaying){
+    overlay.classList.add('hidden');
+    playBtn.classList.add('visible');
+    vid.play().catch(()=>{});
+    playIcon.style.display='none';
+    pauseIcon.style.display='block';
+    playLabel.textContent='Pausar';
+    videoPlaying=true;
+  } else {
+    vid.pause();
+    overlay.classList.remove('hidden');
+    playBtn.classList.remove('visible');
+    playIcon.style.display='block';
+    pauseIcon.style.display='none';
+    playLabel.textContent='Assistir vídeo';
+    videoPlaying=false;
+  }
+}
+// Quando tiver o link do YouTube, chame: setYouTube('VIDEOID')
+function setYouTube(id){
+  const iframe = document.getElementById('ytFrame');
+  const vid = document.getElementById('heroVideo');
+  vid.style.display='none';
+  iframe.style.display='block';
+  iframe.src='https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0&modestbranding=1';
+  document.getElementById('videoOverlay').classList.add('hidden');
+  document.getElementById('videoPlayBtn').classList.add('visible');
+}
+
+// ── MODAL CADASTRO ──
+let mTipoPessoa='PJ';
+function openCadastroModal(tipo){
+  document.getElementById('cadModalOv').classList.add('open');
+  document.body.style.overflow='hidden';
+  switchCadTab(tipo);
+}
+function closeCadModal(){
+  document.getElementById('cadModalOv').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.getElementById('cadModalOv').addEventListener('click',function(e){
+  if(e.target===this) closeCadModal();
+});
+function switchCadTab(tab){
+  ['Esp','Pro'].forEach(k=>{
+    document.getElementById('mTab'+k).classList.remove('active');
+    document.getElementById('mForm'+k).classList.remove('active');
+  });
+  const k=tab==='esp'?'Esp':'Pro';
+  document.getElementById('mTab'+k).classList.add('active');
+  document.getElementById('mForm'+k).classList.add('active');
+  document.getElementById('cadModalTitle').textContent=tab==='esp'?'Cadastrar meu espaço':'Cadastro profissional';
+}
+function switchMTipo(t){
+  mTipoPessoa=t;
+  document.getElementById('mTipoPJ').classList.toggle('active',t==='PJ');
+  document.getElementById('mTipoPF').classList.toggle('active',t==='PF');
+  document.getElementById('mDocLabel').textContent=t==='PJ'?'CNPJ':'CPF';
+  document.getElementById('me_doc').placeholder=t==='PJ'?'00.000.000/0001-00':'000.000.000-00';
+  document.getElementById('mUpLabel1').textContent=t==='PJ'?'Contrato social da empresa':'RG ou CNH do responsável';
+}
+
+function updateSlugPreview(){
+  const raw=document.getElementById('me_slug').value;
+  const clean=raw.toLowerCase().replace(/[^a-z0-9-]/g,'').replace(/--+/g,'-');
+  if(raw!==clean) document.getElementById('me_slug').value=clean;
+  const prev=document.getElementById('slugPreview');
+  const val=document.getElementById('slugVal');
+  const status=document.getElementById('slugStatus');
+  if(clean){
+    prev.style.display='block';
+    val.textContent=clean;
+    status.textContent='✓';
+    status.style.color='var(--gl)';
+  } else {
+    prev.style.display='none';
+    status.textContent='—';
+    status.style.color='rgba(255,255,255,.3)';
+  }
+}
+function openSuccessModalEsp(nome,email,slug){
+  const link='sublocafacil.com.br/'+slug;
+  document.getElementById('mTitle').textContent='Espaço cadastrado!';
+  document.getElementById('mBody').innerHTML=`
+    <div style="text-align:center">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--gx);border:2px solid rgba(10,110,92,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-family:var(--fh);font-size:22px;font-weight:600;margin-bottom:8px">Olá, ${nome}!</div>
+      <div style="font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:16px">
+        Cadastro recebido! Verificaremos seus documentos em até <strong>24 horas úteis</strong>.
+      </div>
+      <div style="background:var(--gx);border:1px solid rgba(13,158,133,.25);border-radius:10px;padding:16px;margin-bottom:18px;text-align:left;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--g);margin-bottom:8px;">Seu link personalizado</div>
+        <div style="display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--bo);border-radius:7px;padding:10px 13px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span style="font-size:13px;font-weight:600;color:var(--ink);flex:1;">${link}</span>
+          <button onclick="navigator.clipboard.writeText('https://${link}').then(()=>this.textContent='Copiado!').catch(()=>{})" style="background:var(--g);color:white;border:none;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;">Copiar</button>
+        </div>
+        <div style="font-size:11px;color:var(--mu);margin-top:6px;">Após aprovação, este link estará ativo e mostrará seus espaços disponíveis.</div>
+      </div>
+      <div style="background:#f8fffe;border:1px solid var(--bo);border-radius:8px;padding:13px 16px;font-size:13px;line-height:1.8;text-align:left;margin-bottom:18px">
+        Confirmação para <strong>${email}</strong><br>
+        Após aprovação, cadastre suas salas no painel
+      </div>
+      <button class="btn-submit" onclick="closeModal()" style="background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;padding:12px;border-radius:8px;width:100%;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.2px;">Entendido</button>
+    </div>`;
+  document.getElementById('modalOv').classList.add('open');
+}
+// Aguarda SDK Supabase carregar (máx 5 segundos)
+function waitForSupabase(timeout=5000){
+  return new Promise((resolve,reject)=>{
+    if(typeof supabase!=='undefined'){resolve();return;}
+    const start=Date.now();
+    const check=setInterval(()=>{
+      if(typeof supabase!=='undefined'){clearInterval(check);resolve();}
+      else if(Date.now()-start>timeout){clearInterval(check);reject(new Error('SDK Supabase não carregou. Verifique sua conexão com internet.'));}
+    },100);
+  });
+}
+
+async function mCadastrarEspaco(){
+  const n=document.getElementById('me_nome').value.trim(),resp=document.getElementById('me_resp').value.trim(),em=document.getElementById('me_email').value.trim(),s=document.getElementById('me_senha').value,d=document.getElementById('me_doc').value.trim(),f1=document.getElementById('me_f1').files[0],f2=document.getElementById('me_f2').files[0],f3=document.getElementById('me_f3').files[0];
+  if(!n||!resp||!em||!s||!d){toast('Preencha todos os campos obrigatórios');return;}
+  if(s.length<8){toast('Senha mínimo 8 caracteres');return;}
+  if(!f1||!f2||!f3){toast('Envie todos os documentos obrigatórios');return;}
+  const btn=document.getElementById('mBtnEsp');btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    await waitForSupabase();
+    const db=getSupabase();
+    const rawSlug=document.getElementById('me_slug').value.trim();
+    const slug=rawSlug||n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    const payload={
+      nome:n,proprietaria:resp,email:em,
+      plano:'profissional',status:'pendente_aprovacao',
+      WhatsApp:document.getElementById('me_tel').value.trim()||null,
+      cnpj:mTipoPessoa==='PJ'?d:null,
+      cpf:mTipoPessoa==='PF'?d:null
+    };
+    const{data:cl,error:insertErr}=await db.from('clinicas').insert(payload).select().single();
+    if(insertErr){
+      console.error('Erro clinicas:',insertErr);
+      if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')||insertErr.message?.toLowerCase().includes('unique')){toast('E-mail já cadastrado. Faça login.');}
+      else{toast('Erro ao salvar: '+(insertErr.message||'tente novamente'));}
+      btn.disabled=false;btn.textContent='Cadastrar meu espaço';return;
+    }
+    try{await Promise.all([db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_social',f1,{upsert:true}),db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_foto',f2,{upsert:true}),db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_end',f3,{upsert:true})]);}catch(e){console.warn('Upload:',e);}
+    const{error:errU}=await db.from('usuarios').insert({clinica_id:cl.id,nome:resp,email:em,senha_hash:btoa(s),role:'admin',cpf:mTipoPessoa==='PF'?d:null});
+    if(errU)console.warn('Usuario:',errU);
+    try{await db.from('config_clinica').insert({clinica_id:cl.id});}catch(_){}
+    localStorage.setItem('hope_user',JSON.stringify({nome:resp,email:em,clinica_id:cl.id,clinica_nome:n,role:'admin'}));
+    closeCadModal();
+    openSuccessModalEsp(resp.split(' ')[0],em,slug);
+  }catch(err){console.error(err);toast(err.message||'Erro inesperado. Veja o console (F12).');btn.disabled=false;btn.textContent='Cadastrar meu espaço';}
+}
+
+async function mCadastrarProfissional(){
+  const n=document.getElementById('mp_nome').value.trim(),em=document.getElementById('mp_email').value.trim(),s=document.getElementById('mp_senha').value,cons=document.getElementById('mp_conselho').value,reg=document.getElementById('mp_reg').value.trim(),cpf=document.getElementById('mp_cpf').value.trim(),f1=document.getElementById('mp_f1').files[0],f2=document.getElementById('mp_f2').files[0];
+  if(!n||!em||!s||!cons||!reg||!cpf){toast('Preencha todos os campos obrigatórios');return;}
+  if(s.length<8){toast('Senha mínimo 8 caracteres');return;}
+  if(!f1||!f2){toast('Envie os documentos obrigatórios');return;}
+  const btn=document.getElementById('mBtnPro');btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    await waitForSupabase();
+    const db=getSupabase();
+    const{data:p,error:insertErr}=await db.from('psicologas').insert({nome:n,email:em,cpf,crp:reg,tipo_sub:'avulso',status:'pendente_aprovacao',telefone:document.getElementById('mp_tel').value,clinica_id:null}).select().single();
+    if(insertErr){
+      if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')){toast('E-mail já cadastrado. Faça login.');}
+      else{toast('Erro: '+(insertErr.message||'tente novamente'));}
+      btn.disabled=false;btn.textContent='Criar minha conta';return;
+    }
+    try{await Promise.all([db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_foto',f1,{upsert:true}),db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_reg',f2,{upsert:true})]);}catch(_){}
+    localStorage.setItem('hope_psi_logada',JSON.stringify({id:p.id,nome:n,email:em,crp:reg,conselho:cons,status:'pendente_aprovacao'}));
+    closeCadModal();
+    openSuccessModal('pro',n.split(' ')[0],em);
+  }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Criar minha conta';}
+}
+</script>
+
+<!-- PROFISSIONAL MODAL -->
+<div class="cad-modal-ov" id="proModalOv">
+  <div class="cad-modal-box">
+    <div class="cad-modal-head">
+      <div class="cad-modal-title">Cadastro profissional</div>
+      <button class="cad-modal-close" onclick="closeProModal()">&#10005;</button>
+    </div>
+    <div style="padding:20px 24px 28px;">
+      <div class="sform-sub" style="margin-bottom:16px;">Acesse espaços clínicos verificados em todo o Brasil</div>
+      <div class="fg"><label>Nome completo</label><input type="text" id="mp_nome" placeholder="Nome e sobrenome"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>E-mail</label><input type="email" id="mp_email" placeholder="seu@email.com"/></div>
+        <div class="fg"><label>WhatsApp</label><input type="text" id="mp_tel" placeholder="(11) 99999-9999"/></div>
+      </div>
+      <div class="fg"><label>Senha</label><input type="password" id="mp_senha" placeholder="Mínimo 8 caracteres"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>Conselho profissional</label>
+          <select id="mp_conselho">
+            <option value="">Selecione</option>
+            <option>CRP — Psicologia</option><option>CRM — Medicina</option>
+            <option>CRN — Nutrição</option><option>CREFITO — Fisioterapia</option>
+            <option>CFFa — Fonoaudiologia</option><option>CRO — Odontologia</option>
+            <option>COREN — Enfermagem</option><option>CFF — Farmácia</option>
+            <option>Outro conselho</option>
+          </select>
+        </div>
+        <div class="fg"><label>Número de registro</label><input type="text" id="mp_reg" placeholder="Ex: 06/123456"/></div>
+      </div>
+      <div class="fg"><label>CPF</label><input type="text" id="mp_cpf" placeholder="000.000.000-00"/></div>
+      <div class="fdiv"></div>
+      <div class="up-sec">
+        <div class="up-label">Documento com foto (RG ou CNH)</div>
+        <div class="up-zone" id="mpuz1">
+          <input type="file" id="mp_f1" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('mp_f1','mpuz1','mpuzd1')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg></div>
+          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="mpuzd1"></div></div>
+        </div>
+      </div>
+      <div class="up-sec">
+        <div class="up-label">Comprovante de registro no conselho</div>
+        <div class="up-zone" id="mpuz2">
+          <input type="file" id="mp_f2" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('mp_f2','mpuz2','mpuzd2')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="up-text"><div class="up-main">Carteirinha, certidão ou comprovante</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="mpuzd2"></div></div>
+        </div>
+      </div>
+      <button class="btn-submit" id="mBtnPro" onclick="mCadastrarProfissional()">Criar minha conta</button>
+      <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeProModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('proModalOv').addEventListener('click',function(e){if(e.target===this)closeProModal();});
+
+async function mCadastrarProfissional(){
+  const n=document.getElementById('mp_nome').value.trim(),em=document.getElementById('mp_email').value.trim(),s=document.getElementById('mp_senha').value,cons=document.getElementById('mp_conselho').value,reg=document.getElementById('mp_reg').value.trim(),cpf=document.getElementById('mp_cpf').value.trim(),f1=document.getElementById('mp_f1').files[0],f2=document.getElementById('mp_f2').files[0];
+  if(!n||!em||!s||!cons||!reg||!cpf){toast('Preencha todos os campos obrigatórios');return;}
+  if(s.length<8){toast('Senha mínimo 8 caracteres');return;}
+  if(!f1||!f2){toast('Envie os documentos obrigatórios');return;}
+  const btn=document.getElementById('mBtnPro');btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    await waitForSupabase();
+    const db=getSupabase();
+    const{data:p,error:insertErr}=await db.from('psicologas').insert({nome:n,email:em,cpf,crp:reg,tipo_sub:'avulso',status:'pendente_aprovacao',telefone:document.getElementById('mp_tel').value,clinica_id:null}).select().single();
+    if(insertErr){
+      if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')){toast('E-mail já cadastrado. Faça login.');}
+      else{toast('Erro: '+(insertErr.message||'tente novamente'));}
+      btn.disabled=false;btn.textContent='Criar minha conta';return;
+    }
+    try{await Promise.all([db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_foto',f1,{upsert:true}),db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_reg',f2,{upsert:true})]);}catch(_){}
+    localStorage.setItem('hope_psi_logada',JSON.stringify({id:p.id,nome:n,email:em,crp:reg,conselho:cons,status:'pendente_aprovacao'}));
+    closeProModal();
+    openSuccessModal('pro',n.split(' ')[0],em);
+  }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Criar minha conta';}
+}
+</script>
+<script>
+// Carrega SDK Supabase dinamicamente e inicializa
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js';
+  s.onload = function(){
+    console.log('✅ Supabase SDK carregado!');
+    // Testa conexão
+    try {
+      var db = getSupabase();
+      db.from('clinicas').select('id').limit(1).then(function(r){
+        if(r.error) console.warn('Supabase erro:', r.error.message);
+        else console.log('✅ Banco conectado! Registros:', r.data);
+      });
+    } catch(e) { console.warn('Init erro:', e.message); }
+  };
+  s.onerror = function(){
+    console.error('❌ Falha ao carregar SDK Supabase - verifique internet');
+    var t = document.getElementById('toast');
+    if(t){ t.textContent = 'Sem internet - SDK não carregou'; t.classList.add('show'); }
+  };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>
