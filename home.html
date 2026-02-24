@@ -534,38 +534,73 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);-webkit-font-sm
 .btn-submit:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
 .flink{text-align:center;font-size:11px;color:rgba(255,255,255,.22);margin-top:9px;}
 .flink a{color:var(--gl);font-weight:600;cursor:pointer;}
-/* SALAS */
-.rooms-sec{padding:80px 52px;background:var(--w);}
-.rooms-inner{max-width:1200px;margin:0 auto;}
-.sec-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
-.sec-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--g);margin-bottom:5px;}
-.sec-title{font-family:var(--fh);font-size:clamp(22px,3vw,34px);font-weight:600;color:var(--ink);letter-spacing:-.3px;}
-.btn-refresh{padding:9px 20px;border:1.5px solid var(--bo);border-radius:6px;font-family:var(--fb);font-size:13px;font-weight:500;color:var(--ink);background:transparent;cursor:pointer;transition:all .2s;}
+/* SALAS — redesign premium */
+.rooms-sec{padding:60px 0;background:#f5f2ed;}
+.rooms-inner{max-width:1200px;margin:0 auto;padding:0 40px;}
+/* Header da seção */
+.sec-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;}
+.sec-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--g);margin-bottom:6px;}
+.sec-title{font-family:var(--fh);font-size:clamp(26px,3vw,40px);font-weight:500;color:var(--ink);letter-spacing:-.4px;line-height:1.1;}
+.sec-title em{font-style:italic;color:var(--g);}
+.sec-count{font-size:13px;color:var(--mu);margin-top:6px;}
+.btn-refresh{display:flex;align-items:center;gap:7px;padding:10px 18px;border:1.5px solid var(--bo);border-radius:8px;background:white;color:var(--ink);font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;}
 .btn-refresh:hover{border-color:var(--gl);color:var(--g);}
-.filters{display:flex;gap:10px;flex-wrap:wrap;padding:14px 18px;background:var(--bg);border:1px solid var(--bo);border-radius:8px;margin-bottom:22px;align-items:flex-end;}
-.fg2{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px;}
-.fg2 label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);}
-.fg2 select{padding:8px 11px;border:1.5px solid var(--bo);border-radius:6px;font-family:var(--fb);font-size:13px;color:var(--ink);background:white;outline:none;cursor:pointer;-webkit-appearance:none;}
-.fg2 select:focus{border-color:var(--gl);}
-.btn-buscar{padding:9px 22px;background:var(--g);color:white;border:none;border-radius:6px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;align-self:flex-end;}
-.btn-buscar:hover{background:#086649;}
-.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;}
-.room-card{background:white;border:1px solid var(--bo);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+/* Filtros — barra Airbnb style */
+.filters{background:white;border:1px solid var(--bo);border-radius:14px;padding:6px 6px 6px 20px;display:flex;align-items:center;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.fg2{flex:1;padding:8px 14px;cursor:pointer;border-right:1px solid var(--bo);border-radius:8px;transition:background .15s;}
+.fg2:last-of-type{border-right:none;}
+.fg2:hover{background:#f5f2ed;}
+.fg2 label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:3px;cursor:pointer;}
+.fg2 select{border:none;background:transparent;font-family:var(--fb);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;outline:none;width:100%;appearance:none;-webkit-appearance:none;}
+.btn-buscar{flex-shrink:0;padding:12px 26px;border-radius:10px;background:var(--g);color:white;border:none;font-family:var(--fb);font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.btn-buscar:hover{background:var(--gl);transform:translateY(-1px);}
+/* Tags rápidas */
+.filtros-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;}
+.ftag{padding:5px 14px;border-radius:20px;border:1.5px solid var(--bo);background:white;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;transition:all .15s;font-family:var(--fb);}
+.ftag:hover,.ftag.active{border-color:var(--g);color:var(--g);background:var(--gx);}
+/* Sort bar */
+.sort-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.sort-info{font-size:13px;color:var(--mu);}
+.sort-info strong{color:var(--ink);font-weight:700;}
+.sort-sel{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);font-weight:600;font-family:var(--fb);}
+.sort-sel select{border:1.5px solid var(--bo);border-radius:8px;padding:7px 12px;font-family:var(--fb);font-size:13px;background:white;cursor:pointer;outline:none;color:var(--ink);}
+/* Grid de cards */
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px;}
+/* Card */
+.room-card{background:white;border:1px solid var(--bo);border-radius:18px;overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;box-shadow:0 2px 12px rgba(0,0,0,.06);position:relative;}
 .room-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(0,0,0,.12);border-color:var(--gl);}
-.rc-img{height:200px;background:linear-gradient(135deg,var(--gx),#c8e8e2);position:relative;overflow:hidden;}
-.rc-esp{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--ink);}
-.rc-ver{position:absolute;top:10px;right:10px;background:var(--g);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:white;}
-.rc-body{padding:15px 17px;}
-.rc-clin{font-size:10px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
-.rc-name{font-family:var(--fh);font-size:16px;font-weight:600;color:var(--ink);margin-bottom:3px;line-height:1.3;}
-.rc-loc{font-size:12px;color:var(--mu);margin-bottom:9px;}
-.rc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px;}
-.rc-tag{background:var(--bg);border:1px solid var(--bo);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--mu);}
-.rc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--bo);}.rc-price-wrap{}.rc-loc{display:flex;align-items:center;gap:4px;}
-.rc-price{font-family:var(--fh);font-size:26px;font-weight:600;color:var(--ink);letter-spacing:-.5px;}
-.rc-price span{font-size:12px;color:var(--mu);font-family:var(--fb);font-weight:500;}
-.btn-view{padding:10px 20px;background:var(--g);color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+/* Foto */
+.rc-img{height:200px;background:linear-gradient(135deg,var(--gx),#c8e8e2);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.rc-img svg{opacity:.3;}
+.rc-img-txt{font-size:11px;color:var(--mu);font-weight:600;font-family:var(--fb);}
+.rc-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s;}
+.room-card:hover .rc-img img{transform:scale(1.05);}
+/* Badges */
+.rc-badges{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;}
+.rc-esp{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--ink);border:1px solid rgba(255,255,255,.5);}
+.rc-ver{background:var(--g);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:white;display:flex;align-items:center;gap:4px;}
+.rc-hot{position:absolute;bottom:12px;left:12px;padding:4px 10px;border-radius:20px;background:#ff6b35;color:white;font-size:11px;font-weight:700;animation:rc-pulse 2s infinite;}
+@keyframes rc-pulse{0%,100%{opacity:1;}50%{opacity:.7;}}
+/* Corpo */
+.rc-body{padding:18px 20px;}
+.rc-clin{font-size:10px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.rc-name{font-family:var(--fh);font-size:19px;font-weight:500;color:var(--ink);margin-bottom:8px;line-height:1.2;}
+.rc-loc{font-size:12px;color:var(--mu);margin-bottom:12px;display:flex;align-items:center;gap:4px;}
+.rc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.rc-tag{background:#f5f2ed;border:1px solid var(--bo);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--ink);}
+/* Footer — hierarquia corrigida */
+.rc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--bo);}
+.rc-price-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:1px;}
+.rc-price{font-family:var(--fh);font-size:26px;font-weight:600;color:var(--ink);letter-spacing:-.5px;line-height:1;}
+.rc-price span{font-family:var(--fb);font-size:12px;font-weight:500;color:var(--mu);letter-spacing:0;}
+.btn-view{padding:11px 20px;background:var(--g);color:white;border:none;border-radius:9px;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
 .btn-view:hover{background:var(--gl);transform:scale(1.05);}
+/* Prova social */
+.rc-social{padding:11px 20px;background:#f5f2ed;border-top:1px solid var(--bo);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mu);font-weight:500;}
+.rc-social strong{color:var(--ink);}
+.rc-avs{display:flex;}
+.rc-av{width:22px;height:22px;border-radius:50%;background:var(--gx);border:2px solid white;margin-left:-6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--g);}
+.rc-av:first-child{margin-left:0;}
 .loading-state{text-align:center;padding:52px;color:var(--mu);}
 .spinner{width:26px;height:26px;border:2.5px solid var(--bo);border-top-color:var(--gl);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -794,16 +829,40 @@ footer{background:#060f0c;padding:52px 52px 0;}
     <div class="sec-top">
       <div>
         <div class="sec-eyebrow">SublocaFacil.com.br</div>
-        <div class="sec-title">Espaços disponíveis</div>
+        <div class="sec-title">Espaços <em>disponíveis</em></div>
+        <div class="sec-count" id="secCount">Carregando espaços...</div>
       </div>
-      <button class="btn-refresh" onclick="loadRooms()">Atualizar listagem</button>
+      <button class="btn-refresh" onclick="loadRooms()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Atualizar listagem
+      </button>
     </div>
     <div class="filters">
       <div class="fg2"><label>Estado</label><select id="fEst" onchange="loadCities()"><option value="">Todos os estados</option><option value="SP">São Paulo</option><option value="RJ">Rio de Janeiro</option><option value="MG">Minas Gerais</option><option value="PR">Paraná</option><option value="RS">Rio Grande do Sul</option><option value="SC">Santa Catarina</option><option value="BA">Bahia</option><option value="DF">Distrito Federal</option></select></div>
       <div class="fg2"><label>Município</label><select id="fCid"><option value="">Todos os municípios</option></select></div>
       <div class="fg2"><label>Especialidade</label><select id="fEsp2"><option value="">Todas</option><option value="Psicologia">Psicologia</option><option value="Medicina">Medicina</option><option value="Nutrição">Nutrição</option><option value="Fisioterapia">Fisioterapia</option><option value="Odontologia">Odontologia</option><option value="Multiuso">Multiuso</option></select></div>
       <div class="fg2"><label>Valor máx. / sessão</label><select id="fVal"><option value="">Qualquer valor</option><option value="50">Até R$ 50</option><option value="100">Até R$ 100</option><option value="150">Até R$ 150</option></select></div>
-      <button class="btn-buscar" onclick="applyFilters()">Buscar</button>
+      <button class="btn-buscar" onclick="applyFilters()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Buscar
+      </button>
+    </div>
+    <div class="filtros-tags">
+      <button class="ftag active" onclick="filtrarTag(this,'')">Todos</button>
+      <button class="ftag" onclick="filtrarTag(this,'Psicologia')">Psicologia</button>
+      <button class="ftag" onclick="filtrarTag(this,'Medicina')">Medicina</button>
+      <button class="ftag" onclick="filtrarTag(this,'Fisioterapia')">Fisioterapia</button>
+      <button class="ftag" onclick="filtrarTag(this,'Nutrição')">Nutrição</button>
+      <button class="ftag" onclick="filtrarTag(this,'Multiuso')">Multiuso</button>
+    </div>
+    <div class="sort-bar">
+      <span class="sort-info"><strong id="totalCount">0</strong> espaços encontrados</span>
+      <div class="sort-sel">Ordenar por
+        <select onchange="sortRooms(this.value)">
+          <option value="rel">Relevância</option>
+          <option value="preco">Menor preço</option>
+        </select>
+      </div>
     </div>
     <div id="roomsGrid"><div class="loading-state"><div class="spinner"></div>Carregando espaços...</div></div>
   </div>
@@ -859,9 +918,84 @@ function switchTab(tab){['Esp','Pro'].forEach(k=>{document.getElementById('tab'+
 function switchTipo(t){tipoPessoa=t;document.getElementById('tipoPJ').classList.toggle('active',t==='PJ');document.getElementById('tipoPF').classList.toggle('active',t==='PF');document.getElementById('docLabel').textContent=t==='PJ'?'CNPJ':'CPF';document.getElementById('e_doc').placeholder=t==='PJ'?'00.000.000/0001-00':'000.000.000-00';document.getElementById('upLabel1').textContent=t==='PJ'?'Contrato social da empresa':'RG ou CNH do responsável';}
 function handleUpload(inputId,zoneId,doneId){const f=document.getElementById(inputId).files[0];if(!f)return;document.getElementById(zoneId).classList.add('done');document.getElementById(doneId).textContent=f.name;}
 function loadCities(){const e=document.getElementById('fEst').value;const s=document.getElementById('fCid');s.innerHTML='<option value="">Todos os municípios</option>';(CITIES[e]||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;s.appendChild(o);});}
-function applyFilters(){const e=document.getElementById('fEst').value;const c=document.getElementById('fCid').value;const esp=document.getElementById('fEsp2').value;const v=parseFloat(document.getElementById('fVal').value)||Infinity;let r=[...DEMOS];if(e)r=r.filter(s=>s.estado===e);if(c)r=r.filter(s=>s.cidade===c);if(esp)r=r.filter(s=>s.esp===esp);r=r.filter(s=>s.valor<=v);renderRooms(r);}
-function loadRooms(){renderRooms(DEMOS);}
-function renderRooms(list){if(!list.length){document.getElementById('roomsGrid').innerHTML='<div class="loading-state" style="opacity:.5">Nenhum espaço encontrado.</div>';return;}document.getElementById('roomsGrid').innerHTML='<div class="rooms-grid">'+list.map(s=>`<div class="room-card" onclick="window.location.href='sala-detalhe.html?id=${s.id}'"><div class="rc-img"><div class="rc-esp">${s.esp}</div><div class="rc-ver">✓ Verificado</div></div><div class="rc-body"><div class="rc-clin">${s.clinica}</div><div class="rc-name">${s.nome}</div><div class="rc-loc">${s.bairro} · ${s.cidade}, ${s.estado}</div><div class="rc-tags"><span class="rc-tag">🕐 ${s.hI} – ${s.hF}</span><span class="rc-tag">📅 ${s.dias}</span></div><div class="rc-foot"><div class="rc-price-wrap"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:1px">A partir de</div><div class="rc-price">R$ ${s.valor.toFixed(2)}<span> / sessão</span></div></div><button class="btn-view">Ver espaço →</button></div></div></div>`).join('')+'</div>';}
+let _currentList = [];
+
+function applyFilters(){
+  const e=document.getElementById('fEst').value;
+  const c=document.getElementById('fCid').value;
+  const esp=document.getElementById('fEsp2').value;
+  const v=parseFloat(document.getElementById('fVal').value)||Infinity;
+  let r=[...DEMOS];
+  if(e) r=r.filter(s=>s.estado===e);
+  if(c) r=r.filter(s=>s.cidade===c);
+  if(esp) r=r.filter(s=>s.esp===esp);
+  r=r.filter(s=>s.valor<=v);
+  // resetar tags
+  document.querySelectorAll('.ftag').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.ftag').classList.add('active');
+  renderRooms(r);
+}
+
+function filtrarTag(el, esp){
+  document.querySelectorAll('.ftag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const v=parseFloat(document.getElementById('fVal').value)||Infinity;
+  let r=[...DEMOS];
+  if(esp) r=r.filter(s=>s.esp===esp);
+  r=r.filter(s=>s.valor<=v);
+  renderRooms(r);
+}
+
+function sortRooms(val){
+  if(val==='preco') _currentList=[..._currentList].sort((a,b)=>a.valor-b.valor);
+  else _currentList=[...DEMOS];
+  renderRooms(_currentList, false);
+}
+
+function loadRooms(){ _currentList=[...DEMOS]; renderRooms(_currentList); }
+
+function renderRooms(list, updateCurrent=true){
+  if(updateCurrent) _currentList=list;
+  const el=document.getElementById('totalCount');
+  if(el) el.textContent=list.length;
+  const sc=document.getElementById('secCount');
+  if(sc) sc.textContent=list.length+' espaço'+(list.length!==1?'s':'')+' encontrado'+(list.length!==1?'s':'');
+  if(!list.length){
+    document.getElementById('roomsGrid').innerHTML='<div class="loading-state" style="opacity:.5">Nenhum espaço encontrado.</div>';
+    return;
+  }
+  const hotIds=['s1','s5'];
+  const socialMap={s1:['A','M','R'],s2:['C','L'],s3:['F','J','P','+'],s4:['B','K'],s5:['T','N','S'],s6:['G','V','H']};
+  const countMap={s1:12,s2:8,s3:20,s4:5,s5:15,s6:9};
+  const hotLabel={s1:'🔥 Alta demanda',s5:'⚡ Últimas vagas'};
+  document.getElementById('roomsGrid').innerHTML='<div class="rooms-grid">'+list.map(s=>{
+    const avs=(socialMap[s.id]||['A']).map(a=>`<div class="rc-av">${a}</div>`).join('');
+    const hot=hotIds.includes(s.id)?`<div class="rc-hot">${hotLabel[s.id]}</div>`:'';
+    const cnt=countMap[s.id]||3;
+    return `<div class="room-card" onclick="window.location.href='sala-detalhe.html?id=${s.id}'">
+      <div class="rc-img">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0a6e55" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span class="rc-img-txt">Foto do espaço</span>
+        <div class="rc-badges">
+          <span class="rc-esp">${s.esp}</span>
+          <span class="rc-ver"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Verificado</span>
+        </div>
+        ${hot}
+      </div>
+      <div class="rc-body">
+        <div class="rc-clin">${s.clinica}</div>
+        <div class="rc-name">${s.nome}</div>
+        <div class="rc-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${s.bairro} · ${s.cidade}, ${s.estado}</div>
+        <div class="rc-tags"><span class="rc-tag">🕐 ${s.hI} – ${s.hF}</span><span class="rc-tag">📅 ${s.dias}</span></div>
+        <div class="rc-foot">
+          <div><div class="rc-price-label">A partir de</div><div class="rc-price">R$ ${Math.floor(s.valor)}<span>,${(s.valor%1*100).toFixed(0).padStart(2,'0')} / sessão</span></div></div>
+          <button class="btn-view" onclick="event.stopPropagation();window.location.href='sala-detalhe.html?id=${s.id}'">Ver espaço →</button>
+        </div>
+      </div>
+      <div class="rc-social"><div class="rc-avs">${avs}</div><span><strong>${cnt} profissionais</strong> já locaram</span></div>
+    </div>`;
+  }).join('')+'</div>';
+}
 
 async function cadastrarEspaco(){
   const n=document.getElementById('e_nome').value.trim(),resp=document.getElementById('e_resp').value.trim(),em=document.getElementById('e_email').value.trim(),s=document.getElementById('e_senha').value,d=document.getElementById('e_doc').value.trim(),f1=document.getElementById('e_f1').files[0],f2=document.getElementById('e_f2').files[0],f3=document.getElementById('e_f3').files[0];
