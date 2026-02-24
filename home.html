@@ -195,6 +195,106 @@ footer{background:#060f0c;padding:52px 52px 0;}
 .fcol a{display:block;font-size:13px;color:rgba(255,255,255,.38);text-decoration:none;margin-bottom:7px;cursor:pointer;transition:color .2s;}
 .fcol a:hover{color:rgba(255,255,255,.8);}
 .fbot{max-width:1100px;margin:0 auto;padding:20px 0;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.18);}
+/* HERO CTA BUTTONS */
+.hero-cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;}
+.cta-hero-main{padding:13px 28px;background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;letter-spacing:.2px;text-transform:uppercase;}
+.cta-hero-main:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(13,158,133,.35);}
+.cta-hero-outline{padding:13px 24px;background:transparent;color:rgba(255,255,255,.7);border:1.5px solid rgba(255,255,255,.18);border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:500;cursor:pointer;transition:all .25s;}
+.cta-hero-outline:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.35);color:white;}
+
+/* VIDEO PLAYER */
+.video-hero{position:relative;z-index:1;display:flex;flex-direction:column;gap:14px;}
+.video-wrapper{
+  position:relative;
+  border-radius:18px;overflow:hidden;
+  background:#080f0d;
+  border:1px solid rgba(13,158,133,.2);
+  box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.06);
+  aspect-ratio:16/9;
+}
+.video-wrapper::before{content:'';position:absolute;top:-1px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(13,158,133,.5),transparent);pointer-events:none;z-index:3;}
+.video-wrapper video{width:100%;height:100%;object-fit:cover;display:block;}
+.video-badge{
+  position:absolute;top:14px;left:14px;z-index:4;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:5px;padding:4px 11px;
+  font-size:10px;font-weight:600;color:rgba(255,255,255,.7);
+  letter-spacing:1px;text-transform:uppercase;
+}
+/* VIDEO OVERLAY */
+.video-overlay{
+  position:absolute;inset:0;z-index:2;
+  background:linear-gradient(155deg,rgba(5,14,11,.9) 0%,rgba(11,28,24,.85) 60%,rgba(10,46,34,.8) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;transition:opacity .4s;
+  padding:32px;text-align:center;
+}
+.video-overlay.hidden{opacity:0;pointer-events:none;}
+.vo-logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:24px;font-weight:600;color:white;margin-bottom:4px;box-shadow:0 8px 24px rgba(13,158,133,.3);}
+.vo-title{font-family:var(--fh);font-size:clamp(18px,2.5vw,26px);font-weight:600;color:white;letter-spacing:-.3px;}
+.vo-sub{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:8px;}
+.vo-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 28px;
+  background:rgba(13,158,133,.2);
+  border:1.5px solid rgba(13,158,133,.4);
+  border-radius:40px;color:white;
+  font-family:var(--fb);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .25s;
+  backdrop-filter:blur(8px);
+}
+.vo-btn:hover{background:rgba(13,158,133,.35);border-color:var(--gl);transform:scale(1.04);}
+.vo-btn svg{flex-shrink:0;}
+/* PLAY BTN (when video is playing) */
+.video-play-btn{
+  position:absolute;bottom:14px;right:14px;z-index:4;
+  display:none;align-items:center;gap:8px;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.15);border-radius:24px;
+  padding:7px 14px;cursor:pointer;transition:all .2s;
+}
+.video-play-btn.visible{display:flex;}
+.video-play-btn:hover{background:rgba(13,158,133,.25);border-color:var(--gl);}
+.vpb-inner{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;}
+#playLabel{font-size:11px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.3px;}
+/* VIDEO CAPTION */
+.video-caption{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.3);padding:0 4px;letter-spacing:.2px;}
+.vc-dot{width:6px;height:6px;border-radius:50%;background:var(--gl);flex-shrink:0;}
+
+/* ── CADASTRO MODAL ── */
+.cad-modal-ov{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(5,12,10,.75);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.cad-modal-ov.open{opacity:1;pointer-events:all;}
+.cad-modal-box{
+  background:rgba(10,22,18,.92);
+  border:1px solid rgba(13,158,133,.2);
+  border-radius:20px;
+  width:100%;max-width:580px;max-height:92vh;
+  overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;
+  box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
+  transform:translateY(20px);transition:transform .3s;
+  position:relative;
+}
+.cad-modal-box::before{content:'';position:absolute;top:-1px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(13,158,133,.5),transparent);pointer-events:none;border-radius:20px;}
+.cad-modal-ov.open .cad-modal-box{transform:translateY(0);}
+.cad-modal-box::-webkit-scrollbar{width:3px;}
+.cad-modal-box::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);}
+.cad-modal-head{
+  padding:20px 24px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;background:rgba(10,22,18,.95);
+  backdrop-filter:blur(12px);z-index:2;padding-bottom:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.cad-modal-title{font-family:var(--fh);font-size:22px;font-weight:600;color:white;letter-spacing:-.2px;}
+.cad-modal-close{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:transparent;cursor:pointer;color:rgba(255,255,255,.4);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.cad-modal-close:hover{background:rgba(255,255,255,.08);color:white;}
+
 @media(max-width:960px){
   .nav{padding:0 20px;}
   .hero{grid-template-columns:1fr;padding:82px 20px 52px;text-align:center;}
@@ -227,7 +327,7 @@ footer{background:#060f0c;padding:52px 52px 0;}
   <div class="hero-glow"></div>
   <div class="hero-grid"></div>
   <div class="hero-left">
-    <div class="hero-kicker"><span class="kicker-line"></span>Tenha na sua mão a gestão completa da sua sala</div>
+    <div class="hero-kicker"><span class="kicker-line"></span>Tenha na sua mão a gestão completa da sua sala<span class="kicker-line"></span></div>
     <h1>Transforme espaços<br>ociosos em<br><em>faturamento.</em></h1>
     <div class="hero-sub">Do agendamento ao faturamento, tudo em um só lugar.</div>
     <p class="hero-desc">Conectamos clínicas, espaços terapêuticos e coworkings de saúde que desejam aumentar a receita com profissionais que precisam de salas prontas para atender.</p>
@@ -236,123 +336,46 @@ footer{background:#060f0c;padding:52px 52px 0;}
       <div><div class="hs-n">1.800+</div><div class="hs-l">Profissionais ativos</div></div>
       <div><div class="hs-n">15</div><div class="hs-l">Cidades atendidas</div></div>
     </div>
-  </div>
-
-  <div class="signup-card" id="signupCard">
-    <div class="stabs">
-      <div class="stab active" id="tabEsp" onclick="switchTab('esp')">
-        <div class="stab-title">Tenho um espaço</div>
-        <div class="stab-desc">Quero anunciar e sublocar</div>
-      </div>
-      <div class="stab" id="tabPro" onclick="switchTab('pro')">
-        <div class="stab-title">Sou profissional</div>
-        <div class="stab-desc">Quero sublocar um espaço</div>
-      </div>
-    </div>
-
-    <div class="sform active" id="formEsp">
-      <div class="sform-title">Cadastrar meu espaço</div>
-      <div class="sform-sub">Preencha os dados para anunciar suas salas</div>
-      <div class="type-toggle">
-        <div class="tt-btn active" id="tipoPJ" onclick="switchTipo('PJ')">
-          <div class="tt-title">Pessoa Jurídica</div>
-          <div class="tt-sub">CNPJ da empresa</div>
-        </div>
-        <div class="tt-btn" id="tipoPF" onclick="switchTipo('PF')">
-          <div class="tt-title">Pessoa Física</div>
-          <div class="tt-sub">CPF do responsável</div>
-        </div>
-      </div>
-      <div class="fg"><label>Nome do espaço / clínica</label><input type="text" id="e_nome" placeholder="Ex: Clínica Bem Estar"/></div>
-      <div class="fg-row">
-        <div class="fg"><label>Responsável</label><input type="text" id="e_resp" placeholder="Nome completo"/></div>
-        <div class="fg"><label>WhatsApp</label><input type="text" id="e_tel" placeholder="(11) 99999-9999"/></div>
-      </div>
-      <div class="fg"><label>E-mail</label><input type="email" id="e_email" placeholder="contato@espaco.com"/></div>
-      <div class="fg-row">
-        <div class="fg"><label>Senha</label><input type="password" id="e_senha" placeholder="Mínimo 8 caracteres"/></div>
-        <div class="fg"><label id="docLabel">CNPJ</label><input type="text" id="e_doc" placeholder="00.000.000/0001-00"/></div>
-      </div>
-      <div class="fdiv"></div>
-      <div class="up-sec">
-        <div class="up-label" id="upLabel1">Contrato social (PJ) ou RG/CNH (PF)</div>
-        <div class="up-zone" id="uz1">
-          <input type="file" id="e_f1" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('e_f1','uz1','uzd1')"/>
-          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="uzd1"></div></div>
-        </div>
-      </div>
-      <div class="up-sec">
-        <div class="up-label">Documento com foto do responsável (RG ou CNH)</div>
-        <div class="up-zone" id="uz2">
-          <input type="file" id="e_f2" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('e_f2','uz2','uzd2')"/>
-          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg></div>
-          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="uzd2"></div></div>
-        </div>
-      </div>
-      <div class="up-sec">
-        <div class="up-label">Comprovante de endereço do espaço</div>
-        <div class="up-zone" id="uz3">
-          <input type="file" id="e_f3" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('e_f3','uz3','uzd3')"/>
-          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-          <div class="up-text"><div class="up-main">Conta de luz, água ou IPTU</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="uzd3"></div></div>
-        </div>
-      </div>
-      <button class="btn-submit" id="btnEsp" onclick="cadastrarEspaco()">Cadastrar meu espaço</button>
-      <div class="flink">Já tem conta? <a onclick="window.location.href='index.html#loginSec'">Acessar painel</a></div>
-    </div>
-
-    <div class="sform" id="formPro">
-      <div class="sform-title">Cadastro profissional</div>
-      <div class="sform-sub">Acesse espaços clínicos verificados em todo o Brasil</div>
-      <div class="fg"><label>Nome completo</label><input type="text" id="p_nome" placeholder="Nome e sobrenome"/></div>
-      <div class="fg-row">
-        <div class="fg"><label>E-mail</label><input type="email" id="p_email" placeholder="seu@email.com"/></div>
-        <div class="fg"><label>WhatsApp</label><input type="text" id="p_tel" placeholder="(11) 99999-9999"/></div>
-      </div>
-      <div class="fg"><label>Senha</label><input type="password" id="p_senha" placeholder="Mínimo 8 caracteres"/></div>
-      <div class="fg-row">
-        <div class="fg">
-          <label>Conselho profissional</label>
-          <select id="p_conselho">
-            <option value="">Selecione</option>
-            <option value="CRP">CRP — Psicologia</option>
-            <option value="CRM">CRM — Medicina</option>
-            <option value="CRN">CRN — Nutrição</option>
-            <option value="CREFITO">CREFITO — Fisioterapia</option>
-            <option value="CFFa">CFFa — Fonoaudiologia</option>
-            <option value="CRO">CRO — Odontologia</option>
-            <option value="COREN">COREN — Enfermagem</option>
-            <option value="CFF">CFF — Farmácia</option>
-            <option value="CFMV">CFMV — Med. Veterinária</option>
-            <option value="outro">Outro conselho</option>
-          </select>
-        </div>
-        <div class="fg"><label>Número de registro</label><input type="text" id="p_reg" placeholder="Ex: 06/123456"/></div>
-      </div>
-      <div class="fg"><label>CPF</label><input type="text" id="p_cpf" placeholder="000.000.000-00"/></div>
-      <div class="fdiv"></div>
-      <div class="up-sec">
-        <div class="up-label">Documento com foto (RG ou CNH)</div>
-        <div class="up-zone" id="puz1">
-          <input type="file" id="p_f1" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('p_f1','puz1','puzd1')"/>
-          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg></div>
-          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="puzd1"></div></div>
-        </div>
-      </div>
-      <div class="up-sec">
-        <div class="up-label">Comprovante de registro no conselho</div>
-        <div class="up-zone" id="puz2">
-          <input type="file" id="p_f2" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('p_f2','puz2','puzd2')"/>
-          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-          <div class="up-text"><div class="up-main">Carteirinha, certidão ou comprovante</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="puzd2"></div></div>
-        </div>
-      </div>
-      <button class="btn-submit" id="btnPro" onclick="cadastrarProfissional()">Criar minha conta</button>
-      <div class="flink">Já tem conta? <a onclick="window.location.href='index.html#loginSec'">Acessar painel</a></div>
+    <div class="hero-cta-row">
+      <button class="cta-hero-main" onclick="openCadastroModal('esp')">Cadastrar meu espaço</button>
+      <button class="cta-hero-outline" onclick="openCadastroModal('pro')">Sou profissional</button>
     </div>
   </div>
-</section>
+
+  <!-- VIDEO PLAYER -->
+  <div class="video-hero">
+    <div class="video-wrapper">
+      <div class="video-badge">SublocaFacil.com.br</div>
+      <div class="video-play-btn" id="videoPlayBtn" onclick="toggleVideo()">
+        <div class="vpb-inner">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="white" width="28" height="28"><polygon points="5,3 19,12 5,21"/></svg>
+          <svg id="pauseIcon" viewBox="0 0 24 24" fill="white" width="28" height="28" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </div>
+        <span id="playLabel">Assista ao vídeo</span>
+      </div>
+      <video id="heroVideo" loop playsinline preload="metadata"
+        poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450'%3E%3Crect fill='%230b1c18' width='800' height='450'/%3E%3C/svg%3E">
+        <!-- Quando tiver o vídeo, coloque a URL aqui: -->
+        <!-- <source src="video-institucional.mp4" type="video/mp4"> -->
+        <!-- Ou YouTube embed abaixo via iframe -->
+      </video>
+      <!-- YouTube embed (ativar quando tiver o link) -->
+      <iframe id="ytFrame" style="display:none;position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:16px;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+      <div class="video-overlay" id="videoOverlay">
+        <div class="vo-logo">S</div>
+        <div class="vo-title">SublocaFacil.com.br</div>
+        <div class="vo-sub">Gestão completa de sublocação clínica</div>
+        <button class="vo-btn" onclick="toggleVideo()">
+          <svg viewBox="0 0 24 24" fill="white" width="22" height="22"><polygon points="5,3 19,12 5,21"/></svg>
+          Assistir apresentação
+        </button>
+      </div>
+    </div>
+    <div class="video-caption">
+      <div class="vc-dot"></div>
+      Do agendamento ao faturamento — uma plataforma, resultado real
+    </div>
+  </div></section>
 
 <section class="rooms-sec" id="salas">
   <div class="rooms-inner">
@@ -510,6 +533,232 @@ function openSuccessModal(tipo,nome,email){
 function closeModal(){document.getElementById('modalOv').classList.remove('open');}
 function footerLogin(){const e=document.getElementById('fEmail').value.trim(),s=document.getElementById('fSenha').value;if(!e||!s){toast('Preencha e-mail e senha');return;}window.location.href='painel-psi.html';}
 document.addEventListener('DOMContentLoaded',loadRooms);
+</script>
+<!-- CADASTRO MODAL -->
+<div class="cad-modal-ov" id="cadModalOv">
+  <div class="cad-modal-box" id="cadModalBox">
+    <div class="cad-modal-head">
+      <div class="cad-modal-title" id="cadModalTitle">Cadastrar meu espaço</div>
+      <button class="cad-modal-close" onclick="closeCadModal()">&#10005;</button>
+    </div>
+    <!-- TABS -->
+    <div class="stabs" style="margin:0 24px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.08);margin-top:16px;">
+      <div class="stab active" id="mTabEsp" onclick="switchCadTab('esp')">
+        <div class="stab-title">Tenho um espaço</div>
+        <div class="stab-desc">Quero anunciar e sublocar</div>
+      </div>
+      <div class="stab" id="mTabPro" onclick="switchCadTab('pro')">
+        <div class="stab-title">Sou profissional</div>
+        <div class="stab-desc">Quero sublocar um espaço</div>
+      </div>
+    </div>
+
+    <!-- FORM ESPAÇO -->
+    <div class="sform active" id="mFormEsp" style="padding:20px 24px 28px;">
+      <div class="sform-sub" style="margin-bottom:16px;">Preencha os dados para anunciar suas salas na plataforma</div>
+      <div class="type-toggle">
+        <div class="tt-btn active" id="mTipoPJ" onclick="switchMTipo('PJ')"><div class="tt-title">Pessoa Jurídica</div><div class="tt-sub">CNPJ da empresa</div></div>
+        <div class="tt-btn" id="mTipoPF" onclick="switchMTipo('PF')"><div class="tt-title">Pessoa Física</div><div class="tt-sub">CPF do responsável</div></div>
+      </div>
+      <div class="fg"><label>Nome do espaço / clínica</label><input type="text" id="me_nome" placeholder="Ex: Clínica Bem Estar"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>Responsável</label><input type="text" id="me_resp" placeholder="Nome completo"/></div>
+        <div class="fg"><label>WhatsApp</label><input type="text" id="me_tel" placeholder="(11) 99999-9999"/></div>
+      </div>
+      <div class="fg"><label>E-mail</label><input type="email" id="me_email" placeholder="contato@espaco.com"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>Senha</label><input type="password" id="me_senha" placeholder="Mínimo 8 caracteres"/></div>
+        <div class="fg"><label id="mDocLabel">CNPJ</label><input type="text" id="me_doc" placeholder="00.000.000/0001-00"/></div>
+      </div>
+      <div class="fdiv"></div>
+      <div class="up-sec">
+        <div class="up-label" id="mUpLabel1">Contrato social (PJ) ou RG/CNH (PF)</div>
+        <div class="up-zone" id="muz1">
+          <input type="file" id="me_f1" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('me_f1','muz1','muzd1')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="muzd1"></div></div>
+        </div>
+      </div>
+      <div class="up-sec">
+        <div class="up-label">Documento com foto do responsável (RG ou CNH)</div>
+        <div class="up-zone" id="muz2">
+          <input type="file" id="me_f2" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('me_f2','muz2','muzd2')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg></div>
+          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="muzd2"></div></div>
+        </div>
+      </div>
+      <div class="up-sec">
+        <div class="up-label">Comprovante de endereço do espaço</div>
+        <div class="up-zone" id="muz3">
+          <input type="file" id="me_f3" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('me_f3','muz3','muzd3')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="up-text"><div class="up-main">Conta de luz, água ou IPTU</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="muzd3"></div></div>
+        </div>
+      </div>
+      <button class="btn-submit" id="mBtnEsp" onclick="mCadastrarEspaco()">Cadastrar meu espaço</button>
+      <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeCadModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
+    </div>
+
+    <!-- FORM PROFISSIONAL -->
+    <div class="sform" id="mFormPro" style="padding:20px 24px 28px;">
+      <div class="sform-sub" style="margin-bottom:16px;">Acesse espaços clínicos verificados em todo o Brasil</div>
+      <div class="fg"><label>Nome completo</label><input type="text" id="mp_nome" placeholder="Nome e sobrenome"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>E-mail</label><input type="email" id="mp_email" placeholder="seu@email.com"/></div>
+        <div class="fg"><label>WhatsApp</label><input type="text" id="mp_tel" placeholder="(11) 99999-9999"/></div>
+      </div>
+      <div class="fg"><label>Senha</label><input type="password" id="mp_senha" placeholder="Mínimo 8 caracteres"/></div>
+      <div class="fg-row">
+        <div class="fg"><label>Conselho profissional</label>
+          <select id="mp_conselho">
+            <option value="">Selecione</option>
+            <option>CRP — Psicologia</option><option>CRM — Medicina</option>
+            <option>CRN — Nutrição</option><option>CREFITO — Fisioterapia</option>
+            <option>CFFa — Fonoaudiologia</option><option>CRO — Odontologia</option>
+            <option>COREN — Enfermagem</option><option>CFF — Farmácia</option>
+            <option>Outro conselho</option>
+          </select>
+        </div>
+        <div class="fg"><label>Número de registro</label><input type="text" id="mp_reg" placeholder="Ex: 06/123456"/></div>
+      </div>
+      <div class="fg"><label>CPF</label><input type="text" id="mp_cpf" placeholder="000.000.000-00"/></div>
+      <div class="fdiv"></div>
+      <div class="up-sec">
+        <div class="up-label">Documento com foto (RG ou CNH)</div>
+        <div class="up-zone" id="mpuz1">
+          <input type="file" id="mp_f1" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('mp_f1','mpuz1','mpuzd1')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg></div>
+          <div class="up-text"><div class="up-main">Clique para selecionar ou arraste</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="mpuzd1"></div></div>
+        </div>
+      </div>
+      <div class="up-sec">
+        <div class="up-label">Comprovante de registro no conselho</div>
+        <div class="up-zone" id="mpuz2">
+          <input type="file" id="mp_f2" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload('mp_f2','mpuz2','mpuzd2')"/>
+          <div class="up-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="up-text"><div class="up-main">Carteirinha, certidão ou comprovante</div><div class="up-sub">PDF, JPG ou PNG — máx. 10 MB</div><div class="up-done" id="mpuzd2"></div></div>
+        </div>
+      </div>
+      <button class="btn-submit" id="mBtnPro" onclick="mCadastrarProfissional()">Criar minha conta</button>
+      <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeCadModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── VIDEO ──
+let videoPlaying = false;
+function toggleVideo(){
+  const vid = document.getElementById('heroVideo');
+  const overlay = document.getElementById('videoOverlay');
+  const playBtn = document.getElementById('videoPlayBtn');
+  const playIcon = document.getElementById('playIcon');
+  const pauseIcon = document.getElementById('pauseIcon');
+  const playLabel = document.getElementById('playLabel');
+  if(!videoPlaying){
+    overlay.classList.add('hidden');
+    playBtn.classList.add('visible');
+    vid.play().catch(()=>{});
+    playIcon.style.display='none';
+    pauseIcon.style.display='block';
+    playLabel.textContent='Pausar';
+    videoPlaying=true;
+  } else {
+    vid.pause();
+    overlay.classList.remove('hidden');
+    playBtn.classList.remove('visible');
+    playIcon.style.display='block';
+    pauseIcon.style.display='none';
+    playLabel.textContent='Assistir vídeo';
+    videoPlaying=false;
+  }
+}
+// Quando tiver o link do YouTube, chame: setYouTube('VIDEOID')
+function setYouTube(id){
+  const iframe = document.getElementById('ytFrame');
+  const vid = document.getElementById('heroVideo');
+  vid.style.display='none';
+  iframe.style.display='block';
+  iframe.src='https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0&modestbranding=1';
+  document.getElementById('videoOverlay').classList.add('hidden');
+  document.getElementById('videoPlayBtn').classList.add('visible');
+}
+
+// ── MODAL CADASTRO ──
+let mTipoPessoa='PJ';
+function openCadastroModal(tipo){
+  document.getElementById('cadModalOv').classList.add('open');
+  document.body.style.overflow='hidden';
+  switchCadTab(tipo);
+}
+function closeCadModal(){
+  document.getElementById('cadModalOv').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.getElementById('cadModalOv').addEventListener('click',function(e){
+  if(e.target===this) closeCadModal();
+});
+function switchCadTab(tab){
+  ['Esp','Pro'].forEach(k=>{
+    document.getElementById('mTab'+k).classList.remove('active');
+    document.getElementById('mForm'+k).classList.remove('active');
+  });
+  const k=tab==='esp'?'Esp':'Pro';
+  document.getElementById('mTab'+k).classList.add('active');
+  document.getElementById('mForm'+k).classList.add('active');
+  document.getElementById('cadModalTitle').textContent=tab==='esp'?'Cadastrar meu espaço':'Cadastro profissional';
+}
+function switchMTipo(t){
+  mTipoPessoa=t;
+  document.getElementById('mTipoPJ').classList.toggle('active',t==='PJ');
+  document.getElementById('mTipoPF').classList.toggle('active',t==='PF');
+  document.getElementById('mDocLabel').textContent=t==='PJ'?'CNPJ':'CPF';
+  document.getElementById('me_doc').placeholder=t==='PJ'?'00.000.000/0001-00':'000.000.000-00';
+  document.getElementById('mUpLabel1').textContent=t==='PJ'?'Contrato social da empresa':'RG ou CNH do responsável';
+}
+
+async function mCadastrarEspaco(){
+  const n=document.getElementById('me_nome').value.trim(),resp=document.getElementById('me_resp').value.trim(),em=document.getElementById('me_email').value.trim(),s=document.getElementById('me_senha').value,d=document.getElementById('me_doc').value.trim(),f1=document.getElementById('me_f1').files[0],f2=document.getElementById('me_f2').files[0],f3=document.getElementById('me_f3').files[0];
+  if(!n||!resp||!em||!s||!d){toast('Preencha todos os campos obrigatórios');return;}
+  if(s.length<8){toast('Senha mínimo 8 caracteres');return;}
+  if(!f1||!f2||!f3){toast('Envie todos os documentos obrigatórios');return;}
+  const btn=document.getElementById('mBtnEsp');btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    const db=getSupabase();
+    const{data:cl,error:insertErr}=await db.from('clinicas').insert({nome:n,proprietaria:resp,email:em,plano:'profissional',status:'pendente_aprovacao',whatsapp:document.getElementById('me_tel').value,cnpj:mTipoPessoa==='PJ'?d:null,cpf:mTipoPessoa==='PF'?d:null}).select().single();
+    if(insertErr){
+      if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')||insertErr.message?.toLowerCase().includes('unique')){toast('E-mail já cadastrado. Faça login.');}
+      else{toast('Erro: '+(insertErr.message||'tente novamente'));}
+      btn.disabled=false;btn.textContent='Cadastrar meu espaço';return;
+    }
+    try{await Promise.all([db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_social',f1,{upsert:true}),db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_foto',f2,{upsert:true}),db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_end',f3,{upsert:true})]);}catch(_){}
+    await db.from('usuarios').insert({clinica_id:cl.id,nome:resp,email:em,senha_hash:btoa(s),role:'admin'});
+    try{await db.from('config_clinica').insert({clinica_id:cl.id});}catch(_){}
+    closeCadModal();
+    openSuccessModal('esp',resp.split(' ')[0],em);
+  }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Cadastrar meu espaço';}
+}
+
+async function mCadastrarProfissional(){
+  const n=document.getElementById('mp_nome').value.trim(),em=document.getElementById('mp_email').value.trim(),s=document.getElementById('mp_senha').value,cons=document.getElementById('mp_conselho').value,reg=document.getElementById('mp_reg').value.trim(),cpf=document.getElementById('mp_cpf').value.trim(),f1=document.getElementById('mp_f1').files[0],f2=document.getElementById('mp_f2').files[0];
+  if(!n||!em||!s||!cons||!reg||!cpf){toast('Preencha todos os campos obrigatórios');return;}
+  if(s.length<8){toast('Senha mínimo 8 caracteres');return;}
+  if(!f1||!f2){toast('Envie os documentos obrigatórios');return;}
+  const btn=document.getElementById('mBtnPro');btn.disabled=true;btn.textContent='Enviando...';
+  try{
+    const db=getSupabase();
+    const{data:p,error:insertErr}=await db.from('psicologas').insert({nome:n,email:em,cpf,crp:reg,tipo_sub:'avulso',status:'pendente_aprovacao',telefone:document.getElementById('mp_tel').value,clinica_id:null}).select().single();
+    if(insertErr){
+      if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')){toast('E-mail já cadastrado. Faça login.');}
+      else{toast('Erro: '+(insertErr.message||'tente novamente'));}
+      btn.disabled=false;btn.textContent='Criar minha conta';return;
+    }
+    try{await Promise.all([db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_foto',f1,{upsert:true}),db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_reg',f2,{upsert:true})]);}catch(_){}
+    localStorage.setItem('hope_psi_logada',JSON.stringify({id:p.id,nome:n,email:em,crp:reg,conselho:cons,status:'pendente_aprovacao'}));
+    closeCadModal();
+    openSuccessModal('pro',n.split(' ')[0],em);
+  }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Criar minha conta';}
+}
 </script>
 </body>
 </html>
