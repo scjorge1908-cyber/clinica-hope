@@ -859,12 +859,14 @@ async function cadastrarEspaco(){
       }
       btn.disabled=false;btn.textContent='Cadastrar meu espaço';return;
     }
-    // Upload documentos em paralelo
-    await Promise.all([
-      db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_social',f1,{upsert:true}),
-      db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_foto',f2,{upsert:true}),
-      db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_end',f3,{upsert:true}),
-    ]);
+    // Upload documentos (não bloqueia cadastro se bucket ainda não existe)
+    try{
+      await Promise.all([
+        db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_social',f1,{upsert:true}),
+        db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_foto',f2,{upsert:true}),
+        db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_end',f3,{upsert:true}),
+      ]);
+    }catch(uploadErr){console.warn('Upload docs (criar bucket "documentos" no Supabase):',uploadErr);}
     await db.from('usuarios').insert({clinica_id:cl.id,nome:resp,email:em,senha_hash:btoa(s),role:'admin'});
     try{await db.from('config_clinica').insert({clinica_id:cl.id});}catch(_){}
     openSuccessModal('esp',resp.split(' ')[0],em);
@@ -896,10 +898,12 @@ async function cadastrarProfissional(){
       }
       btn.disabled=false;btn.textContent='Criar minha conta';return;
     }
-    await Promise.all([
-      db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_foto',f1,{upsert:true}),
-      db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_reg',f2,{upsert:true}),
-    ]);
+    try{
+      await Promise.all([
+        db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_foto',f1,{upsert:true}),
+        db.storage.from('documentos').upload('profissionais/'+p.id+'/doc_reg',f2,{upsert:true}),
+      ]);
+    }catch(uploadErr){console.warn('Upload docs (criar bucket "documentos" no Supabase):',uploadErr);}
     localStorage.setItem('hope_psi_logada',JSON.stringify({id:p.id,nome:n,email:em,crp:reg,conselho:cons,status:'pendente_aprovacao'}));
     openSuccessModal('pro',n.split(' ')[0],em);
   }catch(err){
