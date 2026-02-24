@@ -875,7 +875,7 @@ async function cadastrarEspaco(){
     const{data:cl,error:insertErr}=await db.from('clinicas').insert({
       nome:n,proprietaria:resp,email:em,
       plano:'profissional',status:'pendente_aprovacao',
-      whatsapp:document.getElementById('e_tel').value,
+      WhatsApp:document.getElementById('e_tel').value.trim()||null,
       cnpj:tipoPessoa==='PJ'?d:null,cpf:tipoPessoa==='PF'?d:null
     }).select().single();
     if(insertErr){
@@ -1174,31 +1174,32 @@ async function mCadastrarEspaco(){
   if(!f1||!f2||!f3){toast('Envie todos os documentos obrigatórios');return;}
   const btn=document.getElementById('mBtnEsp');btn.disabled=true;btn.textContent='Enviando...';
   try{
+    await waitForSupabase();
     const db=getSupabase();
-    const razao=document.getElementById('me_razao').value.trim();
     const rawSlug=document.getElementById('me_slug').value.trim();
     const slug=rawSlug||n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-    const{data:cl,error:insertErr}=await db.from('clinicas').insert({
-      nome:n,
-      razao_social:razao||n,
-      slug:slug,
-      proprietaria:resp,email:em,
+    const payload={
+      nome:n,proprietaria:resp,email:em,
       plano:'profissional',status:'pendente_aprovacao',
-      whatsapp:document.getElementById('me_tel').value,
+      WhatsApp:document.getElementById('me_tel').value.trim()||null,
       cnpj:mTipoPessoa==='PJ'?d:null,
       cpf:mTipoPessoa==='PF'?d:null
-    }).select().single();
+    };
+    const{data:cl,error:insertErr}=await db.from('clinicas').insert(payload).select().single();
     if(insertErr){
+      console.error('Erro clinicas:',insertErr);
       if(insertErr.code==='23505'||insertErr.message?.toLowerCase().includes('duplicate')||insertErr.message?.toLowerCase().includes('unique')){toast('E-mail já cadastrado. Faça login.');}
-      else{toast('Erro: '+(insertErr.message||'tente novamente'));}
+      else{toast('Erro ao salvar: '+(insertErr.message||'tente novamente'));}
       btn.disabled=false;btn.textContent='Cadastrar meu espaço';return;
     }
-    try{await Promise.all([db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_social',f1,{upsert:true}),db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_foto',f2,{upsert:true}),db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_end',f3,{upsert:true})]);}catch(_){}
-    await db.from('usuarios').insert({clinica_id:cl.id,nome:resp,email:em,senha_hash:btoa(s),role:'admin'});
+    try{await Promise.all([db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_social',f1,{upsert:true}),db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_foto',f2,{upsert:true}),db.storage.from('documentos').upload('clinicas/'+cl.id+'/doc_end',f3,{upsert:true})]);}catch(e){console.warn('Upload:',e);}
+    const{error:errU}=await db.from('usuarios').insert({clinica_id:cl.id,nome:resp,email:em,senha_hash:btoa(s),role:'admin',cpf:mTipoPessoa==='PF'?d:null});
+    if(errU)console.warn('Usuario:',errU);
     try{await db.from('config_clinica').insert({clinica_id:cl.id});}catch(_){}
+    localStorage.setItem('hope_user',JSON.stringify({nome:resp,email:em,clinica_id:cl.id,clinica_nome:n,role:'admin'}));
     closeCadModal();
-    openSuccessModalEsp(resp.split(' ')[0],em,cl.slug||slug);
-  }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Cadastrar meu espaço';}
+    openSuccessModalEsp(resp.split(' ')[0],em,slug);
+  }catch(err){console.error(err);toast(err.message||'Erro inesperado. Veja o console (F12).');btn.disabled=false;btn.textContent='Cadastrar meu espaço';}
 }
 
 async function mCadastrarProfissional(){
