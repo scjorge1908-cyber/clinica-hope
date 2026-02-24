@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SublocaFácil — Reserve sua sala clínica</title>
+<meta name="description" content="Encontre e reserve salas para atendimento psicológico. Contratos digitais, sem burocracia."/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<style>
+:root {
+  --green:#0a7c5c; --green-l:#10b981; --green-xl:#d1fae5;
+  --ink:#0f1923; --muted:#6b7a94; --border:#e2e8f2;
+  --bg:#f6f8fc; --white:#fff;
+  --font-h:'Syne',sans-serif; --font-b:'DM Sans',sans-serif;
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-b);background:var(--white);color:var(--ink);}
+a{text-decoration:none;color:inherit;}
+
+/* ── NAV ── */
+nav {
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 40px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(0,0,0,.07);
+}
+.nav-logo {
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-h);font-size:20px;font-weight:800;
+}
+.nav-logo-mark {
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--green),var(--green-l));
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:18px;font-weight:800;
+}
+.nav-links {display:flex;align-items:center;gap:24px;}
+.nav-links a {font-size:14px;font-weight:500;color:var(--muted);transition:color .2s;}
+.nav-links a:hover {color:var(--ink);}
+.nav-cta {
+  background:var(--green);color:white;padding:9px 20px;border-radius:8px;
+  font-size:13px;font-weight:700;transition:all .2s;
+}
+.nav-cta:hover{background:#086649;transform:translateY(-1px);}
+
+/* ── HERO ── */
+.hero {
+  min-height:100vh;
+  background:linear-gradient(160deg,#050d18 0%,#0a2e1f 50%,#071a0f 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:100px 20px 60px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.hero::before {
+  content:'';position:absolute;width:800px;height:800px;border-radius:50%;
+  background:radial-gradient(circle,rgba(16,185,129,.15) 0%,transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;
+}
+.hero::after {
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events:none;
+}
+.hero-badge {
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);
+  border-radius:20px;padding:7px 18px;margin-bottom:28px;
+  font-size:13px;font-weight:600;color:var(--green-l);
+  position:relative;
+}
+.hero-badge-dot {width:7px;height:7px;border-radius:50%;background:var(--green-l);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.2)}}
+.hero h1 {
+  font-family:var(--font-h);font-size:clamp(36px,6vw,72px);
+  font-weight:800;color:white;line-height:1.08;
+  margin-bottom:20px;position:relative;
+}
+.hero h1 em {
+  font-style:normal;
+  background:linear-gradient(135deg,var(--green-l),#34d399);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero p {
+  font-size:clamp(15px,2vw,19px);color:rgba(255,255,255,.6);
+  max-width:560px;line-height:1.6;margin-bottom:40px;position:relative;
+}
+
+/* ── SEARCH BOX ── */
+.search-box {
+  background:white;border-radius:16px;padding:20px;
+  box-shadow:0 24px 64px rgba(0,0,0,.35);
+  width:100%;max-width:700px;position:relative;
+  margin-bottom:48px;
+}
+.search-box-title {
+  font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--muted);margin-bottom:14px;text-align:left;
+}
+.search-grid {display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;}
+.sf {display:flex;flex-direction:column;gap:5px;}
+.sf label {font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);}
+.sf select,.sf input {
+  padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:var(--font-b);font-size:14px;color:var(--ink);
+  background:white;outline:none;transition:border-color .2s;
+}
+.sf select:focus,.sf input:focus {border-color:var(--green-l);}
+.btn-buscar {
+  background:var(--green);color:white;border:none;
+  padding:12px 28px;border-radius:10px;
+  font-family:var(--font-h);font-size:14px;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:all .2s;
+  display:flex;align-items:center;gap:8px;
+}
+.btn-buscar:hover{background:#086649;transform:translateY(-1px);}
+
+/* ── NÚMEROS ── */
+.numeros {
+  display:flex;gap:48px;position:relative;
+  flex-wrap:wrap;justify-content:center;
+}
+.num-item {text-align:center;}
+.num-val {font-family:var(--font-h);font-size:36px;font-weight:800;color:var(--green-l);}
+.num-label {font-size:13px;color:rgba(255,255,255,.5);margin-top:4px;}
+
+/* ── SEÇÃO SALAS ── */
+.sec {padding:80px 40px;max-width:1200px;margin:0 auto;}
+.sec-head {display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;flex-wrap:wrap;gap:12px;}
+.sec-title {font-family:var(--font-h);font-size:clamp(24px,3vw,36px);font-weight:700;}
+.sec-sub {color:var(--muted);font-size:15px;margin-top:6px;}
+
+/* ── FILTRO ATIVO ── */
+.filtro-ativo {
+  background:var(--green-xl);border:1px solid rgba(16,185,129,.2);
+  border-radius:10px;padding:12px 20px;margin-bottom:28px;
+  font-size:13px;color:var(--green);font-weight:600;
+  display:none;align-items:center;justify-content:space-between;
+}
+.filtro-ativo.show{display:flex;}
+.limpar-filtro{cursor:pointer;color:var(--green);font-weight:700;font-size:12px;}
+
+/* ── GRID DE SALAS ── */
+.salas-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;}
+.sala-card {
+  background:white;border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;transition:all .25s;cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.sala-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.12);border-color:var(--green-l);}
+.sala-foto {
+  width:100%;height:200px;object-fit:cover;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;color:var(--border);
+  position:relative;overflow:hidden;
+}
+.sala-foto img{width:100%;height:100%;object-fit:cover;display:block;}
+.sala-foto-placeholder{display:flex;align-items:center;justify-content:center;height:100%;font-size:48px;background:linear-gradient(135deg,#e8f5e9,#f1f8f5);}
+.sala-clinica-badge {
+  position:absolute;bottom:10px;left:10px;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(4px);
+  border-radius:8px;padding:5px 10px;
+  font-size:11px;font-weight:700;color:white;
+}
+.sala-body {padding:18px;}
+.sala-name {font-family:var(--font-h);font-size:17px;font-weight:700;margin-bottom:4px;}
+.sala-end {font-size:12px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:4px;}
+.sala-tags {display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.sala-tag {
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--muted);
+}
+.sala-footer {display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border);}
+.sala-preco {font-family:var(--font-h);font-size:20px;font-weight:700;color:var(--green);}
+.sala-preco span{font-size:12px;color:var(--muted);font-weight:400;font-family:var(--font-b);}
+.btn-ver {
+  background:var(--green);color:white;border:none;
+  padding:9px 18px;border-radius:8px;font-family:var(--font-b);
+  font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.btn-ver:hover{background:#086649;}
+
+/* ── LOADING ── */
+.loading {text-align:center;padding:60px;color:var(--muted);}
+.loading-spin {
+  width:36px;height:36px;border:3px solid var(--border);
+  border-top-color:var(--green-l);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto 16px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── COMO FUNCIONA ── */
+.como {background:var(--ink);padding:80px 40px;}
+.como-inner{max-width:1100px;margin:0 auto;}
+.como h2{font-family:var(--font-h);font-size:clamp(24px,3vw,40px);color:white;margin-bottom:10px;text-align:center;}
+.como-sub{color:rgba(255,255,255,.5);text-align:center;font-size:15px;margin-bottom:48px;}
+.como-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;}
+.como-item{text-align:center;padding:28px 20px;}
+.como-icon{font-size:36px;margin-bottom:16px;}
+.como-num{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-h);font-size:15px;font-weight:700;color:var(--green-l);
+  margin:0 auto 12px;
+}
+.como-title{font-size:16px;font-weight:700;color:white;margin-bottom:8px;}
+.como-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.6;}
+
+/* ── PARCEIRO ── */
+.parceiro {
+  padding:80px 40px;
+  background:linear-gradient(135deg,var(--green-xl),white);
+}
+.parceiro-inner {
+  max-width:900px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
+}
+.parceiro h2{font-family:var(--font-h);font-size:clamp(24px,3vw,38px);font-weight:700;margin-bottom:14px;}
+.parceiro p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:24px;}
+.beneficios{display:flex;flex-direction:column;gap:12px;}
+.beneficio{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;}
+.beneficio::before{content:'✓';width:22px;height:22px;border-radius:50%;background:var(--green-xl);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.parceiro-cta {
+  background:var(--green);color:white;border:none;
+  padding:14px 32px;border-radius:10px;font-family:var(--font-h);
+  font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;gap:8px;margin-top:8px;
+}
+.parceiro-cta:hover{background:#086649;transform:translateY(-2px);box-shadow:0 8px 24px rgba(10,124,92,.3);}
+.parceiro-visual{
+  background:white;border-radius:20px;padding:28px;
+  box-shadow:0 12px 40px rgba(0,0,0,.1);
+}
+.pv-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.pv-row:last-child{border:none;}
+.pv-icon{width:40px;height:40px;border-radius:10px;background:var(--green-xl);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.pv-label{font-size:13px;color:var(--muted);}
+.pv-val{font-size:15px;font-weight:700;}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);padding:40px;text-align:center;}
+footer p{font-size:13px;color:rgba(255,255,255,.3);}
+footer strong{color:rgba(255,255,255,.6);}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  nav{padding:0 20px;}
+  .nav-links{display:none;}
+  .search-grid{grid-template-columns:1fr 1fr;}
+  .btn-buscar{grid-column:1/-1;}
+  .sec{padding:50px 20px;}
+  .parceiro-inner{grid-template-columns:1fr;}
+  .como{padding:50px 20px;}
+  .parceiro{padding:50px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">S</div>
+    SublocaFácil
+  </div>
+  <div class="nav-links">
+    <a href="#salas">Encontrar sala</a>
+    <a href="#como">Como funciona</a>
+    <a href="#parceiro">Seja parceiro</a>
+    <a href="index.html" class="nav-cta">Área da clínica →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Plataforma de sublocação clínica
+  </div>
+  <h1>Reserve sua sala.<br><em>Comece a atender.</em></h1>
+  <p>Encontre salas equipadas para atendimento psicológico com contratos digitais, sem burocracia e com desconto para blocos fixos.</p>
+
+  <!-- SEARCH -->
+  <div class="search-box">
+    <div class="search-box-title">🔍 Encontre uma sala perto de você</div>
+    <div class="search-grid">
+      <div class="sf">
+        <label>Estado</label>
+        <select id="filtroEstado" onchange="carregarMunicipios()">
+          <option value="">Todos</option>
+          <option value="SP">São Paulo</option>
+          <option value="RJ">Rio de Janeiro</option>
+          <option value="MG">Minas Gerais</option>
+          <option value="RS">Rio Grande do Sul</option>
+          <option value="PR">Paraná</option>
+          <option value="SC">Santa Catarina</option>
+          <option value="BA">Bahia</option>
+          <option value="GO">Goiás</option>
+          <option value="DF">Distrito Federal</option>
+          <option value="PE">Pernambuco</option>
+        </select>
+      </div>
+      <div class="sf">
+        <label>Município</label>
+        <select id="filtroMunicipio" onchange="carregarBairros()">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="sf">
+        <label>Bairro</label>
+        <select id="filtroBairro">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <button class="btn-buscar" onclick="buscarSalas()">
+        🔍 Buscar
+      </button>
+    </div>
+  </div>
+
+  <!-- NÚMEROS -->
+  <div class="numeros">
+    <div class="num-item"><div class="num-val" id="numClinicas">—</div><div class="num-label">Clínicas parceiras</div></div>
+    <div class="num-item"><div class="num-val" id="numSalas">—</div><div class="num-label">Salas disponíveis</div></div>
+    <div class="num-item"><div class="num-val" id="numCidades">—</div><div class="num-label">Cidades atendidas</div></div>
+    <div class="num-item"><div class="num-val">100%</div><div class="num-label">Digital e sem papel</div></div>
+  </div>
+</section>
+
+<!-- SALAS -->
+<section class="sec" id="salas">
+  <div class="sec-head">
+    <div>
+      <div class="sec-title">Salas disponíveis</div>
+      <div class="sec-sub" id="salasSubtitle">Todas as salas cadastradas na plataforma</div>
+    </div>
+    <div id="filtroAtivoInfo" style="font-size:13px;color:var(--muted)"></div>
+  </div>
+
+  <div class="filtro-ativo" id="filtroAtivoBar">
+    <span id="filtroAtivoTexto"></span>
+    <span class="limpar-filtro" onclick="limparFiltros()">✕ Limpar filtros</span>
+  </div>
+
+  <div id="salasWrap">
+    <div class="loading">
+      <div class="loading-spin"></div>
+      Carregando salas...
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="como" id="como">
+  <div class="como-inner">
+    <h2>Como funciona</h2>
+    <div class="como-sub">Simples, rápido e 100% digital</div>
+    <div class="como-grid">
+      <div class="como-item">
+        <div class="como-num">1</div>
+        <div class="como-icon">🔍</div>
+        <div class="como-title">Encontre sua sala</div>
+        <div class="como-desc">Filtre por cidade, bairro e horário. Veja fotos reais e valores transparentes.</div>
+      </div>
+      <div class="como-item">
+        <div class="como-num">2</div>
+        <div class="como-icon">📋</div>
+        <div class="como-title">Escolha o plano</div>
+        <div class="como-desc">Avulso por sessão ou bloco fixo semanal com até 45% de desconto.</div>
+      </div>
+      <div class="como-item">
+        <div class="como-num">3</div>
+        <div class="como-icon">✍</div>
+        <div class="como-title">Assine digitalmente</div>
+        <div class="como-desc">Contrato gerado automaticamente. Assinatura digital válida juridicamente.</div>
+      </div>
+      <div class="como-item">
+        <div class="como-num">4</div>
+        <div class="como-icon">🏥</div>
+        <div class="como-title">Comece a atender</div>
+        <div class="como-desc">Acesse seu painel, gerencie suas reservas e pagamentos em um só lugar.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEJA PARCEIRO -->
+<section class="parceiro" id="parceiro">
+  <div class="parceiro-inner">
+    <div>
+      <h2>Tem uma clínica?<br>Monetize seus espaços.</h2>
+      <p>Cadastre suas salas na SublocaFácil e conecte-se com centenas de psicólogos que buscam espaços de qualidade para atender seus pacientes.</p>
+      <div class="beneficios">
+        <div class="beneficio">Contratos digitais automáticos</div>
+        <div class="beneficio">Cobrança via Mercado Pago (PIX e cartão)</div>
+        <div class="beneficio">Agenda integrada sem conflitos</div>
+        <div class="beneficio">Relatórios financeiros completos</div>
+        <div class="beneficio">Sem taxa de adesão — pague só pelo uso</div>
+      </div>
+      <button class="parceiro-cta" onclick="window.location.href='index.html'">
+        Cadastrar minha clínica →
+      </button>
+    </div>
+    <div class="parceiro-visual">
+      <div class="pv-row"><div class="pv-icon">📅</div><div><div class="pv-label">Ocupação média</div><div class="pv-val">73% das salas</div></div></div>
+      <div class="pv-row"><div class="pv-icon">💰</div><div><div class="pv-label">Receita extra média/mês</div><div class="pv-val">R$ 2.840</div></div></div>
+      <div class="pv-row"><div class="pv-icon">📄</div><div><div class="pv-label">Contratos gerados</div><div class="pv-val">100% digitais</div></div></div>
+      <div class="pv-row"><div class="pv-icon">⭐</div><div><div class="pv-label">Satisfação dos parceiros</div><div class="pv-val">4.9 / 5.0</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div style="margin-bottom:12px">
+    <div class="nav-logo" style="justify-content:center;margin-bottom:8px">
+      <div class="nav-logo-mark">S</div>
+      SublocaFácil
+    </div>
+  </div>
+  <p>© 2026 SublocaFácil — <strong>Plataforma de sublocação clínica</strong></p>
+  <p style="margin-top:6px">Conectando clínicas e profissionais de saúde mental</p>
+</footer>
+
+<script>
+// ═══ DADOS MUNICIPIOS POR ESTADO ═══
+const MUNICIPIOS = {
+  SP:['São Paulo','Campinas','Santos','São Bernardo do Campo','Guarulhos','Osasco','Ribeirão Preto','Sorocaba'],
+  RJ:['Rio de Janeiro','Niterói','São Gonçalo','Duque de Caxias','Nova Iguaçu','Campos dos Goytacazes'],
+  MG:['Belo Horizonte','Uberlândia','Contagem','Juiz de Fora','Betim','Montes Claros'],
+  RS:['Porto Alegre','Caxias do Sul','Pelotas','Canoas','Santa Maria','Novo Hamburgo'],
+  PR:['Curitiba','Londrina','Maringá','Ponta Grossa','Cascavel','São José dos Pinhais'],
+  SC:['Florianópolis','Joinville','Blumenau','São José','Chapecó','Itajaí'],
+  BA:['Salvador','Feira de Santana','Vitória da Conquista','Camaçari','Itabuna'],
+  GO:['Goiânia','Aparecida de Goiânia','Anápolis','Rio Verde'],
+  DF:['Brasília','Taguatinga','Ceilândia','Samambaia'],
+  PE:['Recife','Caruaru','Petrolina','Olinda','Jaboatão dos Guararapes'],
+};
+
+// DEMO SALAS (em produção vem do Supabase)
+const SALAS_DEMO = [
+  {
+    id:'s1', clinica_nome:'Clínica Esperança', sala_nome:'Sala 01 — Acolhimento',
+    cidade:'São Paulo', estado:'SP', bairro:'Vila Mariana',
+    endereco:'Rua das Flores, 123', valor:31.90,
+    fotos:[], descricao:'Sala climatizada, silenciosa, com poltrona e divã.',
+    dias:['segunda','terca','quarta','quinta','sexta'],
+    horaInicio:'08:00', horaFim:'21:00',
+    clinica_id:'c1'
+  },
+  {
+    id:'s2', clinica_nome:'Instituto Mente Sã', sala_nome:'Sala Terapêutica Premium',
+    cidade:'São Paulo', estado:'SP', bairro:'Pinheiros',
+    endereco:'Av. Rebouças, 456', valor:45.00,
+    fotos:[], descricao:'Espaço amplo com vista, ideal para terapias.',
+    dias:['segunda','quarta','sexta'], horaInicio:'09:00', horaFim:'20:00',
+    clinica_id:'c2'
+  },
+  {
+    id:'s3', clinica_nome:'Espaço Ser', sala_nome:'Sala Zen',
+    cidade:'Campinas', estado:'SP', bairro:'Cambuí',
+    endereco:'Rua Barão de Jaguara, 789', valor:28.00,
+    fotos:[], descricao:'Decoração zen, iluminação natural, muito tranquila.',
+    dias:['terca','quinta'], horaInicio:'08:00', horaFim:'18:00',
+    clinica_id:'c3'
+  },
+  {
+    id:'s4', clinica_nome:'Clínica Viver Bem', sala_nome:'Sala 02 — Conforto',
+    cidade:'Curitiba', estado:'PR', bairro:'Batel',
+    endereco:'Al. Dom Pedro II, 321', valor:35.00,
+    fotos:[], descricao:'Sala confortável com ar-condicionado e boa acústica.',
+    dias:['segunda','terca','quarta','quinta','sexta'],
+    horaInicio:'08:00', horaFim:'22:00',
+    clinica_id:'c4'
+  },
+  {
+    id:'s5', clinica_nome:'Centro Psico Sul', sala_nome:'Sala Integração',
+    cidade:'Porto Alegre', estado:'RS', bairro:'Moinhos de Vento',
+    endereco:'Rua Padre Chagas, 654', valor:38.00,
+    fotos:[], descricao:'Ampla, próxima ao metrô, estacionamento no local.',
+    dias:['segunda','quarta','quinta','sexta'],
+    horaInicio:'09:00', horaFim:'20:00',
+    clinica_id:'c5'
+  },
+  {
+    id:'s6', clinica_nome:'Clínica Harmonia RJ', sala_nome:'Sala Vista Mar',
+    cidade:'Rio de Janeiro', estado:'RJ', bairro:'Ipanema',
+    endereco:'Rua Visconde de Pirajá, 999', valor:65.00,
+    fotos:[], descricao:'Vista privilegiada, sala equipada, ambiente sofisticado.',
+    dias:['segunda','terca','quarta','quinta','sexta'],
+    horaInicio:'08:00', horaFim:'21:00',
+    clinica_id:'c6'
+  },
+];
+
+let salasFiltradas = [...SALAS_DEMO];
+
+// ═══ CARREGAR NÚMEROS ═══
+async function carregarNumeros() {
+  try {
+    const db = window.getSupabase ? getSupabase() : null;
+    if (db) {
+      const [c, s] = await Promise.all([
+        db.from('clinicas').select('id', {count:'exact',head:true}),
+        db.from('salas').select('cidade', {count:'exact'}).eq('ativa',true).eq('visivel_marketplace',true)
+      ]);
+      document.getElementById('numClinicas').textContent = c.count || SALAS_DEMO.length;
+      document.getElementById('numSalas').textContent    = s.count || SALAS_DEMO.length;
+      const cidades = [...new Set((s.data||[]).map(r=>r.cidade).filter(Boolean))];
+      document.getElementById('numCidades').textContent  = cidades.length || 12;
+    } else { throw new Error('no db'); }
+  } catch {
+    document.getElementById('numClinicas').textContent = '12+';
+    document.getElementById('numSalas').textContent    = '48+';
+    document.getElementById('numCidades').textContent  = '8';
+  }
+}
+
+// ═══ FILTROS ═══
+function carregarMunicipios() {
+  const estado = document.getElementById('filtroEstado').value;
+  const sel = document.getElementById('filtroMunicipio');
+  sel.innerHTML = '<option value="">Todos</option>';
+  if (estado && MUNICIPIOS[estado]) {
+    MUNICIPIOS[estado].forEach(m => {
+      const o = document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o);
+    });
+  }
+  document.getElementById('filtroBairro').innerHTML = '<option value="">Todos</option>';
+}
+
+function carregarBairros() {
+  // Em produção: buscar bairros únicos do Supabase pelo município
+  const bairrosDemo = ['Centro','Vila Mariana','Pinheiros','Moema','Bela Vista','Liberdade','Cambuí','Batel'];
+  const sel = document.getElementById('filtroBairro');
+  sel.innerHTML = '<option value="">Todos</option>';
+  bairrosDemo.forEach(b => {
+    const o = document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o);
+  });
+}
+
+async function buscarSalas() {
+  const estado    = document.getElementById('filtroEstado').value;
+  const municipio = document.getElementById('filtroMunicipio').value;
+  const bairro    = document.getElementById('filtroBairro').value;
+
+  document.getElementById('salasWrap').innerHTML = `<div class="loading"><div class="loading-spin"></div>Buscando salas...</div>`;
+
+  // Simular delay de busca
+  await new Promise(r => setTimeout(r, 600));
+
+  let resultado = [...SALAS_DEMO];
+  if (estado)    resultado = resultado.filter(s => s.estado === estado);
+  if (municipio) resultado = resultado.filter(s => s.cidade === municipio);
+  if (bairro)    resultado = resultado.filter(s => s.bairro === bairro);
+
+  salasFiltradas = resultado;
+
+  // Mostrar barra de filtro ativo
+  const partes = [estado, municipio, bairro].filter(Boolean);
+  if (partes.length) {
+    document.getElementById('filtroAtivoBar').classList.add('show');
+    document.getElementById('filtroAtivoTexto').textContent = '📍 Filtrando por: ' + partes.join(' → ');
+    document.getElementById('salasSubtitle').textContent = `${resultado.length} sala(s) encontrada(s)`;
+  }
+
+  renderSalas(resultado);
+  document.getElementById('salas').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function limparFiltros() {
+  document.getElementById('filtroEstado').value    = '';
+  document.getElementById('filtroMunicipio').innerHTML = '<option value="">Todos</option>';
+  document.getElementById('filtroBairro').innerHTML    = '<option value="">Todos</option>';
+  document.getElementById('filtroAtivoBar').classList.remove('show');
+  document.getElementById('salasSubtitle').textContent = 'Todas as salas cadastradas na plataforma';
+  renderSalas(SALAS_DEMO);
+}
+
+// ═══ RENDER SALAS ═══
+function renderSalas(salas) {
+  if (!salas.length) {
+    document.getElementById('salasWrap').innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🏠</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Nenhuma sala encontrada</div>
+        <div>Tente outros filtros ou <span style="color:var(--green);cursor:pointer" onclick="limparFiltros()">veja todas as salas</span></div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('salasWrap').innerHTML = `
+    <div class="salas-grid">
+      ${salas.map(s => cartaoSala(s)).join('')}
+    </div>`;
+}
+
+function cartaoSala(s) {
+  const fotoHtml = s.fotos && s.fotos.length
+    ? `<img src="${s.fotos[0]}" alt="${s.sala_nome}" loading="lazy"/>`
+    : `<div class="sala-foto-placeholder">🏥</div>`;
+
+  const diasLabel = (s.dias||[]).length === 5 ? 'Seg–Sex' :
+                    (s.dias||[]).map(d=>d.slice(0,3)).join(', ');
+
+  return `
+    <div class="sala-card" onclick="verSala('${s.id}')">
+      <div class="sala-foto">
+        ${fotoHtml}
+        <div class="sala-clinica-badge">${s.clinica_nome}</div>
+      </div>
+      <div class="sala-body">
+        <div class="sala-name">${s.sala_nome}</div>
+        <div class="sala-end">📍 ${s.bairro}, ${s.cidade}/${s.estado}</div>
+        <div class="sala-tags">
+          <span class="sala-tag">🕐 ${s.horaInicio}–${s.horaFim}</span>
+          <span class="sala-tag">📅 ${diasLabel}</span>
+        </div>
+        <div class="sala-footer">
+          <div class="sala-preco">R$ ${s.valor.toFixed(2)}<span>/sessão</span></div>
+          <button class="btn-ver">Ver sala →</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function verSala(id) {
+  window.location.href = `sala-detalhe.html?id=${id}`;
+}
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded', () => {
+  carregarNumeros();
+  renderSalas(SALAS_DEMO);
+});
+</script>
+</body>
+</html>

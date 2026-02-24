@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Detalhe da Sala — SublocaFácil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<style>
+:root{
+  --green:#0a7c5c;--green-l:#10b981;--green-xl:#d1fae5;
+  --ink:#0f1923;--muted:#6b7a94;--border:#e2e8f2;
+  --bg:#f6f8fc;--white:#fff;
+  --font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-b);background:var(--bg);color:var(--ink);}
+
+nav{
+  position:sticky;top:0;z-index:100;
+  padding:0 40px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--font-h);font-size:18px;font-weight:800;cursor:pointer;}
+.nav-logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--green),var(--green-l));display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:800;}
+.back-link{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:color .2s;}
+.back-link:hover{color:var(--green);}
+
+.wrap{max-width:1100px;margin:0 auto;padding:40px 20px 80px;}
+
+/* GALERIA */
+.galeria{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:280px 180px;gap:8px;border-radius:16px;overflow:hidden;margin-bottom:36px;}
+.foto-main{grid-row:1/3;position:relative;background:var(--bg);overflow:hidden;cursor:pointer;}
+.foto-main img,.foto-mini img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s;}
+.foto-main:hover img,.foto-mini:hover img{transform:scale(1.04);}
+.foto-mini{background:var(--bg);overflow:hidden;cursor:pointer;position:relative;}
+.foto-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8f5e9,#f1f8f5);font-size:48px;color:var(--border);}
+.foto-count{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);color:white;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:none;align-items:center;justify-content:center;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:12px;object-fit:contain;}
+.lightbox-close{position:absolute;top:20px;right:20px;color:white;font-size:28px;cursor:pointer;background:rgba(255,255,255,.1);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);color:white;font-size:36px;cursor:pointer;background:rgba(255,255,255,.1);width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.lightbox-nav:hover{background:rgba(255,255,255,.2);}
+.lightbox-prev{left:20px;}
+.lightbox-next{right:20px;}
+
+/* LAYOUT */
+.detalhe-grid{display:grid;grid-template-columns:1fr 360px;gap:36px;align-items:start;}
+.detalhe-main{}
+.detalhe-side{}
+
+/* CLINICA BADGE */
+.clinica-badge{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.clinica-foto{width:44px;height:44px;border-radius:10px;object-fit:cover;background:var(--green-xl);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;flex-shrink:0;}
+.clinica-nome{font-size:13px;font-weight:700;color:var(--ink);}
+.clinica-end{font-size:12px;color:var(--muted);margin-top:2px;}
+
+.sala-titulo{font-family:var(--font-h);font-size:clamp(22px,3vw,32px);font-weight:700;margin-bottom:8px;}
+.sala-loc{font-size:14px;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:6px;}
+
+/* TAGS */
+.tags-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+.tag{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.tag.green{background:var(--green-xl);border-color:rgba(16,185,129,.2);color:var(--green);}
+
+/* SOBRE */
+.card{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.card-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+
+/* AGENDA */
+.agenda-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.dia-col{text-align:center;}
+.dia-nome{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px;}
+.hora-pill{padding:5px;border-radius:6px;font-size:11px;font-weight:600;margin-bottom:4px;text-align:center;}
+.hora-pill.livre{background:var(--green-xl);color:var(--green);}
+.hora-pill.ocupado{background:var(--bg);color:var(--border);text-decoration:line-through;}
+
+/* BOOKING CARD */
+.booking-card{background:white;border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.08);position:sticky;top:76px;}
+.booking-preco{font-family:var(--font-h);font-size:32px;font-weight:700;color:var(--green);margin-bottom:4px;}
+.booking-preco span{font-size:15px;color:var(--muted);font-weight:400;font-family:var(--font-b);}
+.booking-desc{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.booking-planos{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.plano-opt{
+  border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;
+  cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center;
+}
+.plano-opt:hover,.plano-opt.selected{border-color:var(--green-l);background:var(--green-xl);}
+.plano-opt-nome{font-size:13px;font-weight:700;}
+.plano-opt-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.plano-opt-preco{font-size:15px;font-weight:700;color:var(--green);}
+.btn-reservar{
+  width:100%;background:var(--green);color:white;border:none;
+  padding:14px;border-radius:10px;font-family:var(--font-h);
+  font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:12px;
+}
+.btn-reservar:hover{background:#086649;transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,124,92,.3);}
+.booking-info{font-size:12px;color:var(--muted);text-align:center;line-height:1.5;}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.booking-detalhe-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}
+.booking-detalhe-row strong{font-weight:700;}
+.desconto-badge{background:var(--green-xl);color:var(--green);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;}
+
+/* WHATSAPP */
+.btn-wpp{
+  width:100%;background:#25d366;color:white;border:none;
+  padding:11px;border-radius:10px;font-family:var(--font-b);
+  font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-wpp:hover{background:#1ebe59;}
+
+@media(max-width:768px){
+  .detalhe-grid{grid-template-columns:1fr;}
+  .booking-card{position:static;}
+  .galeria{grid-template-columns:1fr;grid-template-rows:250px;}
+  .foto-main{grid-row:auto;}
+  .foto-mini{display:none;}
+  nav{padding:0 16px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="window.location.href='home.html'">
+    <div class="nav-logo-mark">S</div>SublocaFácil
+  </div>
+  <div class="back-link" onclick="history.back()">← Voltar às salas</div>
+</nav>
+
+<div class="wrap">
+
+  <!-- GALERIA -->
+  <div class="galeria" id="galeria">
+    <div class="foto-main" onclick="abrirLightbox(0)">
+      <div class="foto-placeholder" id="fotoMain">🏥</div>
+    </div>
+    <div class="foto-mini" onclick="abrirLightbox(1)">
+      <div class="foto-placeholder" id="fotoMini1">🪴</div>
+    </div>
+    <div class="foto-mini" onclick="abrirLightbox(2)" style="position:relative">
+      <div class="foto-placeholder" id="fotoMini2">🛋</div>
+      <div class="foto-count" id="fotoCount" style="display:none">Ver todas</div>
+    </div>
+  </div>
+
+  <div class="detalhe-grid">
+
+    <!-- MAIN -->
+    <div class="detalhe-main">
+
+      <!-- CLÍNICA -->
+      <div class="clinica-badge">
+        <div class="clinica-foto" id="clinicaFoto">🏥</div>
+        <div>
+          <div class="clinica-nome" id="clinicaNome">Carregando...</div>
+          <div class="clinica-end" id="clinicaEnd">—</div>
+        </div>
+      </div>
+
+      <div class="sala-titulo" id="salaTitulo">Carregando sala...</div>
+      <div class="sala-loc" id="salaLoc">📍 —</div>
+
+      <div class="tags-row" id="salaTags"></div>
+
+      <!-- SOBRE -->
+      <div class="card">
+        <div class="card-title">📝 Sobre esta sala</div>
+        <p id="salaDescricao" style="font-size:14px;line-height:1.7;color:var(--muted)">—</p>
+      </div>
+
+      <!-- DISPONIBILIDADE -->
+      <div class="card">
+        <div class="card-title">📅 Disponibilidade semanal</div>
+        <div class="agenda-grid" id="agendaGrid"></div>
+      </div>
+
+    </div>
+
+    <!-- SIDE: BOOKING -->
+    <div class="detalhe-side">
+      <div class="booking-card">
+        <div class="booking-preco" id="bookingPreco">R$ —<span>/sessão</span></div>
+        <div class="booking-desc">ou economize com bloco fixo semanal</div>
+
+        <div class="booking-planos">
+          <div class="plano-opt selected" id="planoAvulso" onclick="selecionarPlano('avulso')">
+            <div>
+              <div class="plano-opt-nome">Avulso</div>
+              <div class="plano-opt-desc">Paga só o que usar</div>
+            </div>
+            <div class="plano-opt-preco" id="precoAvulsoOpt">R$ —</div>
+          </div>
+          <div class="plano-opt" id="planoBloco1" onclick="selecionarPlano('bloco1')">
+            <div>
+              <div class="plano-opt-nome">Bloco 1 dia/semana</div>
+              <div class="plano-opt-desc">1 dia fixo por semana</div>
+            </div>
+            <div class="plano-opt-preco" id="precoBloco1Opt">—</div>
+          </div>
+          <div class="plano-opt" id="planoBloco2" onclick="selecionarPlano('bloco2')">
+            <div>
+              <div class="plano-opt-nome">Bloco 2 dias/semana</div>
+              <div class="plano-opt-desc" style="display:flex;gap:4px;align-items:center">
+                2 dias fixos <span class="desconto-badge">−30%</span>
+              </div>
+            </div>
+            <div class="plano-opt-preco" id="precoBloco2Opt">—</div>
+          </div>
+          <div class="plano-opt" id="planoBloco3" onclick="selecionarPlano('bloco3')">
+            <div>
+              <div class="plano-opt-nome">Bloco 3 dias/semana</div>
+              <div class="plano-opt-desc" style="display:flex;gap:4px;align-items:center">
+                3 dias fixos <span class="desconto-badge">−45%</span>
+              </div>
+            </div>
+            <div class="plano-opt-preco" id="precoBloco3Opt">—</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="booking-detalhe-row"><span>Contrato digital</span><strong>✓ Incluso</strong></div>
+        <div class="booking-detalhe-row"><span>Validade</span><strong>12 meses</strong></div>
+        <div class="booking-detalhe-row" id="rowDesconto" style="display:none">
+          <span>Desconto aplicado</span><strong id="descontoVal" style="color:var(--green)">—</strong>
+        </div>
+        <div class="divider"></div>
+
+        <button class="btn-reservar" onclick="reservar()">Reservar agora →</button>
+        <div class="booking-info">Contrato assinado digitalmente. Sem taxa de adesão.</div>
+
+        <div style="margin-top:14px">
+          <button class="btn-wpp" id="btnWpp" onclick="abrirWhatsapp()">
+            💬 Falar com a clínica
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-close" onclick="fecharLightbox()">✕</div>
+  <div class="lightbox-nav lightbox-prev" onclick="navLightbox(-1)">‹</div>
+  <img id="lightboxImg" src="" alt=""/>
+  <div class="lightbox-nav lightbox-next" onclick="navLightbox(1)">›</div>
+</div>
+
+<script>
+const DIAS_PT = {segunda:'Segunda',terca:'Terça',quarta:'Quarta',quinta:'Quinta',sexta:'Sexta'};
+const HORAS   = ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+
+// DEMO SALAS (mesmo objeto da home.html)
+const SALAS_DEMO = {
+  s1:{ id:'s1', clinica_nome:'Clínica Esperança', sala_nome:'Sala 01 — Acolhimento', cidade:'São Paulo', estado:'SP', bairro:'Vila Mariana', endereco:'Rua das Flores, 123', numero:'123', valor:31.90, fotos:[], descricao:'Sala climatizada com isolamento acústico, poltrona e divã de qualidade. Ideal para sessões individuais e de casal. Wi-Fi disponível.', dias:['segunda','terca','quarta','quinta','sexta'], horaInicio:'08:00', horaFim:'21:00', clinica_id:'c1', whatsapp:'5511999999999' },
+  s2:{ id:'s2', clinica_nome:'Instituto Mente Sã', sala_nome:'Sala Terapêutica Premium', cidade:'São Paulo', estado:'SP', bairro:'Pinheiros', endereco:'Av. Rebouças, 456', numero:'456', valor:45.00, fotos:[], descricao:'Espaço amplo, iluminado com luz natural, decoração acolhedora e vista privilegiada. Perfeito para terapias individuais, casal e família.', dias:['segunda','quarta','sexta'], horaInicio:'09:00', horaFim:'20:00', clinica_id:'c2', whatsapp:'5511988888888' },
+  s3:{ id:'s3', clinica_nome:'Espaço Ser', sala_nome:'Sala Zen', cidade:'Campinas', estado:'SP', bairro:'Cambuí', endereco:'Rua Barão de Jaguara, 789', numero:'789', valor:28.00, fotos:[], descricao:'Sala com decoração zen, plantas naturais, iluminação suave e muito silêncio. Ambiente que transmite paz e acolhimento.', dias:['terca','quinta'], horaInicio:'08:00', horaFim:'18:00', clinica_id:'c3', whatsapp:'5519977777777' },
+};
+
+let salaAtual = null;
+let planoSelecionado = 'avulso';
+let lightboxFotos = [];
+let lightboxIdx   = 0;
+
+function getSalaId() {
+  return new URLSearchParams(window.location.search).get('id') || 's1';
+}
+
+async function carregarSala() {
+  const id = getSalaId();
+
+  // Tentar carregar do Supabase
+  let sala = null;
+  try {
+    const db = getSupabase();
+    const { data } = await db.from('salas')
+      .select(`*, clinicas(nome, foto_institucional, endereco, whatsapp)`)
+      .eq('id', id).single();
+    if (data) sala = {
+      id: data.id,
+      clinica_nome: data.clinicas?.nome || '—',
+      sala_nome: data.nome,
+      cidade: data.cidade,
+      estado: data.estado,
+      bairro: data.bairro,
+      endereco: data.endereco,
+      numero: data.numero,
+      valor: parseFloat(data.valor_avulso),
+      fotos: data.fotos || [],
+      descricao: data.descricao || '',
+      dias: data.dias || [],
+      horaInicio: data.hora_inicio,
+      horaFim: data.hora_fim,
+      clinica_id: data.clinica_id,
+      clinica_foto: data.clinicas?.foto_institucional || null,
+      whatsapp: data.clinicas?.whatsapp || null,
+    };
+  } catch(e) {
+    sala = SALAS_DEMO[id] || SALAS_DEMO['s1'];
+  }
+
+  if (!sala) sala = SALAS_DEMO['s1'];
+  salaAtual = sala;
+  renderSala(sala);
+}
+
+function renderSala(s) {
+  document.title = `${s.sala_nome} — SublocaFácil`;
+
+  // Galeria
+  lightboxFotos = s.fotos && s.fotos.length ? s.fotos : [];
+  renderGaleria(s);
+
+  // Clínica
+  if (s.clinica_foto) {
+    document.getElementById('clinicaFoto').innerHTML = `<img src="${s.clinica_foto}" alt="${s.clinica_nome}" style="width:100%;height:100%;object-fit:cover"/>`;
+  }
+  document.getElementById('clinicaNome').textContent = s.clinica_nome;
+  document.getElementById('clinicaEnd').textContent  = `${s.endereco}${s.numero?', '+s.numero:''} — ${s.bairro||''}, ${s.cidade}/${s.estado}`;
+
+  // Título
+  document.getElementById('salaTitulo').textContent = s.sala_nome;
+  document.getElementById('salaLoc').innerHTML = `📍 ${s.bairro || ''}, ${s.cidade}/${s.estado}`;
+
+  // Tags
+  const diasLabel = (s.dias||[]).length >= 5 ? 'Seg–Sex' : (s.dias||[]).map(d=>DIAS_PT[d]||d).join(', ');
+  document.getElementById('salaTags').innerHTML = `
+    <span class="tag green">✓ Disponível</span>
+    <span class="tag">🕐 ${s.horaInicio} – ${s.horaFim}</span>
+    <span class="tag">📅 ${diasLabel}</span>
+    <span class="tag">📄 Contrato digital</span>
+  `;
+
+  // Descrição
+  document.getElementById('salaDescricao').textContent = s.descricao || 'Sala equipada para atendimento psicológico.';
+
+  // Agenda
+  renderAgenda(s);
+
+  // Preços
+  document.getElementById('bookingPreco').innerHTML = `R$ ${s.valor.toFixed(2)}<span>/sessão</span>`;
+  document.getElementById('precoAvulsoOpt').textContent = `R$ ${s.valor.toFixed(2)}`;
+  document.getElementById('precoBloco1Opt').textContent = `R$ ${(s.valor*4).toFixed(2)}/mês`;
+  document.getElementById('precoBloco2Opt').textContent = `R$ ${(s.valor*2*4*0.7).toFixed(2)}/mês`;
+  document.getElementById('precoBloco3Opt').textContent = `R$ ${(s.valor*3*4*0.55).toFixed(2)}/mês`;
+}
+
+function renderGaleria(s) {
+  const fotos = s.fotos && s.fotos.length ? s.fotos : [];
+  const emojis = ['🏥','🪴','🛋'];
+
+  ['fotoMain','fotoMini1','fotoMini2'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (fotos[i]) {
+      el.outerHTML = el.outerHTML; // reset
+      document.getElementById(id).innerHTML = `<img src="${fotos[i]}" alt="Foto ${i+1}"/>`;
+    } else {
+      el.textContent = emojis[i];
+      el.className = 'foto-placeholder';
+    }
+  });
+
+  if (fotos.length > 3) {
+    document.getElementById('fotoCount').style.display = 'block';
+    document.getElementById('fotoCount').textContent = `+${fotos.length-3} fotos`;
+  }
+}
+
+function renderAgenda(s) {
+  const dias = (s.dias||[]).filter(d=>d!=='sabado'&&d!=='domingo');
+  const hIni = parseInt((s.horaInicio||'08:00').split(':')[0]);
+  const hFim = parseInt((s.horaFim   ||'21:00').split(':')[0]);
+  const horas = HORAS.filter(h => parseInt(h)>=hIni && parseInt(h)<hFim);
+
+  let html = '';
+  dias.forEach(d => {
+    html += `<div class="dia-col">
+      <div class="dia-nome">${(DIAS_PT[d]||d).slice(0,3)}</div>
+      ${horas.slice(0,6).map(h=>`<div class="hora-pill livre">${h}</div>`).join('')}
+    </div>`;
+  });
+
+  document.getElementById('agendaGrid').innerHTML = html || '<p style="color:var(--muted);font-size:13px">Nenhum dia configurado.</p>';
+}
+
+// ── LIGHTBOX ──
+function abrirLightbox(idx) {
+  if (!lightboxFotos.length) return;
+  lightboxIdx = idx;
+  document.getElementById('lightboxImg').src = lightboxFotos[lightboxIdx];
+  document.getElementById('lightbox').classList.add('open');
+}
+function fecharLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+function navLightbox(dir) {
+  if (!lightboxFotos.length) return;
+  lightboxIdx = (lightboxIdx + dir + lightboxFotos.length) % lightboxFotos.length;
+  document.getElementById('lightboxImg').src = lightboxFotos[lightboxIdx];
+}
+
+// ── PLANO ──
+function selecionarPlano(plano) {
+  planoSelecionado = plano;
+  ['planoAvulso','planoBloco1','planoBloco2','planoBloco3'].forEach(id => {
+    document.getElementById(id).classList.remove('selected');
+  });
+  const mapa = {avulso:'planoAvulso',bloco1:'planoBloco1',bloco2:'planoBloco2',bloco3:'planoBloco3'};
+  document.getElementById(mapa[plano]).classList.add('selected');
+
+  const rowDesc = document.getElementById('rowDesconto');
+  const desVal  = document.getElementById('descontoVal');
+  if (plano === 'bloco2') { rowDesc.style.display='flex'; desVal.textContent='-30%'; }
+  else if (plano === 'bloco3') { rowDesc.style.display='flex'; desVal.textContent='-45%'; }
+  else rowDesc.style.display = 'none';
+}
+
+// ── RESERVAR ──
+function reservar() {
+  if (!salaAtual) return;
+  const tipo = planoSelecionado === 'avulso' ? 'avulso' : 'bloco';
+  const qtd  = planoSelecionado === 'bloco3' ? 3 : planoSelecionado === 'bloco2' ? 2 : 1;
+  window.location.href = `portal-psi.html?c=${salaAtual.clinica_id}&sala=${salaAtual.id}&tipo=${tipo}&qtd=${qtd}`;
+}
+
+function abrirWhatsapp() {
+  const wpp = salaAtual?.whatsapp;
+  if (wpp) {
+    const msg = encodeURIComponent(`Olá! Vi a ${salaAtual.sala_nome} no SublocaFácil e tenho interesse. Poderia me dar mais informações?`);
+    window.open(`https://wa.me/${wpp}?text=${msg}`, '_blank');
+  } else {
+    alert('WhatsApp não cadastrado para esta clínica.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', carregarSala);
+</script>
+</body>
+</html>
