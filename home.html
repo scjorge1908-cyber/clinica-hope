@@ -841,7 +841,7 @@ footer{background:#060f0c;padding:52px 52px 0;}
       <div class="fg2"><label>Estado</label><select id="fEst" onchange="loadCities()"><option value="">Todos os estados</option><option value="SP">São Paulo</option><option value="RJ">Rio de Janeiro</option><option value="MG">Minas Gerais</option><option value="PR">Paraná</option><option value="RS">Rio Grande do Sul</option><option value="SC">Santa Catarina</option><option value="BA">Bahia</option><option value="DF">Distrito Federal</option></select></div>
       <div class="fg2"><label>Município</label><select id="fCid"><option value="">Todos os municípios</option></select></div>
       <div class="fg2"><label>Especialidade</label><select id="fEsp2"><option value="">Todas</option><option value="Psicologia">Psicologia</option><option value="Medicina">Medicina</option><option value="Nutrição">Nutrição</option><option value="Fisioterapia">Fisioterapia</option><option value="Odontologia">Odontologia</option><option value="Multiuso">Multiuso</option></select></div>
-      <div class="fg2"><label>Valor máx. / hora</label><select id="fVal"><option value="">Qualquer valor</option><option value="50">Até R$ 50</option><option value="100">Até R$ 100</option><option value="150">Até R$ 150</option></select></div>
+      <div class="fg2"><label>Valor máx. / sessão</label><select id="fVal"><option value="">Qualquer valor</option><option value="50">Até R$ 50</option><option value="100">Até R$ 100</option><option value="150">Até R$ 150</option></select></div>
       <button class="btn-buscar" onclick="applyFilters()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         Buscar
@@ -870,17 +870,17 @@ footer{background:#060f0c;padding:52px 52px 0;}
 
 <section class="how">
   <div class="how-inner">
-    <div style="text-align:center"><div class="sec-eyebrow">Processo para sublocar</div><div class="sec-title">Como funciona</div></div>
+    <div style="text-align:center"><div class="sec-eyebrow">Processo simples</div><div class="sec-title">Como funciona</div></div>
     <div class="how-grid">
-      <div class="hw-card"><div class="hw-num">1</div><h3>Cadastro verificado</h3><p>Envie seus documentos e registro profissional. O sistema valida os dados automaticamente.</p></div>
+      <div class="hw-card"><div class="hw-num">1</div><h3>Cadastro verificado</h3><p>Envie seus documentos e registro profissional. Nossa equipe valida em até 24 horas.</p></div>
       <div class="hw-card"><div class="hw-num">2</div><h3>Encontre o espaço</h3><p>Filtre por cidade, especialidade e valor. Veja disponibilidade em tempo real.</p></div>
       <div class="hw-card"><div class="hw-num">3</div><h3>Assine o contrato</h3><p>Contrato digital gerado automaticamente com validade jurídica. Sem papel.</p></div>
       <div class="hw-card"><div class="hw-num">4</div><h3>Comece a atender</h3><p>Gerencie reservas e pagamentos em um único painel. Simples e ágil.</p></div>
     </div>
     <div style="text-align:center;margin-top:40px;padding:28px;background:linear-gradient(135deg,rgba(13,158,133,.07),rgba(10,110,92,.04));border:1px solid rgba(13,158,133,.15);border-radius:12px;">
-      <div style="font-family:var(--fh);font-size:22px;font-weight:600;color:var(--ink);margin-bottom:8px;">Você é profissional de saúde?</div>
-      <div style="font-size:14px;color:var(--mu);margin-bottom:18px;">Encontre consultórios verificados para atender hoje mesmo</div>
-      <button onclick="openCadastroProModal()" style="padding:13px 32px;background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.2px;transition:all .25s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">Sublocar agora</button>
+      <div style="font-family:var(--fh);font-size:22px;font-weight:600;color:var(--ink);margin-bottom:8px;">Eleve o nível do seu atendimento.</div>
+      <div style="font-size:14px;color:var(--mu);margin-bottom:18px;">Salas prontas, bem localizadas e preparadas para atender. A SublocaFácil aproxima você das melhores opções e simplifica o processo do início ao fim.</div>
+      <button onclick="openCadastroProModal()" style="padding:13px 32px;background:linear-gradient(135deg,var(--g),var(--gl));color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.2px;transition:all .25s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">Cadastrar como profissional</button>
     </div>
   </div>
 </section>
@@ -988,7 +988,7 @@ function renderRooms(list, updateCurrent=true){
         <div class="rc-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${s.bairro} · ${s.cidade}, ${s.estado}</div>
         <div class="rc-tags"><span class="rc-tag">🕐 ${s.hI} – ${s.hF}</span><span class="rc-tag">📅 ${s.dias}</span></div>
         <div class="rc-foot">
-          <div><div class="rc-price-label">A partir de</div><div class="rc-price">R$ ${Math.floor(s.valor)}<span>,${(s.valor%1*100).toFixed(0).padStart(2,'0')} / hora</span></div></div>
+          <div><div class="rc-price-label">A partir de</div><div class="rc-price">R$ ${Math.floor(s.valor)}<span>,${(s.valor%1*100).toFixed(0).padStart(2,'0')} / sessão</span></div></div>
           <button class="btn-view" onclick="event.stopPropagation();window.location.href='sala-detalhe.html?id=${s.id}'">Ver espaço →</button>
         </div>
       </div>
