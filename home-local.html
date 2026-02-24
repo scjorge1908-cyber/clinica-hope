@@ -6,7 +6,7 @@
 <title>SublocaFacil — Cadastro e Espaços</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
 <script>
 // ── supabase.js inline ──
 // ============================================================
@@ -17,17 +17,22 @@
 const SUPABASE_URL  = 'https://cobxcmsnypkngiszzxpp.supabase.co';
 // IMPORTANTE: Substitua pela sua anon key do Supabase
 // Supabase → Settings → API → Project API keys → anon public (começa com eyJ...)
-const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI_eyJ...';
+const SUPABASE_KEY = 'sb_publishable_C2ZK1G5JV8INtTEFh-NH9A_dOo2jqXd'; // frontend key - safe
 
 // Cliente Supabase (usando a CDN — não precisa instalar nada)
 // Adicione esta tag nos HTMLs: 
-// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
 
 let _supabase = null;
 
 function getSupabase() {
   if (!_supabase) {
-    _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    try {
+      _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch(e) {
+      // try alternate namespace
+      _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
   }
   return _supabase;
 }

@@ -4,7 +4,7 @@
 // ============================================================
 
 const SUPABASE_URL  = 'https://cobxcmsnypkngiszzxpp.supabase.co';
-const SUPABASE_KEY  = 'sb_publishable_C2ZK1G5JV8INtTEFh-NH9A_d0o2jqXd';
+const SUPABASE_KEY  = 'sb_publishable_C2ZK1G5JV8INtTEFh-NH9A_dOo2jqXd'; // frontend key - safe
 
 // Cliente Supabase (usando a CDN — não precisa instalar nada)
 // Adicione esta tag nos HTMLs: 
