@@ -549,23 +549,23 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);-webkit-font-sm
 .fg2 select:focus{border-color:var(--gl);}
 .btn-buscar{padding:9px 22px;background:var(--g);color:white;border:none;border-radius:6px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;align-self:flex-end;}
 .btn-buscar:hover{background:#086649;}
-.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;}
-.room-card{background:white;border:1px solid var(--bo);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s;box-shadow:0 1px 4px rgba(0,0,0,.05);}
-.room-card:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.09);border-color:var(--gl);}
-.rc-img{height:168px;background:linear-gradient(135deg,var(--gx),#d0eeea);position:relative;}
-.rc-esp{position:absolute;top:10px;left:10px;background:white;border-radius:4px;padding:3px 9px;font-size:10px;font-weight:600;color:var(--g);}
-.rc-ver{position:absolute;top:10px;right:10px;background:var(--g);border-radius:4px;padding:3px 9px;font-size:10px;font-weight:600;color:white;}
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;}
+.room-card{background:white;border:1px solid var(--bo);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.room-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(0,0,0,.12);border-color:var(--gl);}
+.rc-img{height:200px;background:linear-gradient(135deg,var(--gx),#c8e8e2);position:relative;overflow:hidden;}
+.rc-esp{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--ink);}
+.rc-ver{position:absolute;top:10px;right:10px;background:var(--g);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:white;}
 .rc-body{padding:15px 17px;}
 .rc-clin{font-size:10px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
 .rc-name{font-family:var(--fh);font-size:16px;font-weight:600;color:var(--ink);margin-bottom:3px;line-height:1.3;}
 .rc-loc{font-size:12px;color:var(--mu);margin-bottom:9px;}
 .rc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px;}
 .rc-tag{background:var(--bg);border:1px solid var(--bo);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--mu);}
-.rc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:11px;border-top:1px solid var(--bg);}
-.rc-price{font-family:var(--fh);font-size:22px;font-weight:600;color:var(--g);}
-.rc-price span{font-size:12px;color:var(--mu);font-family:var(--fb);font-weight:400;}
-.btn-view{padding:7px 15px;background:var(--gx);color:var(--g);border:none;border-radius:6px;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
-.btn-view:hover{background:var(--g);color:white;}
+.rc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--bo);}.rc-price-wrap{}.rc-loc{display:flex;align-items:center;gap:4px;}
+.rc-price{font-family:var(--fh);font-size:26px;font-weight:600;color:var(--ink);letter-spacing:-.5px;}
+.rc-price span{font-size:12px;color:var(--mu);font-family:var(--fb);font-weight:500;}
+.btn-view{padding:10px 20px;background:var(--g);color:white;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+.btn-view:hover{background:var(--gl);transform:scale(1.05);}
 .loading-state{text-align:center;padding:52px;color:var(--mu);}
 .spinner{width:26px;height:26px;border:2.5px solid var(--bo);border-top-color:var(--gl);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -861,7 +861,7 @@ function handleUpload(inputId,zoneId,doneId){const f=document.getElementById(inp
 function loadCities(){const e=document.getElementById('fEst').value;const s=document.getElementById('fCid');s.innerHTML='<option value="">Todos os municípios</option>';(CITIES[e]||[]).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;s.appendChild(o);});}
 function applyFilters(){const e=document.getElementById('fEst').value;const c=document.getElementById('fCid').value;const esp=document.getElementById('fEsp2').value;const v=parseFloat(document.getElementById('fVal').value)||Infinity;let r=[...DEMOS];if(e)r=r.filter(s=>s.estado===e);if(c)r=r.filter(s=>s.cidade===c);if(esp)r=r.filter(s=>s.esp===esp);r=r.filter(s=>s.valor<=v);renderRooms(r);}
 function loadRooms(){renderRooms(DEMOS);}
-function renderRooms(list){if(!list.length){document.getElementById('roomsGrid').innerHTML='<div class="loading-state" style="opacity:.5">Nenhum espaço encontrado.</div>';return;}document.getElementById('roomsGrid').innerHTML='<div class="rooms-grid">'+list.map(s=>`<div class="room-card" onclick="window.location.href='sala-detalhe.html?id=${s.id}'"><div class="rc-img"><div class="rc-esp">${s.esp}</div><div class="rc-ver">Verificado</div></div><div class="rc-body"><div class="rc-clin">${s.clinica}</div><div class="rc-name">${s.nome}</div><div class="rc-loc">${s.bairro} · ${s.cidade}, ${s.estado}</div><div class="rc-tags"><span class="rc-tag">${s.dias}</span><span class="rc-tag">${s.hI} – ${s.hF}</span></div><div class="rc-foot"><div class="rc-price">R$ ${s.valor.toFixed(2)}<span> / sessão</span></div><button class="btn-view">Ver espaço</button></div></div></div>`).join('')+'</div>';}
+function renderRooms(list){if(!list.length){document.getElementById('roomsGrid').innerHTML='<div class="loading-state" style="opacity:.5">Nenhum espaço encontrado.</div>';return;}document.getElementById('roomsGrid').innerHTML='<div class="rooms-grid">'+list.map(s=>`<div class="room-card" onclick="window.location.href='sala-detalhe.html?id=${s.id}'"><div class="rc-img"><div class="rc-esp">${s.esp}</div><div class="rc-ver">✓ Verificado</div></div><div class="rc-body"><div class="rc-clin">${s.clinica}</div><div class="rc-name">${s.nome}</div><div class="rc-loc">${s.bairro} · ${s.cidade}, ${s.estado}</div><div class="rc-tags"><span class="rc-tag">🕐 ${s.hI} – ${s.hF}</span><span class="rc-tag">📅 ${s.dias}</span></div><div class="rc-foot"><div class="rc-price-wrap"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:1px">A partir de</div><div class="rc-price">R$ ${s.valor.toFixed(2)}<span> / sessão</span></div></div><button class="btn-view">Ver espaço →</button></div></div></div>`).join('')+'</div>';}
 
 async function cadastrarEspaco(){
   const n=document.getElementById('e_nome').value.trim(),resp=document.getElementById('e_resp').value.trim(),em=document.getElementById('e_email').value.trim(),s=document.getElementById('e_senha').value,d=document.getElementById('e_doc').value.trim(),f1=document.getElementById('e_f1').files[0],f2=document.getElementById('e_f2').files[0],f3=document.getElementById('e_f3').files[0];
@@ -875,7 +875,7 @@ async function cadastrarEspaco(){
     const{data:cl,error:insertErr}=await db.from('clinicas').insert({
       nome:n,proprietaria:resp,email:em,
       plano:'profissional',status:'pendente_aprovacao',
-      WhatsApp:document.getElementById('e_tel').value.trim()||null,
+      whatsapp:document.getElementById('e_tel').value.trim()||null,
       cnpj:tipoPessoa==='PJ'?d:null,cpf:tipoPessoa==='PF'?d:null
     }).select().single();
     if(insertErr){
@@ -1181,7 +1181,7 @@ async function mCadastrarEspaco(){
     const payload={
       nome:n,proprietaria:resp,email:em,
       plano:'profissional',status:'pendente_aprovacao',
-      WhatsApp:document.getElementById('me_tel').value.trim()||null,
+      whatsapp:document.getElementById('me_tel').value.trim()||null,
       cnpj:mTipoPessoa==='PJ'?d:null,
       cpf:mTipoPessoa==='PF'?d:null
     };
