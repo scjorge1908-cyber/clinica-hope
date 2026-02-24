@@ -184,10 +184,10 @@ const HORAS = ['08','09','10','11','14','15','16','17','18','19','20'];
 const DIAS_PT = { segunda:'Segunda', terca:'Terça', quarta:'Quarta', quinta:'Quinta', sexta:'Sexta' };
 
 function renderPainel() {
-  const salas = getSalas();
+  const salas  = getSalas();
   const agends = getAgendamentos();
   const filtroTurno = document.getElementById('painelFiltroTurno')?.value || '';
-  const filtroDia   = document.getElementById('painelFiltroDia')?.value || '';
+  const filtroDia   = document.getElementById('painelFiltroDia')?.value  || '';
 
   // Stats
   const totalSlots = salas.length * HORAS.length * 5;
@@ -202,45 +202,91 @@ function renderPainel() {
     <div class="stat-card stat-green"><div class="stat-label">Receita estimada</div><div class="stat-value">R$ ${totalVal.toLocaleString('pt-BR')}</div><div class="stat-sub">sublocações</div></div>
   `;
 
+  // Filtros
   const horasFiltradas = filtroTurno === 'manha' ? ['08','09','10','11'] :
                          filtroTurno === 'tarde'  ? ['14','15','16','17'] :
                          filtroTurno === 'noite'  ? ['18','19','20'] : HORAS;
 
   const diasFiltrados = filtroDia ? [filtroDia] : Object.keys(DIAS_PT);
 
-  let thead = '<tr><th>Hora</th>';
-  diasFiltrados.forEach(d => thead += `<th>${DIAS_PT[d]}</th>`);
-  thead += '</tr>';
+  if (!salas.length) {
+    document.getElementById('painelWrap').innerHTML = `
+      <div style="text-align:center;padding:40px;color:#6b7a94">
+        <div style="font-size:32px;margin-bottom:12px">🏠</div>
+        Nenhuma sala cadastrada. Vá em <strong>Salas</strong> para cadastrar.
+      </div>`;
+    return;
+  }
 
-  let rows = '';
-  horasFiltradas.forEach(hora => {
-    rows += `<tr><td>${hora}:00</td>`;
-    diasFiltrados.forEach(dia => {
-      const ocupantes = agends.filter(a => {
-        const diaSemana = getDiaSemana(a.data);
-        return diaSemana === dia && a.horaI && a.horaI.startsWith(hora) && a.status !== 'cancelado';
+  // ── Uma tabela por SALA ──
+  // Colunas = Horário | Dia1 | Dia2 | ...
+  let html = '';
+
+  salas.forEach(sala => {
+    // Filtrar só dias que a sala funciona
+    const diasDaSala = diasFiltrados.filter(d => (sala.dias || []).includes(d));
+
+    if (!diasDaSala.length) return; // sala não funciona nos dias filtrados
+
+    let thead = '<tr><th style="width:72px">Horário</th>';
+    diasDaSala.forEach(d => thead += `<th>${DIAS_PT[d]}</th>`);
+    thead += '</tr>';
+
+    let rows = '';
+    horasFiltradas.forEach(hora => {
+      // Verificar se este horário está dentro do range da sala
+      const hNum = parseInt(hora);
+      const hIni = parseInt((sala.horaInicio || '08:00').split(':')[0]);
+      const hFim = parseInt((sala.horaFim    || '21:00').split(':')[0]);
+      if (hNum < hIni || hNum >= hFim) return; // fora do horário da sala
+
+      rows += `<tr><td style="font-weight:700;font-size:13px;color:#6b7a94">${hora}:00</td>`;
+
+      diasDaSala.forEach(dia => {
+        const ocupantes = agends.filter(a => {
+          const diaSemana = getDiaSemana(a.data);
+          return diaSemana === dia
+            && a.salaId === sala.id
+            && a.horaI && a.horaI.startsWith(hora)
+            && a.status !== 'cancelado';
+        });
+
+        if (ocupantes.length === 0) {
+          rows += `<td><span class="cell-livre">LIVRE</span></td>`;
+        } else if (ocupantes.length >= 2) {
+          rows += `<td><span class="cell-conflito">⚠ CONFLITO</span></td>`;
+        } else {
+          rows += `<td><span class="cell-ocupado">${ocupantes[0].psiNome}</span></td>`;
+        }
       });
 
-      let celulas = salas.map(sala => {
-        const ocu = ocupantes.filter(o => o.salaId === sala.id);
-        if (ocu.length === 0) return `<span class="cell-livre">LIVRE</span>`;
-        if (ocu.length >= 2) return `<span class="cell-conflito">⚠ CONFLITO</span>`;
-        return `<span class="cell-ocupado">${ocu[0].psiNome}</span>`;
-      });
-
-      rows += `<td style="padding:6px 8px">${celulas.join('<br>')}</td>`;
+      rows += '</tr>';
     });
-    rows += '</tr>';
+
+    if (!rows) return; // sem horários para mostrar
+
+    html += `
+      <div style="margin-bottom:28px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div>
+          <span style="font-family:'DM Serif Display',serif;font-size:17px;font-weight:700">${sala.nome}</span>
+          <span style="font-size:12px;color:#6b7a94">${sala.endereco}</span>
+          <span style="margin-left:auto;font-size:12px;font-weight:700;color:#0a7c5c">R$ ${(sala.valor||0).toFixed(2)}/sessão</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="painel-table">
+            <thead>${thead}</thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
   });
 
-  document.getElementById('painelWrap').innerHTML = `
-    <div style="overflow-x:auto">
-      <table class="painel-table">
-        <thead>${thead}</thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  `;
+  document.getElementById('painelWrap').innerHTML = html || `
+    <div style="text-align:center;padding:40px;color:#6b7a94">
+      Nenhuma sala disponível para os filtros selecionados.
+    </div>`;
 }
 
 function getDiaSemana(dateStr) {
