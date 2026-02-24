@@ -276,7 +276,7 @@ footer strong{color:rgba(255,255,255,.6);}
     <a href="#salas">Encontrar sala</a>
     <a href="#como">Como funciona</a>
     <a href="#parceiro">Seja parceiro</a>
-    <a href="index.html" class="nav-cta">Área da clínica →</a>
+    <a href="javascript:void(0)" class="nav-cta" onclick="abrirModalCadastro()">Área da clínica →</a>
   </div>
 </nav>
 
@@ -406,7 +406,7 @@ footer strong{color:rgba(255,255,255,.6);}
         <div class="beneficio">Relatórios financeiros completos</div>
         <div class="beneficio">Sem taxa de adesão — pague só pelo uso</div>
       </div>
-      <button class="parceiro-cta" onclick="abrirModalCadastro()">
+      <button class="parceiro-cta" onclick="window.location.href='index.html'">
         Cadastrar minha clínica →
       </button>
     </div>
@@ -644,165 +644,171 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- ═══════════════════════════════════════════════════════
-     MODAL — CADASTRAR MEU ESPAÇO
-════════════════════════════════════════════════════════ -->
+<!-- ═══ MODAL CADASTRAR MEU ESPAÇO ═══ -->
+<style>
+.cad-input {
+  width:100%;background:#1a2a1f;border:1px solid #1e3828;border-radius:8px;
+  padding:12px 14px;color:#e2e8f0;font-size:14px;outline:none;
+  transition:border-color .2s;font-family:inherit;
+}
+.cad-input:focus { border-color:#10b981; }
+.cad-input::placeholder { color:#4a6355; }
+.cad-label {
+  font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#6b8f7a;display:block;margin-bottom:6px;
+}
+.cad-upload {
+  display:flex;align-items:center;gap:12px;
+  background:#1a2a1f;border:1px dashed #2a4a38;border-radius:8px;
+  padding:14px;cursor:pointer;transition:border-color .2s;
+}
+.cad-upload:hover { border-color:#10b981; }
+.tipo-btn {
+  flex:1;padding:12px;border-radius:8px;border:none;cursor:pointer;
+  font-size:13px;font-weight:700;transition:all .2s;font-family:inherit;
+}
+.tipo-btn.ativo { background:#0d3d28;color:#10b981;border:1px solid #10b981; }
+.tipo-btn.inativo { background:#111f18;color:#4a6355;border:1px solid #1e3828; }
+</style>
+
 <div id="modalCadastroEspaco" style="
-  display:none; position:fixed; inset:0; z-index:9999;
-  background:rgba(0,0,0,.65); backdrop-filter:blur(4px);
-  align-items:center; justify-content:center; padding:20px;
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;padding:20px;
 ">
   <div style="
-    background:#0f1923; color:#e2e8f0; border-radius:16px;
-    width:100%; max-width:560px; max-height:90vh; overflow-y:auto;
-    padding:32px; position:relative; border:1px solid #1e2d3d;
+    background:#0d1f16;color:#e2e8f0;border-radius:20px;
+    width:100%;max-width:580px;max-height:92vh;overflow-y:auto;
+    padding:36px;border:1px solid #1e3828;box-shadow:0 24px 60px rgba(0,0,0,.5);
   ">
     <!-- Cabeçalho -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-      <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;">
-        Cadastrar meu espaço
-      </h2>
-      <button onclick="fecharModalCadastro()" style="
-        background:none;border:none;color:#6b7a94;font-size:22px;cursor:pointer;
-        width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-      ">✕</button>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+      <div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:4px;">Cadastrar meu espaço</h2>
+        <p style="font-size:13px;color:#6b8f7a;">Preencha os dados para anunciar suas salas na plataforma</p>
+      </div>
+      <button onclick="fecharModalCadastro()" style="background:none;border:1px solid #1e3828;color:#6b8f7a;font-size:18px;cursor:pointer;width:36px;height:36px;border-radius:50%;flex-shrink:0;">✕</button>
     </div>
 
-    <!-- Formulário -->
-    <div style="display:flex;flex-direction:column;gap:16px;">
+    <div style="display:flex;flex-direction:column;gap:18px;margin-top:24px;">
 
-      <!-- Razão Social -->
+      <!-- Toggle PJ / PF -->
+      <div style="display:flex;gap:8px;background:#111f18;padding:6px;border-radius:10px;">
+        <button id="btnPJ" class="tipo-btn ativo" onclick="setTipo('PJ')">
+          <div>Pessoa Jurídica</div>
+          <div style="font-size:11px;font-weight:400;margin-top:2px;opacity:.7">CNPJ da empresa</div>
+        </button>
+        <button id="btnPF" class="tipo-btn inativo" onclick="setTipo('PF')">
+          <div>Pessoa Física</div>
+          <div style="font-size:11px;font-weight:400;margin-top:2px;opacity:.7">CPF do responsável</div>
+        </button>
+      </div>
+
+      <!-- Nome Fantasia -->
       <div>
-        <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">Razão Social</label>
-        <input id="cad_razao" type="text" placeholder="Nome da clínica ou espaço" style="
-          width:100%;background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-          padding:12px 14px;color:#e2e8f0;font-size:14px;outline:none;
-        ">
+        <label class="cad-label">Nome Fantasia / Clínica</label>
+        <input id="cad_nome_fantasia" class="cad-input" type="text" placeholder="Ex: Clínica Bem Estar">
+      </div>
+
+      <!-- Razão Social (só PJ) -->
+      <div id="wrap_razao">
+        <label class="cad-label">Razão Social</label>
+        <input id="cad_razao" class="cad-input" type="text" placeholder="Ex: Bem Estar Saúde Ltda">
       </div>
 
       <!-- Responsável + WhatsApp -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
-          <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">Responsável</label>
-          <input id="cad_responsavel" type="text" placeholder="Seu nome completo" style="
-            width:100%;background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-            padding:12px 14px;color:#e2e8f0;font-size:14px;outline:none;
-          ">
+          <label class="cad-label">Responsável</label>
+          <input id="cad_responsavel" class="cad-input" type="text" placeholder="Nome completo">
         </div>
         <div>
-          <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">WhatsApp</label>
-          <input id="cad_whatsapp" type="tel" placeholder="48999990000" style="
-            width:100%;background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-            padding:12px 14px;color:#e2e8f0;font-size:14px;outline:none;
-          ">
+          <label class="cad-label">WhatsApp</label>
+          <input id="cad_whatsapp" class="cad-input" type="tel" placeholder="(11) 99999-9999">
         </div>
       </div>
 
       <!-- E-mail -->
       <div>
-        <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">E-mail</label>
-        <input id="cad_email" type="email" placeholder="seu@email.com" style="
-          width:100%;background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-          padding:12px 14px;color:#e2e8f0;font-size:14px;outline:none;
-        ">
+        <label class="cad-label">E-mail</label>
+        <input id="cad_email" class="cad-input" type="email" placeholder="contato@espaco.com">
       </div>
 
-      <!-- Senha + CPF -->
+      <!-- Senha + CNPJ/CPF -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
-          <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">Senha</label>
-          <input id="cad_senha" type="password" placeholder="Mínimo 6 caracteres" style="
-            width:100%;background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-            padding:12px 14px;color:#e2e8f0;font-size:14px;outline:none;
-          ">
+          <label class="cad-label">Senha</label>
+          <input id="cad_senha" class="cad-input" type="password" placeholder="Mínimo 8 caracteres">
         </div>
         <div>
-          <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">CPF</label>
-          <input id="cad_cpf" type="text" placeholder="000.000.000-00" style="
-            width:100%;background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-            padding:12px 14px;color:#e2e8f0;font-size:14px;outline:none;
-          ">
+          <label class="cad-label" id="label_doc_fiscal">CNPJ</label>
+          <input id="cad_doc_fiscal" class="cad-input" type="text" placeholder="00.000.000/0001-00">
         </div>
       </div>
 
-      <!-- Link da página pública -->
+      <!-- Link público -->
       <div>
-        <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">Link da sua página pública</label>
-        <div style="display:flex;align-items:center;background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;overflow:hidden;">
-          <span style="padding:12px 14px;color:#6b7a94;font-size:13px;white-space:nowrap;border-right:1px solid #2a3a4d;">sublocafacil.com.br/</span>
-          <input id="cad_slug" type="text" placeholder="suaclinica" style="
-            flex:1;background:transparent;border:none;
-            padding:12px 14px;color:#e2e8f0;font-size:14px;outline:none;
-          ">
+        <label class="cad-label">Link da sua página pública</label>
+        <div style="display:flex;align-items:center;background:#1a2a1f;border:1px solid #1e3828;border-radius:8px;overflow:hidden;">
+          <span style="padding:12px 14px;color:#4a6355;font-size:13px;white-space:nowrap;border-right:1px solid #1e3828;">sublocafacil.com.br/</span>
+          <input id="cad_slug" class="cad-input" type="text" placeholder="clinicahope" style="border:none;border-radius:0;">
+          <span style="padding:12px 14px;color:#4a6355;font-size:13px;">—</span>
         </div>
       </div>
 
-      <!-- Upload RG/CNH -->
+      <!-- Upload Doc Principal -->
       <div>
-        <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">RG ou CNH do Responsável</label>
-        <label for="cad_doc_rg" style="
-          display:flex;align-items:center;gap:12px;
-          background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-          padding:14px;cursor:pointer;transition:border-color .2s;
-        " onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='#2a3a4d'">
-          <span style="font-size:20px;">📄</span>
+        <label class="cad-label" id="label_doc_principal">Contrato Social (PJ) ou RG/CNH (PF)</label>
+        <label for="cad_doc_rg" class="cad-upload">
+          <span style="font-size:22px;background:#0d3d28;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;">📄</span>
           <div>
-            <div id="cad_doc_rg_label" style="font-size:13px;color:#e2e8f0;">Clique para selecionar ou arraste</div>
-            <div style="font-size:11px;color:#6b7a94;margin-top:2px;">PDF, JPG ou PNG</div>
+            <div id="cad_doc_rg_label" style="font-size:13px;color:#a0c0b0;">Clique para selecionar ou arraste</div>
+            <div style="font-size:11px;color:#4a6355;margin-top:2px;">PDF, JPG ou PNG — máx. 10 MB</div>
           </div>
         </label>
-        <input id="cad_doc_rg" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="mostrarNomeArquivo(this,'cad_doc_rg_label')">
+        <input id="cad_doc_rg" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="mostrarNome(this,'cad_doc_rg_label')">
       </div>
 
-      <!-- Upload Foto do Documento -->
+      <!-- Upload Foto Doc -->
       <div>
-        <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">Documento com foto do Responsável (RG ou CNH)</label>
-        <label for="cad_doc_foto" style="
-          display:flex;align-items:center;gap:12px;
-          background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-          padding:14px;cursor:pointer;transition:border-color .2s;
-        " onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='#2a3a4d'">
-          <span style="font-size:20px;">🪪</span>
+        <label class="cad-label">Documento com foto do Responsável (RG ou CNH)</label>
+        <label for="cad_doc_foto" class="cad-upload">
+          <span style="font-size:22px;background:#0d3d28;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;">🪪</span>
           <div>
-            <div id="cad_doc_foto_label" style="font-size:13px;color:#e2e8f0;">Clique para selecionar ou arraste</div>
-            <div style="font-size:11px;color:#6b7a94;margin-top:2px;">PDF, JPG ou PNG</div>
+            <div id="cad_doc_foto_label" style="font-size:13px;color:#a0c0b0;">Clique para selecionar ou arraste</div>
+            <div style="font-size:11px;color:#4a6355;margin-top:2px;">PDF, JPG ou PNG — máx. 10 MB</div>
           </div>
         </label>
-        <input id="cad_doc_foto" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="mostrarNomeArquivo(this,'cad_doc_foto_label')">
+        <input id="cad_doc_foto" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="mostrarNome(this,'cad_doc_foto_label')">
       </div>
 
-      <!-- Upload Comprovante de Endereço -->
+      <!-- Upload Comprovante -->
       <div>
-        <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7a94;display:block;margin-bottom:6px;">Comprovante de Endereço do Espaço</label>
-        <label for="cad_doc_end" style="
-          display:flex;align-items:center;gap:12px;
-          background:#1a2535;border:1px solid #2a3a4d;border-radius:8px;
-          padding:14px;cursor:pointer;transition:border-color .2s;
-        " onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='#2a3a4d'">
-          <span style="font-size:20px;">🏠</span>
+        <label class="cad-label">Comprovante de Endereço do Espaço</label>
+        <label for="cad_doc_end" class="cad-upload">
+          <span style="font-size:22px;background:#0d3d28;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;">🏠</span>
           <div>
-            <div id="cad_doc_end_label" style="font-size:13px;color:#e2e8f0;">Conta de luz, água ou IPTU</div>
-            <div style="font-size:11px;color:#6b7a94;margin-top:2px;">PDF, JPG ou PNG</div>
+            <div id="cad_doc_end_label" style="font-size:13px;color:#a0c0b0;">Conta de luz, água ou IPTU</div>
+            <div style="font-size:11px;color:#4a6355;margin-top:2px;">PDF, JPG ou PNG — máx. 10 MB</div>
           </div>
         </label>
-        <input id="cad_doc_end" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="mostrarNomeArquivo(this,'cad_doc_end_label')">
+        <input id="cad_doc_end" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="mostrarNome(this,'cad_doc_end_label')">
       </div>
 
-      <!-- Mensagem de erro/sucesso -->
+      <!-- Mensagem -->
       <div id="cad_msg" style="display:none;padding:12px 14px;border-radius:8px;font-size:13px;font-weight:500;"></div>
 
-      <!-- Botão enviar -->
+      <!-- Botão -->
       <button id="cad_btn" onclick="enviarCadastroEspaco()" style="
         width:100%;background:linear-gradient(135deg,#0a7c5c,#10b981);
-        color:white;border:none;border-radius:10px;
-        padding:16px;font-size:14px;font-weight:800;
-        letter-spacing:.05em;text-transform:uppercase;
-        cursor:pointer;transition:opacity .2s;margin-top:4px;
-      ">
+        color:white;border:none;border-radius:10px;padding:16px;
+        font-size:14px;font-weight:800;letter-spacing:.06em;
+        text-transform:uppercase;cursor:pointer;margin-top:4px;
+        box-shadow:0 4px 20px rgba(16,185,129,.3);">
         Cadastrar Meu Espaço
       </button>
 
-      <p style="text-align:center;font-size:13px;color:#6b7a94;margin-top:4px;">
+      <p style="text-align:center;font-size:13px;color:#4a6355;">
         Já tem conta? <a href="index.html" style="color:#10b981;font-weight:600;">Acessar painel</a>
       </p>
     </div>
@@ -810,30 +816,36 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
-// ═══ MODAL CADASTRO ESPAÇO ═══
+// ═══ MODAL ═══
+let tipoCadastro = 'PJ';
 
 function abrirModalCadastro() {
-  const modal = document.getElementById('modalCadastroEspaco');
-  modal.style.display = 'flex';
+  document.getElementById('modalCadastroEspaco').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
-
 function fecharModalCadastro() {
-  const modal = document.getElementById('modalCadastroEspaco');
-  modal.style.display = 'none';
+  document.getElementById('modalCadastroEspaco').style.display = 'none';
   document.body.style.overflow = '';
 }
-
-// Fechar ao clicar fora
 document.getElementById('modalCadastroEspaco').addEventListener('click', function(e) {
   if (e.target === this) fecharModalCadastro();
 });
 
-function mostrarNomeArquivo(input, labelId) {
-  const label = document.getElementById(labelId);
-  if (input.files && input.files[0]) {
-    label.textContent = input.files[0].name;
-    label.style.color = '#10b981';
+function setTipo(tipo) {
+  tipoCadastro = tipo;
+  document.getElementById('btnPJ').className = 'tipo-btn ' + (tipo==='PJ' ? 'ativo' : 'inativo');
+  document.getElementById('btnPF').className = 'tipo-btn ' + (tipo==='PF' ? 'ativo' : 'inativo');
+  document.getElementById('wrap_razao').style.display = tipo==='PJ' ? 'block' : 'none';
+  document.getElementById('label_doc_fiscal').textContent = tipo==='PJ' ? 'CNPJ' : 'CPF';
+  document.getElementById('cad_doc_fiscal').placeholder = tipo==='PJ' ? '00.000.000/0001-00' : '000.000.000-00';
+  document.getElementById('label_doc_principal').textContent = tipo==='PJ' ? 'Contrato Social (PJ) ou RG/CNH (PF)' : 'RG ou CNH do Responsável';
+}
+
+function mostrarNome(input, labelId) {
+  if (input.files?.[0]) {
+    const el = document.getElementById(labelId);
+    el.textContent = input.files[0].name;
+    el.style.color = '#10b981';
   }
 }
 
@@ -841,76 +853,81 @@ function cadMsg(texto, tipo) {
   const el = document.getElementById('cad_msg');
   el.style.display = 'block';
   el.textContent = texto;
-  el.style.background = tipo === 'erro' ? '#3d1515' : '#0a2e20';
-  el.style.color = tipo === 'erro' ? '#f87171' : '#34d399';
-  el.style.border = `1px solid ${tipo === 'erro' ? '#7f1d1d' : '#065f46'}`;
+  el.style.background = tipo === 'erro' ? '#2d0f0f' : '#0a2e1f';
+  el.style.color      = tipo === 'erro' ? '#f87171' : '#34d399';
+  el.style.border     = `1px solid ${tipo === 'erro' ? '#7f1d1d' : '#065f46'}`;
 }
 
-async function uploadDocumento(arquivo, pasta, clinicaId) {
-  const db = getSupabase();
-  const ext = arquivo.name.split('.').pop();
-  const path = `${clinicaId}/${pasta}_${Date.now()}.${ext}`;
+async function uploadDoc(arquivo, pasta, cid) {
+  const db   = getSupabase();
+  const ext  = arquivo.name.split('.').pop();
+  const path = `${cid}/${pasta}_${Date.now()}.${ext}`;
   const { error } = await db.storage.from('documentos').upload(path, arquivo, { upsert: true });
-  if (error) { console.error('Erro upload:', error); return null; }
-  const { data } = db.storage.from('documentos').getPublicUrl(path);
-  return data.publicUrl;
+  if (error) { console.error('Upload erro:', error); return null; }
+  return db.storage.from('documentos').getPublicUrl(path).data.publicUrl;
 }
 
 async function enviarCadastroEspaco() {
   const btn = document.getElementById('cad_btn');
 
-  // Capturar campos
-  const razao      = document.getElementById('cad_razao').value.trim();
-  const responsavel= document.getElementById('cad_responsavel').value.trim();
-  const whatsapp   = document.getElementById('cad_whatsapp').value.trim();
-  const email      = document.getElementById('cad_email').value.trim();
-  const senha      = document.getElementById('cad_senha').value;
-  const cpf        = document.getElementById('cad_cpf').value.trim();
-  const slug       = document.getElementById('cad_slug').value.trim().toLowerCase().replace(/\s+/g, '-');
-  const fileRg     = document.getElementById('cad_doc_rg').files[0];
-  const fileFoto   = document.getElementById('cad_doc_foto').files[0];
-  const fileEnd    = document.getElementById('cad_doc_end').files[0];
+  const nomeFantasia = document.getElementById('cad_nome_fantasia').value.trim();
+  const razaoSocial  = tipoCadastro === 'PJ' ? document.getElementById('cad_razao').value.trim() : nomeFantasia;
+  const responsavel  = document.getElementById('cad_responsavel').value.trim();
+  const whatsapp     = document.getElementById('cad_whatsapp').value.trim();
+  const email        = document.getElementById('cad_email').value.trim();
+  const senha        = document.getElementById('cad_senha').value;
+  const docFiscal    = document.getElementById('cad_doc_fiscal').value.trim(); // CNPJ ou CPF
+  const slug         = document.getElementById('cad_slug').value.trim().toLowerCase().replace(/\s+/g,'-');
+  const fileRg       = document.getElementById('cad_doc_rg').files[0];
+  const fileFoto     = document.getElementById('cad_doc_foto').files[0];
+  const fileEnd      = document.getElementById('cad_doc_end').files[0];
 
   // Validações
-  if (!razao)       return cadMsg('Informe a razão social.', 'erro');
-  if (!responsavel) return cadMsg('Informe o responsável.', 'erro');
-  if (!whatsapp)    return cadMsg('Informe o WhatsApp.', 'erro');
-  if (!email)       return cadMsg('Informe o e-mail.', 'erro');
-  if (senha.length < 6) return cadMsg('Senha deve ter pelo menos 6 caracteres.', 'erro');
-  if (!cpf)         return cadMsg('Informe o CPF.', 'erro');
-  if (!fileRg)      return cadMsg('Envie o RG ou CNH do responsável.', 'erro');
-  if (!fileFoto)    return cadMsg('Envie a foto do documento.', 'erro');
-  if (!fileEnd)     return cadMsg('Envie o comprovante de endereço.', 'erro');
+  if (!nomeFantasia)    return cadMsg('Informe o nome fantasia / clínica.', 'erro');
+  if (tipoCadastro==='PJ' && !razaoSocial) return cadMsg('Informe a razão social.', 'erro');
+  if (!responsavel)     return cadMsg('Informe o responsável.', 'erro');
+  if (!whatsapp)        return cadMsg('Informe o WhatsApp.', 'erro');
+  if (!email)           return cadMsg('Informe o e-mail.', 'erro');
+  if (senha.length < 8) return cadMsg('Senha deve ter pelo menos 8 caracteres.', 'erro');
+  if (!docFiscal)       return cadMsg(`Informe o ${tipoCadastro==='PJ' ? 'CNPJ' : 'CPF'}.`, 'erro');
+  if (!fileRg)          return cadMsg('Envie o documento principal.', 'erro');
+  if (!fileFoto)        return cadMsg('Envie a foto do documento do responsável.', 'erro');
+  if (!fileEnd)         return cadMsg('Envie o comprovante de endereço.', 'erro');
 
   btn.disabled = true;
-  btn.textContent = 'Aguarde...';
+  btn.textContent = '⏳ Aguarde...';
 
   try {
     const db = getSupabase();
 
     // 1. Criar clínica
-    const { data: clinica, error: errClinica } = await db.from('clinicas').insert({
-      nome: razao,
+    const payload = {
+      nome:         nomeFantasia,
       proprietaria: responsavel,
-      email: email,
-      WhatsApp: whatsapp,
-      plano: 'profissional',
-      status: 'trial',
-      site: slug ? `sublocafacil.com.br/${slug}` : null
-    }).select().single();
+      email,
+      plano:        'profissional',
+      status:       'trial',
+      site:         slug ? `sublocafacil.com.br/${slug}` : null,
+      WhatsApp:     whatsapp,
+    };
+    if (tipoCadastro === 'PJ') payload.cnpj = docFiscal;
+    else                       payload.cpf  = docFiscal;
+    // razão social separada para PJ
+    if (tipoCadastro === 'PJ') payload.razao_social = razaoSocial;
 
-    if (errClinica) {
-      console.error(errClinica);
-      return cadMsg('E-mail já cadastrado ou erro ao criar clínica.', 'erro');
+    const { data: clinica, error: errC } = await db.from('clinicas').insert(payload).select().single();
+    if (errC) {
+      console.error(errC);
+      return cadMsg('E-mail já cadastrado ou erro ao criar o espaço. Tente outro e-mail.', 'erro');
     }
 
     const cid = clinica.id;
 
-    // 2. Upload dos documentos
+    // 2. Upload dos documentos em paralelo
     const [urlRg, urlFoto, urlEnd] = await Promise.all([
-      uploadDocumento(fileRg,   'rg_cnh',      cid),
-      uploadDocumento(fileFoto, 'doc_foto',    cid),
-      uploadDocumento(fileEnd,  'comprovante', cid),
+      uploadDoc(fileRg,   'doc_principal', cid),
+      uploadDoc(fileFoto, 'doc_foto',      cid),
+      uploadDoc(fileEnd,  'comprovante',   cid),
     ]);
 
     // 3. Salvar URLs na clínica
@@ -920,35 +937,36 @@ async function enviarCadastroEspaco() {
       doc_comprovante: urlEnd
     }).eq('id', cid);
 
-    // 4. Criar config padrão
+    // 4. Config padrão
     await db.from('config_clinica').insert({ clinica_id: cid });
 
-    // 5. Criar usuário admin
-    const { error: errUser } = await db.from('usuarios').insert({
-      clinica_id: cid,
-      nome: responsavel,
-      email: email,
-      cpf: cpf,
-      senha_hash: btoa(senha),
-      role: 'admin'
+    // 5. Usuário admin
+    const { error: errU } = await db.from('usuarios').insert({
+      clinica_id:  cid,
+      nome:        responsavel,
+      email,
+      cpf:         tipoCadastro === 'PF' ? docFiscal : null,
+      senha_hash:  btoa(senha),
+      role:        'admin'
     });
 
-    if (errUser) {
-      console.error(errUser);
-      return cadMsg('Clínica criada, mas erro ao criar usuário. Contate o suporte.', 'erro');
+    if (errU) {
+      console.error(errU);
+      return cadMsg('Espaço criado! Mas erro ao criar usuário — contate o suporte.', 'erro');
     }
 
-    // 6. Salvar sessão e redirecionar
+    // 6. Salvar sessão
     localStorage.setItem('hope_user', JSON.stringify({
-      nome: responsavel, email, clinica_id: cid, clinica_nome: razao, role: 'admin'
+      nome: responsavel, email,
+      clinica_id: cid, clinica_nome: nomeFantasia, role: 'admin'
     }));
 
-    cadMsg('✅ Cadastro realizado! Redirecionando...', 'ok');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1800);
+    cadMsg('✅ Cadastro realizado com sucesso! Redirecionando...', 'ok');
+    setTimeout(() => { window.location.href = 'index.html'; }, 2000);
 
-  } catch (e) {
+  } catch(e) {
     console.error(e);
-    cadMsg('Erro inesperado. Tente novamente.', 'erro');
+    cadMsg('Erro inesperado. Verifique o console e tente novamente.', 'erro');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Cadastrar Meu Espaço';
