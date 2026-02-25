@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Portal da Psicóloga — Clínica Hope</title>
+<title>Portal do Profissional — SublocaFácil</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -248,42 +248,126 @@ body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-s
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-clinic-name">🏥 Clínica Esperança</div>
   <h1>Reserve sua sala,<br><em>sem complicação.</em></h1>
-  <p>Escolha o horário, assine o contrato digitalmente e comece a atender.</p>
+  <p>Verifique seu e-mail, preencha seus dados e assine o contrato digitalmente.</p>
 </div>
 
 <!-- BARRA DE PASSOS -->
 <div class="steps-bar">
-  <div class="step active" id="step1"><div class="step-num">1</div> Cadastro</div>
+  <div class="step active" id="step1"><div class="step-num">1</div> Verificação</div>
   <div class="step-sep"></div>
-  <div class="step" id="step2"><div class="step-num">2</div> Reserva</div>
+  <div class="step" id="step2"><div class="step-num">2</div> Cadastro</div>
   <div class="step-sep"></div>
-  <div class="step" id="step3"><div class="step-num">3</div> Contrato</div>
+  <div class="step" id="step3"><div class="step-num">3</div> Reserva</div>
   <div class="step-sep"></div>
-  <div class="step" id="step4"><div class="step-num">4</div> Assinatura</div>
+  <div class="step" id="step4"><div class="step-num">4</div> Contrato</div>
+  <div class="step-sep"></div>
+  <div class="step" id="step5"><div class="step-num">5</div> Assinatura</div>
 </div>
 
 <div class="wrap">
 
+  <!-- ══ TELA 0: VERIFICAÇÃO DE E-MAIL ══ -->
+  <div class="screen active" id="screenVerificacao">
+    <div class="sec-title">Verificação de e-mail</div>
+    <div class="sec-sub">Digite seu e-mail para receber o código de acesso</div>
+    <div class="card">
+      <!-- Etapa A: digitar email -->
+      <div id="etapaEmail">
+        <div class="field">
+          <label>E-mail profissional</label>
+          <input type="email" id="veriEmail" placeholder="seu@email.com" />
+        </div>
+        <div id="testeBanner" style="display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:12px;">
+          🧪 <strong>Modo teste:</strong> o código aparecerá abaixo sem envio de e-mail.
+        </div>
+        <button class="btn-primary" onclick="enviarToken()" id="btnEnviarToken">Enviar código →</button>
+      </div>
+      <!-- Etapa B: digitar token -->
+      <div id="etapaToken" style="display:none;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">Código enviado para</div>
+          <div style="font-weight:700;color:var(--ink);" id="veriEmailMostra"></div>
+        </div>
+        <div id="tokenTestBox" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px;text-align:center;margin-bottom:16px;">
+          <div style="font-size:11px;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Código de teste</div>
+          <div id="tokenTestValor" style="font-size:32px;font-weight:800;letter-spacing:8px;color:#15803d;margin-top:4px;"></div>
+        </div>
+        <div class="field">
+          <label>Código de 6 dígitos</label>
+          <input type="text" id="veriToken" placeholder="000000" maxlength="6"
+            style="text-align:center;font-size:24px;font-weight:700;letter-spacing:8px;"
+            oninput="this.value=this.value.replace(/\D/g,'')" />
+        </div>
+        <button class="btn-primary" onclick="validarToken()">Confirmar código →</button>
+        <div style="text-align:center;margin-top:12px;">
+          <button onclick="voltarParaEmail()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--font-b);">← Trocar e-mail</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ TELA 1: CADASTRO ══ -->
-  <div class="screen active" id="screenCadastro">
+  <div class="screen" id="screenCadastro">
     <div class="sec-title">Seus dados</div>
     <div class="sec-sub">Preencha suas informações para continuar</div>
     <div class="card">
+      <div class="field"><label>Nome completo *</label><input type="text" id="psiNome" placeholder="Dr. Carlos Mendes" /></div>
       <div class="field-row">
-        <div class="field"><label>Nome completo</label><input type="text" id="psiNome" placeholder="Dra. Maria Silva" /></div>
-        <div class="field"><label>CRP</label><input type="text" id="psiCRP" placeholder="06/12345" /></div>
+        <div class="field">
+          <label>Conselho Regional *</label>
+          <select id="psiConselho">
+            <option value="">Selecione...</option>
+            <option value="CRP">CRP — Psicologia</option>
+            <option value="CRM">CRM — Medicina</option>
+            <option value="CRO">CRO — Odontologia</option>
+            <option value="CRN">CRN — Nutrição</option>
+            <option value="CREFITO">CREFITO — Fisioterapia</option>
+            <option value="CRFa">CRFa — Fonoaudiologia</option>
+            <option value="COREN">COREN — Enfermagem</option>
+            <option value="CRF">CRF — Farmácia</option>
+            <option value="CRBM">CRBM — Biomedicina</option>
+            <option value="CRBio">CRBio — Biologia</option>
+            <option value="CRFA">CRFA — Fonoaudiologia</option>
+            <option value="CRESS">CRESS — Serviço Social</option>
+            <option value="CRQ">CRQ — Química</option>
+            <option value="CFO">CFO — Odontologia Federal</option>
+            <option value="CFM">CFM — Medicina Federal</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="field"><label>Número do registro *</label><input type="text" id="psiCRP" placeholder="Ex: 06/12345" /></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>E-mail</label><input type="email" id="psiEmail" placeholder="maria@email.com" /></div>
-        <div class="field"><label>WhatsApp</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" /></div>
+        <div class="field"><label>WhatsApp *</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" oninput="mascaraTel(this)" /></div>
+        <div class="field"><label>CPF *</label><input type="text" id="psiCPF" placeholder="000.000.000-00" oninput="mascaraCPF(this)" maxlength="14" /></div>
       </div>
-      <div class="field"><label>CPF</label><input type="text" id="psiCPF" placeholder="000.000.000-00" /></div>
-      <div class="field"><label>Endereço completo</label><input type="text" id="psiEnd" placeholder="Rua das Flores, 123 — São Paulo/SP" /></div>
+      <!-- Endereço com CEP automático -->
+      <div style="background:#f8fafc;border-radius:10px;padding:16px;margin-top:4px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px;">Endereço</div>
+        <div class="field-row">
+          <div class="field" style="flex:0 0 160px;">
+            <label>CEP * <span id="cepStatus" style="font-size:11px;color:var(--green);font-weight:600;"></span></label>
+            <input type="text" id="psiCEP" placeholder="00000-000" maxlength="9" oninput="mascaraEBuscaCEP(this)" />
+          </div>
+          <div class="field">
+            <label>Logradouro</label>
+            <input type="text" id="psiRua" placeholder="Preenchido automaticamente" readonly style="background:#f1f5f9;color:var(--muted);" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="flex:0 0 100px;"><label>Número *</label><input type="text" id="psiNumero" placeholder="123" /></div>
+          <div class="field"><label>Complemento</label><input type="text" id="psiComplemento" placeholder="Apto, Sala..." /></div>
+          <div class="field"><label>Bairro</label><input type="text" id="psiBairro" readonly style="background:#f1f5f9;color:var(--muted);" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Cidade</label><input type="text" id="psiCidade" readonly style="background:#f1f5f9;color:var(--muted);" /></div>
+          <div class="field" style="flex:0 0 80px;"><label>UF</label><input type="text" id="psiUF" maxlength="2" readonly style="background:#f1f5f9;color:var(--muted);" /></div>
+        </div>
+      </div>
     </div>
     <div class="nav-row">
-      <div></div>
+      <button class="btn-outline" onclick="irPara('screenVerificacao',1)">← Voltar</button>
       <button class="btn-primary" onclick="irParaReserva()">Próximo → Escolher sala</button>
     </div>
   </div>
@@ -370,7 +454,7 @@ body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-s
     </div>
 
     <div class="nav-row">
-      <button class="btn-outline" onclick="irPara('screenCadastro',1)">← Voltar</button>
+      <button class="btn-outline" onclick="irPara('screenCadastro',2)">← Voltar</button>
       <button class="btn-primary" onclick="irParaContrato()">Próximo → Ver contrato</button>
     </div>
   </div>
@@ -396,7 +480,7 @@ body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-s
     </div>
 
     <div class="nav-row">
-      <button class="btn-outline" onclick="irPara('screenReserva',2)">← Voltar</button>
+      <button class="btn-outline" onclick="irPara('screenReserva',3)">← Voltar</button>
       <button class="btn-primary" onclick="irParaAssinatura()">Próximo → Assinar</button>
     </div>
   </div>
@@ -499,9 +583,9 @@ function toast(msg, type='success') {
 }
 
 function atualizarSteps(ativo) {
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 5; i++) {
     const el = document.getElementById('step' + i);
-    el.className = 'step' + (i === ativo ? ' active' : i < ativo ? ' done' : '');
+    if (el) el.className = 'step' + (i === ativo ? ' active' : i < ativo ? ' done' : '');
   }
 }
 
@@ -512,24 +596,39 @@ function irPara(screenId, stepNum) {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ═══ TELA 1 → 2 ═══
+// ═══ TELA 2 → 3 ═══
 function irParaReserva() {
-  const nome  = document.getElementById('psiNome').value.trim();
-  const email = document.getElementById('psiEmail').value.trim();
-  const crp   = document.getElementById('psiCRP').value.trim();
-  const cpf   = document.getElementById('psiCPF').value.trim();
+  const nome     = document.getElementById('psiNome').value.trim();
+  const conselho = document.getElementById('psiConselho').value;
+  const crp      = document.getElementById('psiCRP').value.trim();
+  const cpf      = document.getElementById('psiCPF').value.trim();
+  const tel      = document.getElementById('psiTel').value.trim();
+  const cep      = document.getElementById('psiCEP').value.trim();
+  const numero   = document.getElementById('psiNumero').value.trim();
 
-  if (!nome || !email || !crp || !cpf) { toast('Preencha todos os campos obrigatórios', 'error'); return; }
+  if (!nome)     { toast('Informe o nome completo', 'error'); return; }
+  if (!conselho) { toast('Selecione o conselho regional', 'error'); return; }
+  if (!crp)      { toast('Informe o número do registro', 'error'); return; }
+  if (!cpf)      { toast('Informe o CPF', 'error'); return; }
+  if (!tel)      { toast('Informe o WhatsApp', 'error'); return; }
+  if (!cep)      { toast('Informe o CEP', 'error'); return; }
+  if (!numero)   { toast('Informe o número do endereço', 'error'); return; }
+
+  const rua  = document.getElementById('psiRua').value;
+  const comp = document.getElementById('psiComplemento').value;
+  const bairro = document.getElementById('psiBairro').value;
+  const cidade = document.getElementById('psiCidade').value;
+  const uf   = document.getElementById('psiUF').value;
 
   dadosPsi = {
-    nome, email, crp, cpf,
-    tel: document.getElementById('psiTel').value.trim(),
-    end: document.getElementById('psiEnd').value.trim()
+    nome, conselho, crp, cpf, tel,
+    email: emailVerificado,
+    end: `${rua}, ${numero}${comp ? ' ' + comp : ''} — ${bairro}, ${cidade}/${uf} — CEP ${cep}`
   };
 
   renderBlocoSlots();
   renderHorasAvulso();
-  irPara('screenReserva', 2);
+  irPara('screenReserva', 3);
 }
 
 // ═══ TIPO ═══
@@ -641,7 +740,7 @@ function irParaContrato() {
   }
 
   gerarContratoTexto();
-  irPara('screenContrato', 3);
+  irPara('screenContrato', 4);
 }
 
 function gerarContratoTexto() {
@@ -679,8 +778,8 @@ function gerarContratoTexto() {
   const html = `
     <h3>CONTRATO DE SUBLOCAÇÃO DE SALA</h3>
     <p>Este instrumento particular de sublocação de espaço clínico é celebrado entre:</p>
-    <p><strong>SUBLOCADORA:</strong> ${cfg.nome}, inscrita no CNPJ sob nº ${cfg.cpf_cnpj}, com sede em ${cfg.endereco}, neste ato representada por ${cfg.proprietaria}.</p>
-    <p><strong>SUBLOCATÁRIA:</strong> ${dadosPsi.nome}, inscrita no CPF sob nº ${dadosPsi.cpf}, portadora do CRP ${dadosPsi.crp}, residente em ${dadosPsi.end || '—'}.</p>
+    <p><strong>SUBLOCADORA:</strong> SublocaFácil Gestão de Espaços, inscrita no CNPJ sob nº ${cfg.cpf_cnpj || '—'}, com sede em ${cfg.endereco || '—'}.</p>
+    <p><strong>SUBLOCATÁRIA:</strong> ${dadosPsi.nome}, inscrita no CPF sob nº ${dadosPsi.cpf}, portador(a) do ${dadosPsi.conselho||'CRP'} ${dadosPsi.crp}, residente em ${dadosPsi.end || '—'}.</p>
 
     <h4>CLÁUSULA 1ª — DO OBJETO</h4>
     <p>O presente contrato tem por objeto a sublocação de sala de atendimento psicológico, devidamente equipada, para uso exclusivo da SUBLOCATÁRIA durante os horários pactuados.</p>
@@ -710,7 +809,7 @@ function irParaAssinatura() {
   if (!document.getElementById('checkLGPD').checked)     { toast('Você precisa aceitar os termos da LGPD', 'error'); return; }
   iniciarCanvas();
   renderAssinaturaClinica();
-  irPara('screenAssinatura', 4);
+  irPara('screenAssinatura', 5);
 }
 
 // ═══ CANVAS ═══
@@ -837,8 +936,9 @@ async function finalizarContrato() {
     localStorage.setItem('hope_psi_logada', JSON.stringify({
       id: psiData.id,
       nome: dadosPsi.nome,
+      conselho: dadosPsi.conselho,
       crp: dadosPsi.crp,
-      email: dadosPsi.email,
+      email: emailVerificado,
       clinica_id: clinicaId
     }));
 
@@ -862,9 +962,107 @@ async function finalizarContrato() {
 
 function irParaPainelPsi() { window.location.href = 'painel-psi.html'; }
 
+// ═══ VERIFICAÇÃO DE E-MAIL ═══
+let emailVerificado = '';
+let tokenGerado = '';
+const EMAIL_TESTE = 'teste@teste.com';
+
+function enviarToken() {
+  const email = document.getElementById('veriEmail').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { toast('Digite um e-mail válido', 'error'); return; }
+
+  // Gerar token de 6 dígitos
+  tokenGerado = String(Math.floor(100000 + Math.random() * 900000));
+
+  const isTeste = email === EMAIL_TESTE || email.endsWith('@teste.com');
+
+  document.getElementById('etapaEmail').style.display = 'none';
+  document.getElementById('etapaToken').style.display = 'block';
+  document.getElementById('veriEmailMostra').textContent = email;
+
+  if (isTeste) {
+    // Modo teste: mostrar token na tela
+    document.getElementById('testeBanner').style.display = 'block';
+    document.getElementById('tokenTestBox').style.display = 'block';
+    document.getElementById('tokenTestValor').textContent = tokenGerado;
+    toast('Modo teste ativo — código exibido na tela', 'success');
+  } else {
+    // Enviar via API
+    fetch('/api/send-token', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, token: tokenGerado })
+    }).then(r => {
+      if (r.ok) toast('Código enviado para ' + email, 'success');
+      else toast('Erro ao enviar e-mail. Tente novamente.', 'error');
+    }).catch(() => toast('Erro de conexão', 'error'));
+  }
+}
+
+function validarToken() {
+  const digitado = document.getElementById('veriToken').value.trim();
+  if (!digitado) { toast('Digite o código recebido', 'error'); return; }
+  if (digitado !== tokenGerado) { toast('Código incorreto. Verifique e tente novamente.', 'error'); return; }
+
+  emailVerificado = document.getElementById('veriEmail').value.trim();
+  toast('E-mail verificado com sucesso! ✓', 'success');
+  irPara('screenCadastro', 2);
+}
+
+function voltarParaEmail() {
+  document.getElementById('etapaEmail').style.display = 'block';
+  document.getElementById('etapaToken').style.display = 'none';
+  document.getElementById('tokenTestBox').style.display = 'none';
+  document.getElementById('testeBanner').style.display = 'none';
+  document.getElementById('veriToken').value = '';
+  tokenGerado = '';
+}
+
+// ═══ MÁSCARAS ═══
+function mascaraCPF(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  el.value = v;
+}
+function mascaraTel(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/(\d{2})(\d)/,'($1) $2');
+  v = v.replace(/(\d{5})(\d{1,4})$/,'$1-$2');
+  el.value = v;
+}
+
+// ═══ CEP AUTOMÁTICO ═══
+async function mascaraEBuscaCEP(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/(\d{5})(\d)/,'$1-$2');
+  el.value = v;
+  const digits = v.replace(/\D/g,'');
+  if (digits.length === 8) {
+    const s = document.getElementById('cepStatus');
+    if(s) s.textContent = '⏳';
+    try {
+      const r = await fetch('https://viacep.com.br/ws/' + digits + '/json/');
+      const d = await r.json();
+      if (d.erro) { if(s) s.textContent='❌'; setTimeout(()=>{if(s)s.textContent='';},2000); return; }
+      document.getElementById('psiRua').value    = d.logradouro || '';
+      document.getElementById('psiBairro').value = d.bairro     || '';
+      document.getElementById('psiCidade').value = d.localidade || '';
+      document.getElementById('psiUF').value     = d.uf         || '';
+      if(s) { s.textContent='✓'; setTimeout(()=>{if(s)s.textContent='';},3000); }
+      document.getElementById('psiNumero').focus();
+    } catch(e) { const s=document.getElementById('cepStatus'); if(s){s.textContent='❌';setTimeout(()=>{s.textContent='';},2000);} }
+  }
+}
+
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bloco_qtd')?.addEventListener('change', () => { renderBlocoSlots(); calcularBloco(); });
+  // Enter no campo de token
+  document.getElementById('veriToken')?.addEventListener('keypress', e => { if(e.key==='Enter') validarToken(); });
+  // Enter no campo de email
+  document.getElementById('veriEmail')?.addEventListener('keypress', e => { if(e.key==='Enter') enviarToken(); });
 });
 </script>
 </body>
