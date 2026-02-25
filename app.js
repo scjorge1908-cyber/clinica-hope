@@ -202,8 +202,8 @@ function renderPainel() {
     <div class="stat-card stat-green"><div class="stat-label">Receita estimada</div><div class="stat-value">R$ ${totalVal.toLocaleString('pt-BR')}</div><div class="stat-sub">sublocações</div></div>
   `;
 
-  // Filtros de turno (Manhã 7-11h, Tarde 12-17h, Noite 18-21h)
-  const horasFiltradas = filtroTurno === 'manha' ? HORAS.filter(h => parseInt(h) >= 7 && parseInt(h) <= 11) :
+  // Filtros
+  const horasFiltradas = filtroTurno === 'manha' ? HORAS.filter(h => parseInt(h) >= 7  && parseInt(h) <= 11) :
                          filtroTurno === 'tarde'  ? HORAS.filter(h => parseInt(h) >= 12 && parseInt(h) <= 17) :
                          filtroTurno === 'noite'  ? HORAS.filter(h => parseInt(h) >= 18 && parseInt(h) <= 21) : HORAS;
 
@@ -965,30 +965,20 @@ async function mascaraCEP(el) {
   let v = el.value.replace(/\D/g,'');
   v = v.replace(/(\d{5})(\d)/,'$1-$2');
   el.value = v;
-  // Busca automática ao completar 8 dígitos
-  const digits = v.replace(/\D/g,'');
-  if (digits.length === 8) {
-    const cepEl = document.getElementById('psiCEP');
-    const statusEl = document.getElementById('cepStatus');
-    if (statusEl) statusEl.textContent = '⏳ buscando...';
+  if (v.replace(/\D/g,'').length === 8) {
+    const s = document.getElementById('cepStatus');
+    if(s) s.textContent = '⏳';
     try {
-      const r = await fetch('https://viacep.com.br/ws/' + digits + '/json/');
+      const r = await fetch('https://viacep.com.br/ws/' + v.replace(/\D/g,'') + '/json/');
       const d = await r.json();
-      if (d.erro) {
-        if(statusEl) statusEl.textContent = '❌ não encontrado';
-        setTimeout(() => { if(statusEl) statusEl.textContent = ''; }, 2000);
-        return;
-      }
+      if (d.erro) { if(s) s.textContent = '❌'; setTimeout(()=>{if(s)s.textContent='';},2000); return; }
       document.getElementById('psiRua').value = d.logradouro || '';
       document.getElementById('psiBairro').value = d.bairro || '';
       document.getElementById('psiCidade').value = d.localidade || '';
       document.getElementById('psiUF').value = d.uf || '';
-      if(statusEl) { statusEl.textContent = '✓'; setTimeout(()=>{statusEl.textContent='';},3000); }
+      if(s) { s.textContent = '✓'; setTimeout(()=>{ s.textContent=''; },3000); }
       document.getElementById('psiNumero').focus();
-    } catch(e) {
-      if(statusEl) statusEl.textContent = '❌';
-      setTimeout(()=>{if(statusEl)statusEl.textContent='';},2000);
-    }
+    } catch(e) { if(s) { s.textContent='❌'; setTimeout(()=>{s.textContent='';},2000); } }
   }
 }
 
@@ -1017,28 +1007,23 @@ function carregarHorariosDisp() {
   if (!grid) return;
   if (!salaId) {
     grid.innerHTML = '';
-    if (msg) { msg.style.display = 'block'; msg.textContent = 'Selecione uma sala para ver os horários disponíveis'; }
+    if (msg) { msg.style.display = 'block'; msg.textContent = 'Selecione uma sala para ver os horários'; }
     return;
   }
   if (!data) {
-    // Mostrar horários da sala sem filtrar ocupação (data não selecionada)
-    if (msg) { msg.style.display = 'block'; msg.textContent = 'Selecione uma data para ver disponibilidade real'; }
+    if (msg) { msg.style.display = 'block'; msg.textContent = 'Selecione uma data para ver a disponibilidade real'; }
   } else {
     if (msg) msg.style.display = 'none';
   }
   const sala = getSalas().find(s => s.id === salaId);
-  const agends = data ? getAgendamentos().filter(a => a.salaId === salaId && a.data === data && a.status !== 'cancelado') : [];
+  const agends = getAgendamentos().filter(a => a.salaId === salaId && a.data === data && a.status !== 'cancelado');
   const ocupadas = agends.map(a => a.horaI);
   const horas = _periodoFiltro ? TURNOS_HORAS[_periodoFiltro] : TODAS_HORAS;
   
+  // Filtrar pelas horas da sala
   const horaInicio = sala?.horaInicio || '07:00';
   const horaFim = sala?.horaFim || '21:00';
   const horasFiltradas = horas.filter(h => h >= horaInicio && h <= horaFim);
-  
-  if (!horasFiltradas.length) {
-    grid.innerHTML = '<div style="font-size:12px;color:#94a3b8;padding:8px 0;grid-column:1/-1;">Nenhum horário disponível neste filtro</div>';
-    return;
-  }
   
   grid.innerHTML = horasFiltradas.map(h => {
     const ocp = ocupadas.includes(h);
@@ -1148,16 +1133,14 @@ function verificarBlocoDisp(idx) {
   calcularTotal();
 }
 
-// ── HELPERS DATA ──
-function diasDoMesComDiaSemana(diaSemana, mes, ano) {
-  // diaSemana: 'segunda','terca','quarta','quinta','sexta','sabado'
-  const mapJS = {segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6,domingo:0};
-  const alvo = mapJS[diaSemana];
+// ── HELPER: dias do mês com determinado dia da semana ──
+function _diasMesComDia(diaSem, mes, ano) {
+  const map = {segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6,domingo:0};
+  const alvo = map[diaSem];
   const dias = [];
-  const diasMes = new Date(ano, mes, 0).getDate();
-  for (let d = 1; d <= diasMes; d++) {
-    const dt = new Date(ano, mes-1, d);
-    if (dt.getDay() === alvo) dias.push(d);
+  const total = new Date(ano, mes, 0).getDate();
+  for (let d = 1; d <= total; d++) {
+    if (new Date(ano, mes-1, d).getDay() === alvo) dias.push(d);
   }
   return dias;
 }
@@ -1169,16 +1152,16 @@ function calcularTotal() {
   const resumoItens = document.getElementById('resumoItens');
   const resumoTotal = document.getElementById('resumoTotal');
   if (!resumoItens || !resumoTotal) return;
-  
+
   const hoje = new Date();
-  const mesAtual = hoje.getMonth() + 1;
-  const anoAtual = hoje.getFullYear();
+  const mesRef = hoje.getMonth() + 1;
+  const anoRef = hoje.getFullYear();
   const nomeMes = hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-  
+  const perLbl = {manha:'Manhã',tarde:'Tarde',noite:'Noite'};
+  const diaLbl = {segunda:'Segunda',terca:'Terça',quarta:'Quarta',quinta:'Quinta',sexta:'Sexta',sabado:'Sábado'};
+
   let total = 0;
   let itens = [];
-  const diasLbl = {segunda:'Segunda',terca:'Terça',quarta:'Quarta',quinta:'Quinta',sexta:'Sexta',sabado:'Sábado'};
-  const perLbl = {manha:'Manhã',tarde:'Tarde',noite:'Noite'};
 
   if (tipo === 'bloco') {
     Object.entries(_blocosPeriodos).forEach(([idx, periodos]) => {
@@ -1188,47 +1171,33 @@ function calcularTotal() {
       if (!dia) return;
       Object.entries(periodos).forEach(([p, ativo]) => {
         if (!ativo) return;
-        const hPeriodo = TURNOS_HORAS[p]?.length || 0;
-        const diasMes = diasDoMesComDiaSemana(dia, mesAtual, anoAtual);
-        const valPorDia = hPeriodo * valorHora;
-        const valTotal = valPorDia * diasMes.length;
+        const nHoras = TURNOS_HORAS[p]?.length || 0;
+        const diasMes = _diasMesComDia(dia, mesRef, anoRef);
+        const valDia = nHoras * valorHora;
+        const valTotal = valDia * diasMes.length;
         total += valTotal;
         itens.push(`<div class="resumo-item">
-          <span>${diasLbl[dia]||dia} — ${perLbl[p]||p} (${hPeriodo}h × ${diasMes.length} dias em ${nomeMes})</span>
+          <span>${diaLbl[dia]||dia} — ${perLbl[p]||p} · ${nHoras}h × ${diasMes.length} dias (${nomeMes})</span>
           <span style="font-weight:700;">R$ ${valTotal.toFixed(2).replace('.',',')}</span>
         </div>`);
       });
     });
-  } else if (tipo === 'semanal' || tipo === 'quinzenal') {
-    // Calcular ocorrências no mês com base nos horários selecionados
+  } else if ((tipo === 'semanal' || tipo === 'quinzenal') && _horasSelecionadas.length > 0) {
     const data = document.getElementById('psiDataInicio')?.value;
-    if (!data || _horasSelecionadas.length === 0) {
-      resumoItens.innerHTML = '<div style="font-size:12px;color:#94a3b8;padding:4px 0;">Selecione horários para ver o resumo</div>';
-      resumoTotal.textContent = 'R$ 0,00';
-      return;
-    }
-    const dtBase = new Date(data + 'T12:00');
-    const diaSem = dtBase.getDay(); // 0=dom, 1=seg...
-    const diasSemLbl = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-    const mesDaData = dtBase.getMonth() + 1;
+    if (!data) { resumoItens.innerHTML='<div style="font-size:12px;color:#94a3b8;padding:4px 0;">Selecione a data de início</div>'; resumoTotal.textContent='R$ 0,00'; return; }
+    const dtBase = new Date(data+'T12:00');
+    const diaSem = dtBase.getDay();
+    const diasSemNome = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    const mesDaData = dtBase.getMonth()+1;
     const anoDaData = dtBase.getFullYear();
-    const totalDias = new Date(anoDaData, mesDaData, 0).getDate();
-    
-    // Contar quantas vezes cai neste dia no mês
-    let ocorrencias = [];
-    for (let d = 1; d <= totalDias; d++) {
-      const dt = new Date(anoDaData, mesDaData-1, d);
-      if (dt.getDay() === diaSem) ocorrencias.push(d);
-    }
-    if (tipo === 'quinzenal') ocorrencias = ocorrencias.filter((_,i) => i % 2 === 0);
-    
+    let ocorrencias = _diasMesComDia(Object.keys({0:'domingo',1:'segunda',2:'terca',3:'quarta',4:'quinta',5:'sexta',6:'sabado'})[diaSem]||'segunda', mesDaData, anoDaData);
+    if (tipo === 'quinzenal') ocorrencias = ocorrencias.filter((_,i) => i%2===0);
     const n = _horasSelecionadas.length;
-    const valPorDia = n * valorHora;
-    const valMensal = valPorDia * ocorrencias.length;
-    total = valMensal;
+    const valDia = n * valorHora;
+    total = valDia * ocorrencias.length;
     const datas = ocorrencias.map(d => `${String(d).padStart(2,'0')}/${String(mesDaData).padStart(2,'0')}`).join(', ');
-    itens.push(`<div class="resumo-item"><span>${n}h × ${ocorrencias.length} ${diasSemLbl[diaSem]} em ${nomeMes}</span><span style="font-weight:600;">R$ ${valPorDia.toFixed(2).replace('.',',')} / dia</span></div>`);
-    itens.push(`<div class="resumo-item" style="font-size:11px;color:#64748b;"><span>Datas: ${datas}</span><span>= R$ ${valMensal.toFixed(2).replace('.',',')}</span></div>`);
+    itens.push(`<div class="resumo-item"><span>${n}h × ${ocorrencias.length}× ${diasSemNome[diaSem]} em ${dtBase.toLocaleString('pt-BR',{month:'long',year:'numeric'})}</span><span style="font-weight:600;">R$ ${valDia.toFixed(2).replace('.',',')} / dia</span></div>`);
+    itens.push(`<div class="resumo-item" style="font-size:11px;color:#64748b;"><span>Datas: ${datas}</span><span>= R$ ${total.toFixed(2).replace('.',',')}</span></div>`);
   } else {
     // Avulso
     const n = _horasSelecionadas.length;
@@ -1239,7 +1208,7 @@ function calcularTotal() {
       itens.push(`<div class="resumo-item"><span>${n} hora${n>1?'s':''} — ${dataFmt}</span><span style="font-weight:700;">R$ ${total.toFixed(2).replace('.',',')}</span></div>`);
     }
   }
-  
+
   resumoItens.innerHTML = itens.join('') || '<div style="font-size:12px;color:#94a3b8;padding:4px 0;">Selecione os horários para ver o resumo</div>';
   resumoTotal.textContent = 'R$ ' + total.toFixed(2).replace('.',',');
 }
@@ -1456,33 +1425,15 @@ function salvarNovaReserva() {
   psis.push(novaPsi);
   DB.set('psicologas_' + currentUser.clinicaId, psis);
 
-  // Salvar agendamentos
-  const agends = getAgendamentos();
-  if (tipoSub === 'bloco') {
-    // Para cada dia/período do bloco, criar agendamento com diaSemana
-    Object.entries(_blocosPeriodos).forEach(([idx, periodos]) => {
-      const item = document.getElementById('blocoItem' + idx);
-      if (!item) return;
-      const dia = item.querySelector('.bloco-dia-sel')?.value;
-      if (!dia) return;
-      Object.entries(periodos).forEach(([p, ativo]) => {
-        if (!ativo) return;
-        (TURNOS_HORAS[p] || []).forEach(h => {
-          const [hr] = h.split(':');
-          const horaF = (parseInt(hr)+1).toString().padStart(2,'0')+':00';
-          agends.push({ id:DB.id(), clinicaId:currentUser.clinicaId, psiId:novaPsi.id, salaId, diaSemana:dia, periodo:p, horaI:h, horaF, valor:valorHora, tipo:'bloco', status:'agendado', paciente:'' });
-        });
-      });
-    });
-  } else if (salaId && _horasSelecionadas.length > 0) {
+  // Salvar agendamentos dos horários selecionados
+  if (salaId && _horasSelecionadas.length > 0) {
+    const agends = getAgendamentos();
     const data = document.getElementById('psiDataInicio')?.value;
     _horasSelecionadas.forEach(h => {
       const [hr] = h.split(':');
-      const horaF = (parseInt(hr)+1).toString().padStart(2,'0')+':00';
-      agends.push({ id:DB.id(), clinicaId:currentUser.clinicaId, psiId:novaPsi.id, salaId, data, horaI:h, horaF, valor:valorHora, tipo:tipoSub, status:'agendado', paciente:'' });
+      const horaF = (parseInt(hr) + 1).toString().padStart(2,'0') + ':00';
+      agends.push({ id: DB.id(), clinicaId: currentUser.clinicaId, psiId: novaPsi.id, salaId, data, horaI: h, horaF, valor: valorHora, tipo: tipoSub, status: 'agendado', paciente: '' });
     });
-  }
-  if (agends.length > getAgendamentos().length) {
     DB.set('agendamentos_' + currentUser.clinicaId, agends);
   }
 
