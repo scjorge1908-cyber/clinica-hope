@@ -761,12 +761,12 @@ footer{background:#060f0c;padding:52px 52px 0;}
 </head>
 <body>
 <nav class="nav">
-  <div class="nav-brand" onclick="window.location.href='index.html'">
+  <div class="nav-brand" onclick="window.location.href='painel.html'">
     <div class="nav-mark">S</div>
     <div class="nav-name">SublocaFacil</div>
   </div>
   <div class="nav-right">
-    <button class="btn-ghost" onclick="window.location.href='index.html#loginSec'">Entrar</button>
+    <button class="btn-ghost" onclick="window.location.href='painel.html#loginSec'">Entrar</button>
     <button class="btn-solid" onclick="scrollToSignup()">Criar conta</button>
   </div>
 </nav>
@@ -900,7 +900,7 @@ footer{background:#060f0c;padding:52px 52px 0;}
       <div class="fq-label">Acesso rápido</div>
       <div class="fq-row"><input type="email" id="fEmail" placeholder="E-mail"/><input type="password" id="fSenha" placeholder="Senha"/><button class="fq-btn" onclick="footerLogin()">Entrar</button></div>
     </div>
-    <div class="fcol"><h4>Plataforma</h4><a href="#salas">Ver espaços</a><a onclick="switchTab('pro');scrollToSignup()">Sou profissional</a><a onclick="switchTab('esp');scrollToSignup()">Anunciar espaço</a><a href="index.html">Página inicial</a></div>
+    <div class="fcol"><h4>Plataforma</h4><a href="#salas">Ver espaços</a><a onclick="switchTab('pro');scrollToSignup()">Sou profissional</a><a onclick="switchTab('esp');scrollToSignup()">Anunciar espaço</a><a href="painel.html">Página inicial</a></div>
     <div class="fcol"><h4>Suporte</h4><a>Central de ajuda</a><a>Fale conosco</a></div>
     <div class="fcol"><h4>Legal</h4><a>Termos de uso</a><a>Privacidade</a><a>LGPD</a></div>
   </div>
@@ -1113,7 +1113,7 @@ document.addEventListener('DOMContentLoaded',loadRooms);
         <div class="fg"><label>Senha</label><input type="password" id="me_senha" placeholder="Mínimo 8 caracteres"/></div>
         <div class="fg"><label>Confirmar senha</label><input type="password" id="me_senha2" placeholder="Repita a senha"/></div>
         <button class="btn-submit" id="mBtnStep1" onclick="mEnviarToken()">Continuar →</button>
-        <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeCadModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
+        <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeCadModal();window.location.href='painel.html#loginSec'">Acessar painel</a></div>
       </div>
 
       <!-- PASSO 1b: validar token -->
@@ -1465,7 +1465,7 @@ async function mCadastrarEspaco(){
     const emailSalvo=payload.email;
     closeCadModal();
     openSuccessModalEsp(resp.split(' ')[0], emailSalvo, slug);
-    setTimeout(()=>{ window.location.href='index.html'; }, 3500);
+    setTimeout(()=>{ window.location.href='painel.html'; }, 3500);
   }catch(err){console.error(err);toast(err.message||'Erro inesperado.');btn.disabled=false;btn.textContent='Cadastrar meu espaço';}
 }
 
@@ -1539,7 +1539,7 @@ async function mCadastrarProfissional(){
         </div>
       </div>
       <button class="btn-submit" id="mBtnPro" onclick="mCadastrarProfissional()">Criar minha conta</button>
-      <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeProModal();window.location.href='index.html#loginSec'">Acessar painel</a></div>
+      <div class="flink" style="margin-top:10px;">Já tem conta? <a onclick="closeProModal();window.location.href='painel.html#loginSec'">Acessar painel</a></div>
     </div>
   </div>
 </div>

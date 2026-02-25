@@ -1,7 +1,8 @@
 {
   "rewrites": [
     { "source": "/", "destination": "/home.html" },
-    { "source": "/index.html", "destination": "/index.html" },
+    { "source": "/painel", "destination": "/painel.html" },
+    { "source": "/painel.html", "destination": "/painel.html" },
     { "source": "/painel-psi.html", "destination": "/painel-psi.html" },
     { "source": "/portal-psi.html", "destination": "/portal-psi.html" },
     { "source": "/sala-detalhe.html", "destination": "/sala-detalhe.html" },
