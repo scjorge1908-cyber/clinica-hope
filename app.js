@@ -394,33 +394,83 @@ function resetModalSala() {
 // ═══════════════════════════════════════════
 const tipoSubLabel = { avulso: 'Avulso', semanal: 'Semanal', quinzenal: 'Quinzenal', mensal: 'Mensal fixo' };
 
-function renderPsicologas() {
+function renderPsicologas() { renderPsis(); }
+
+function renderPsis() {
   const psis = getPsis();
   const grid = document.getElementById('psiGrid');
-  if (!psis.length) { grid.innerHTML = '<p class="text-muted">Nenhuma psicóloga cadastrada.</p>'; return; }
+  const empty = document.getElementById('psiEmpty');
+  const search = (document.getElementById('psiSearch')?.value || '').toLowerCase();
+  const filtroTipo = document.getElementById('psiFiltroTipo')?.value || '';
 
-  grid.innerHTML = psis.map(p => {
+  let lista = psis.filter(p => {
+    const matchSearch = !search || p.nome?.toLowerCase().includes(search) || p.email?.toLowerCase().includes(search);
+    const matchTipo = !filtroTipo || p.tipoSub === filtroTipo;
+    return matchSearch && matchTipo;
+  });
+
+  if (!lista.length) {
+    grid.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  const badgeClass = { avulso:'psi-badge-avulso', semanal:'psi-badge-semanal', quinzenal:'psi-badge-quinzenal', mensal:'psi-badge-mensal' };
+  const tipoLabel  = { avulso:'Avulso', semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' };
+
+  grid.innerHTML = lista.map(p => {
     const agends  = getAgendamentos().filter(a => a.psiId === p.id && a.status !== 'cancelado');
     const receita = agends.reduce((s, a) => s + (a.valor || 0), 0);
+    const initials = (p.nome || '?').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+    const conselho = p.conselho || 'CRP';
+    const crp = p.crp || '—';
+    const badge = badgeClass[p.tipoSub] || 'psi-badge-avulso';
+    const label = tipoLabel[p.tipoSub] || p.tipoSub;
+
     return `
-      <div class="item-card">
-        <div class="item-card-head">
+      <div class="psi-card">
+        <span class="psi-badge ${badge}">${label}</span>
+        <div class="psi-card-header">
+          <div class="psi-avatar">${initials}</div>
           <div>
-            <div class="item-card-name">${p.nome}</div>
-            <div class="item-card-sub">CRP ${p.crp}</div>
+            <div class="psi-card-name">${p.nome}</div>
+            <div class="psi-card-reg">${conselho} ${crp}</div>
+            ${p.especialidade ? `<div style="font-size:11px;color:#0d9488;font-weight:600;margin-top:2px;">${p.especialidade}</div>` : ''}
           </div>
-          <span class="badge badge-green">${tipoSubLabel[p.tipoSub] || p.tipoSub}</span>
         </div>
-        <div class="item-card-details">
-          <div class="detail-row"><span>E-mail</span><strong>${p.email}</strong></div>
-          <div class="detail-row"><span>Telefone</span><strong>${p.tel}</strong></div>
-          <div class="detail-row"><span>Agendamentos</span><strong>${agends.length}</strong></div>
-          <div class="detail-row"><span>Receita gerada</span><strong class="text-green">R$ ${receita.toLocaleString('pt-BR', {minimumFractionDigits:2})}</strong></div>
+        <div class="psi-card-body">
+          ${p.email ? `<div class="psi-info-row">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            <span>${p.email}</span>
+          </div>` : ''}
+          ${p.tel ? `<div class="psi-info-row">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.76a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg>
+            <span>${p.tel}</span>
+          </div>` : ''}
         </div>
-        <div class="item-card-actions">
-          <button class="btn-outline" style="flex:1" onclick="editPsi('${p.id}')">✎ Editar</button>
-          <button class="btn-outline" style="flex:1" onclick="gerarCobrancaPsi('${p.id}')">💳 Cobrar</button>
-          <button class="btn-icon" onclick="deletePsi('${p.id}')">🗑</button>
+        <div class="psi-stats">
+          <div class="psi-stat">
+            <div class="psi-stat-val">${agends.length}</div>
+            <div class="psi-stat-label">Agendamentos</div>
+          </div>
+          <div class="psi-stat">
+            <div class="psi-stat-val">R$ ${receita.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
+            <div class="psi-stat-label">Receita gerada</div>
+          </div>
+        </div>
+        <div class="psi-card-actions">
+          <button class="psi-btn-edit" onclick="editPsi('${p.id}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar
+          </button>
+          <button class="psi-btn-cobrar" onclick="gerarCobrancaPsi('${p.id}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Cobrar
+          </button>
+          <button class="psi-btn-del" onclick="deletePsi('${p.id}')" title="Remover">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
         </div>
       </div>
     `;
@@ -428,12 +478,13 @@ function renderPsicologas() {
 }
 
 function salvarPsi() {
-  const id       = document.getElementById('psiId').value;
-  const nome     = document.getElementById('psiNome').value.trim();
-  const crp      = document.getElementById('psiCRP').value.trim();
-  const email    = document.getElementById('psiEmail').value.trim();
-  const tel      = document.getElementById('psiTel').value.trim();
-  const tipoSub  = document.getElementById('psiTipoSub').value;
+  const id       = document.getElementById('psiEditId')?.value || document.getElementById('psiId')?.value || '';
+  const nome     = document.getElementById('psiEditNome')?.value.trim() || '';
+  const crp      = document.getElementById('psiEditCRP')?.value.trim() || '';
+  const email    = document.getElementById('psiEditEmail')?.value.trim() || '';
+  const tel      = document.getElementById('psiEditTel')?.value.trim() || '';
+  const tipoSub  = document.getElementById('psiEditTipoSub')?.value || 'avulso';
+  const conselho = document.getElementById('psiEditConselho')?.value || 'CRP';
 
   if (!nome) { toast('Informe o nome', 'warn'); return; }
 
@@ -886,3 +937,132 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+
+// ── NOVA RESERVA — Fluxo em 3 passos ──
+let _rPasso = 1;
+
+function openNovaReserva() {
+  _rPasso = 1;
+  reservaAtualizarUI();
+  // Popular salas no select
+  const salas = getSalas();
+  const sel = document.getElementById('psiSala');
+  if (sel) {
+    sel.innerHTML = '<option value="">Selecione a sala...</option>' + salas.map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
+  }
+  // Limpar campos
+  ['psiId','psiNome','psiCRP','psiEmail','psiTel','psiEspecialidade','psiValor','psiCobDesc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  openModal('modalReserva');
+}
+
+function reservaAtualizarUI() {
+  ['rPasso1','rPasso2','rPasso3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = _rPasso === i + 1 ? 'block' : 'none';
+  });
+  ['rStep1dot','rStep2dot','rStep3dot'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.style.background = i < _rPasso ? '#0d9488' : '#e2e8f0';
+  });
+  const titles = ['Nova Reserva — Profissional', 'Nova Reserva — Detalhes', 'Nova Reserva — Cobrança'];
+  const titleEl = document.getElementById('reservaTitle');
+  if (titleEl) titleEl.textContent = titles[_rPasso - 1];
+  const voltar = document.getElementById('rBtnVoltar');
+  const cancelar = document.getElementById('rBtnCancelar');
+  const avancar = document.getElementById('rBtnAvancar');
+  if (voltar) voltar.style.display = _rPasso > 1 ? 'block' : 'none';
+  if (cancelar) cancelar.style.display = _rPasso > 1 ? 'none' : 'block';
+  if (avancar) avancar.textContent = _rPasso < 3 ? 'Continuar →' : 'Salvar Reserva';
+}
+
+function reservaAvancar() {
+  if (_rPasso === 1) {
+    const nome = document.getElementById('psiNome')?.value.trim();
+    if (!nome) { toast('Informe o nome do profissional', 'warn'); return; }
+    _rPasso = 2;
+  } else if (_rPasso === 2) {
+    const sala = document.getElementById('psiSala')?.value;
+    const dataI = document.getElementById('psiDataInicio')?.value;
+    if (!sala || !dataI) { toast('Informe a sala e data de início', 'warn'); return; }
+    _rPasso = 3;
+    // Sugerir descrição automática
+    const salaNome = document.getElementById('psiSala')?.selectedOptions[0]?.text || 'sala';
+    const mes = new Date(dataI).toLocaleString('pt-BR', {month:'long', year:'numeric'});
+    const descEl = document.getElementById('psiCobDesc');
+    if (descEl && !descEl.value) descEl.value = `Sublocação ${salaNome} — ${mes}`;
+  } else if (_rPasso === 3) {
+    salvarNovaReserva();
+    return;
+  }
+  reservaAtualizarUI();
+}
+
+function reservaVoltar() {
+  if (_rPasso > 1) { _rPasso--; reservaAtualizarUI(); }
+}
+
+function salvarNovaReserva() {
+  const nome = document.getElementById('psiNome')?.value.trim();
+  const crp = document.getElementById('psiCRP')?.value.trim();
+  const conselho = document.getElementById('psiConselho')?.value || 'CRP';
+  const email = document.getElementById('psiEmail')?.value.trim();
+  const tel = document.getElementById('psiTel')?.value.trim();
+  const especialidade = document.getElementById('psiEspecialidade')?.value.trim();
+  const tipoSub = document.getElementById('psiTipoSub')?.value;
+  const salaId = document.getElementById('psiSala')?.value;
+  const dataInicio = document.getElementById('psiDataInicio')?.value;
+  const horaI = document.getElementById('psiHoraI')?.value;
+  const horaF = document.getElementById('psiHoraF')?.value;
+  const valor = parseFloat(document.getElementById('psiValor')?.value) || 0;
+  const venc = document.getElementById('psiVenc')?.value;
+  const desc = document.getElementById('psiCobDesc')?.value.trim();
+
+  // Salvar profissional
+  const psis = getPsis();
+  const novaPsi = { id: DB.id(), clinicaId: currentUser.clinicaId, nome, crp, conselho, email, tel, especialidade, tipoSub };
+  psis.push(novaPsi);
+  DB.set('psicologas_' + currentUser.clinicaId, psis);
+
+  // Salvar agendamento
+  if (salaId && dataInicio) {
+    const agends = getAgendamentos();
+    agends.push({ id: DB.id(), clinicaId: currentUser.clinicaId, psiId: novaPsi.id, salaId, data: dataInicio, horaI, horaF, valor, tipo: tipoSub, status: 'agendado', paciente: '' });
+    DB.set('agendamentos_' + currentUser.clinicaId, agends);
+  }
+
+  // Salvar cobrança
+  if (valor > 0 && venc) {
+    const cobs = getCobrancas();
+    cobs.push({ id: DB.id(), clinicaId: currentUser.clinicaId, psiId: novaPsi.id, descricao: desc, valor, vencimento: venc, status: 'pendente' });
+    DB.set('cobrancas_' + currentUser.clinicaId, cobs);
+  }
+
+  closeModal('modalReserva');
+  renderPsis();
+  toast('Reserva criada com sucesso!', 'success');
+}
+
+function selectPagto(el, tipo) {
+  document.querySelectorAll('.mp-method').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  const hidden = document.getElementById('psiPagtoTipo');
+  if (hidden) hidden.value = tipo;
+}
+
+function editPsi(id) {
+  const p = getPsis().find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('psiEditId').value = p.id;
+  document.getElementById('psiEditNome').value = p.nome || '';
+  document.getElementById('psiEditCRP').value = p.crp || '';
+  document.getElementById('psiEditEmail').value = p.email || '';
+  document.getElementById('psiEditTel').value = p.tel || '';
+  document.getElementById('psiEditTipoSub').value = p.tipoSub || 'avulso';
+  if (document.getElementById('psiEditConselho')) document.getElementById('psiEditConselho').value = p.conselho || 'CRP';
+  document.getElementById('modalPsiTitle').textContent = 'Editar Profissional';
+  openModal('modalPsi');
+}

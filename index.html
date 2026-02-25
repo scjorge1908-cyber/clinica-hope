@@ -9,6 +9,197 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
+
+  <style>
+  /* ── PROFISSIONAIS — Redesign ── */
+  :root {
+    --midnight: #1e293b;
+    --teal: #0d9488;
+    --teal-light: #f0fdfa;
+    --warm-50: #fafaf9;
+    --warm-100: #f5f5f4;
+    --warm-200: #e7e5e0;
+    --slate-400: #94a3b8;
+    --slate-600: #475569;
+  }
+
+  /* Cards de profissionais */
+  .psi-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--warm-200);
+    overflow: hidden;
+    transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease;
+    position: relative;
+  }
+  .psi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.09);
+  }
+  .psi-card-header {
+    padding: 20px 20px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .psi-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    letter-spacing: -.5px;
+  }
+  .psi-card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--midnight);
+    margin: 0 0 3px;
+    line-height: 1.2;
+  }
+  .psi-card-reg {
+    font-size: 12px;
+    color: var(--slate-400);
+    font-weight: 500;
+  }
+  .psi-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .psi-badge-avulso { background: #fef3c7; color: #92400e; }
+  .psi-badge-semanal { background: #d1fae5; color: #065f46; }
+  .psi-badge-quinzenal { background: #dbeafe; color: #1e40af; }
+  .psi-badge-mensal { background: #ede9fe; color: #5b21b6; }
+
+  .psi-card-body {
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .psi-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--slate-600);
+  }
+  .psi-info-row svg { flex-shrink: 0; opacity: .6; }
+  .psi-info-row strong { color: var(--midnight); font-weight: 600; }
+
+  .psi-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--warm-50);
+    border-top: 1px solid var(--warm-200);
+    border-bottom: 1px solid var(--warm-200);
+    margin: 0;
+  }
+  .psi-stat { text-align: center; }
+  .psi-stat-val { font-size: 17px; font-weight: 800; color: var(--midnight); }
+  .psi-stat-label { font-size: 11px; color: var(--slate-400); font-weight: 500; margin-top: 2px; }
+
+  .psi-card-actions {
+    padding: 12px 20px;
+    display: flex;
+    gap: 8px;
+  }
+  .psi-btn-edit {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--warm-200);
+    border-radius: 8px;
+    background: white;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--midnight);
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .psi-btn-edit:hover { background: var(--warm-100); }
+  .psi-btn-cobrar {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    background: var(--teal);
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .psi-btn-cobrar:hover { background: #0f766e; transform: translateY(-1px); }
+  .psi-btn-del {
+    padding: 8px 10px;
+    border: 1px solid #fee2e2;
+    border-radius: 8px;
+    background: white;
+    color: #ef4444;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .psi-btn-del:hover { background: #fef2f2; }
+
+  /* FAB Mobile */
+  .psi-fab {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(13,148,136,.4);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: transform .2s;
+  }
+  .psi-fab:hover { transform: scale(1.08); }
+
+  /* Steps no modal reserva */
+  #rPasso1, #rPasso2, #rPasso3 { animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* Sidebar nav item psicologas update */
+  #navPsicologas { }
+
+  @media (max-width: 768px) {
+    .psi-fab { display: flex; }
+    .psi-btn-desktop { display: none !important; }
+  }
+  </style>
 </head>
 <body>
 
@@ -104,7 +295,7 @@
         <span class="nav-icon">⬛</span> Salas
       </a>
       <a href="#" class="nav-item" onclick="goTo('psicologas')">
-        <span class="nav-icon">◎</span> Psicólogas
+        <span class="nav-icon">◎</span> Profissionais
       </a>
       <a href="#" class="nav-item" onclick="goTo('agendamentos')">
         <span class="nav-icon">◈</span> Agendamentos
@@ -172,16 +363,43 @@
       <div class="cards-grid" id="salasGrid"></div>
     </section>
 
-    <!-- ── PSICÓLOGAS ── -->
+    <!-- ── PROFISSIONAIS ── -->
     <section id="pagePsicologas" class="page hidden">
-      <div class="page-header">
+      <div class="page-header" style="flex-wrap:wrap;gap:16px;">
         <div>
-          <h2 class="page-title">Psicólogas</h2>
-          <p class="page-sub">Profissionais que sublocam salas</p>
+          <h2 class="page-title">Profissionais</h2>
+          <p class="page-sub">Sublocatários com contratos ativos</p>
         </div>
-        <button class="btn-primary" onclick="openModal('modalPsi')">+ Nova Psicóloga</button>
+        <div style="display:flex;align-items:center;gap:8px;background:#f8f7f5;border:1px solid #e5e2dc;border-radius:12px;padding:8px 16px;flex:1;max-width:480px;">
+          <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="psiSearch" type="text" placeholder="Buscar profissional..." oninput="renderPsis()"
+            style="border:none;background:transparent;outline:none;font-size:14px;color:#1e293b;width:100%;font-family:inherit;" />
+          <select id="psiFiltroTipo" onchange="renderPsis()"
+            style="border:none;background:transparent;outline:none;font-size:13px;color:#64748b;font-family:inherit;cursor:pointer;">
+            <option value="">Todos</option>
+            <option value="avulso">Avulso</option>
+            <option value="semanal">Semanal</option>
+            <option value="quinzenal">Quinzenal</option>
+            <option value="mensal">Mensal</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="openNovaReserva()" style="display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Nova Reserva
+        </button>
       </div>
-      <div class="cards-grid" id="psiGrid"></div>
+      <div id="psiGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-top:8px;"></div>
+      <div id="psiEmpty" style="display:none;text-align:center;padding:64px 24px;">
+        <div style="width:56px;height:56px;border-radius:16px;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <svg width="24" height="24" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <p style="font-size:15px;font-weight:600;color:#1e293b;margin:0 0 6px;">Nenhum profissional encontrado</p>
+        <p style="font-size:13px;color:#94a3b8;margin:0 0 20px;">Adicione uma nova reserva para comecar</p>
+        <button class="btn-primary" onclick="openNovaReserva()">+ Nova Reserva</button>
+      </div>
+      <button onclick="openNovaReserva()" class="psi-fab" title="Nova Reserva">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
     </section>
 
     <!-- ── AGENDAMENTOS ── -->
@@ -379,26 +597,138 @@
   </div>
 </div>
 
-<!-- Modal Psicóloga -->
+<!-- Modal Nova Reserva (3 passos) -->
+<div id="modalReserva" class="modal-overlay hidden">
+  <div class="modal-box modal-lg" style="max-width:560px;">
+    <div class="modal-head">
+      <div>
+        <h3 id="reservaTitle">Nova Reserva</h3>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <div id="rStep1dot" style="height:3px;width:32px;border-radius:2px;background:#0d9488;transition:.3s;"></div>
+          <div id="rStep2dot" style="height:3px;width:32px;border-radius:2px;background:#e2e8f0;transition:.3s;"></div>
+          <div id="rStep3dot" style="height:3px;width:32px;border-radius:2px;background:#e2e8f0;transition:.3s;"></div>
+        </div>
+      </div>
+      <button onclick="closeModal('modalReserva')">✕</button>
+    </div>
+
+    <!-- PASSO 1: Dados do Profissional -->
+    <div id="rPasso1" class="modal-body">
+      <p style="font-size:12px;font-weight:600;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin:0 0 16px;">Passo 1 — Profissional</p>
+      <input type="hidden" id="psiId" />
+      <div class="field"><label>Nome completo</label><input type="text" id="psiNome" placeholder="Ex: Dr. Carlos Mendes" /></div>
+      <div class="field-row">
+        <div class="field">
+          <label>Conselho Regional</label>
+          <select id="psiConselho">
+            <option value="CRP">CRP — Psicologia</option>
+            <option value="CRM">CRM — Medicina</option>
+            <option value="CRO">CRO — Odontologia</option>
+            <option value="CRN">CRN — Nutrição</option>
+            <option value="CREFITO">CREFITO — Fisioterapia</option>
+            <option value="CRFa">CRFa — Fonoaudiologia</option>
+            <option value="CRO">CRO — Terapia Ocup.</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="field"><label>Número do registro</label><input type="text" id="psiCRP" placeholder="Ex: 06/12345" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>E-mail</label><input type="email" id="psiEmail" placeholder="profissional@email.com" /></div>
+        <div class="field"><label>WhatsApp</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" /></div>
+      </div>
+      <div class="field">
+        <label>Especialidade</label>
+        <input type="text" id="psiEspecialidade" placeholder="Ex: Psicoterapia, Clínica Geral, Ortodontia..." />
+      </div>
+    </div>
+
+    <!-- PASSO 2: Detalhes da Reserva -->
+    <div id="rPasso2" class="modal-body" style="display:none;">
+      <p style="font-size:12px;font-weight:600;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin:0 0 16px;">Passo 2 — Reserva</p>
+      <div class="field-row">
+        <div class="field"><label>Sala</label>
+          <select id="psiSala"><option value="">Selecione...</option></select>
+        </div>
+        <div class="field">
+          <label>Tipo de sublocação</label>
+          <select id="psiTipoSub">
+            <option value="avulso">Avulso (por hora)</option>
+            <option value="semanal">Semanal</option>
+            <option value="quinzenal">Quinzenal</option>
+            <option value="mensal">Mensal fixo</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Data início</label><input type="date" id="psiDataInicio" /></div>
+        <div class="field"><label>Data fim (opcional)</label><input type="date" id="psiDataFim" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Horário início</label><input type="time" id="psiHoraI" value="08:00" /></div>
+        <div class="field"><label>Horário fim</label><input type="time" id="psiHoraF" value="09:00" /></div>
+      </div>
+    </div>
+
+    <!-- PASSO 3: Financeiro -->
+    <div id="rPasso3" class="modal-body" style="display:none;">
+      <p style="font-size:12px;font-weight:600;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin:0 0 16px;">Passo 3 — Cobrança</p>
+      <div class="field-row">
+        <div class="field"><label>Valor por hora (R$)</label>
+          <div class="input-prefix"><span>R$</span><input type="number" id="psiValor" placeholder="0.00" step="0.01" /></div>
+        </div>
+        <div class="field"><label>Vencimento</label><input type="date" id="psiVenc" /></div>
+      </div>
+      <div class="field"><label>Descrição da cobrança</label>
+        <input type="text" id="psiCobDesc" placeholder="Ex: Sublocação sala 01 — março/2026" />
+      </div>
+      <div class="field">
+        <label>Forma de pagamento</label>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <div class="mp-method active" onclick="selectPagto(this,'pix')"><span>PIX</span><small>Imediato</small></div>
+          <div class="mp-method" onclick="selectPagto(this,'cartao')"><span>Cartão</span><small>Crédito/Débito</small></div>
+          <div class="mp-method" onclick="selectPagto(this,'boleto')"><span>Boleto</span><small>3 dias úteis</small></div>
+        </div>
+      </div>
+      <input type="hidden" id="psiPagtoTipo" value="pix" />
+    </div>
+
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="btn-outline" id="rBtnVoltar" onclick="reservaVoltar()" style="display:none;">← Voltar</button>
+      <button class="btn-outline" id="rBtnCancelar" onclick="closeModal('modalReserva')">Cancelar</button>
+      <button class="btn-primary" id="rBtnAvancar" onclick="reservaAvancar()">Continuar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Profissional (simples) -->
 <div id="modalPsi" class="modal-overlay hidden">
   <div class="modal-box">
     <div class="modal-head">
-      <h3 id="modalPsiTitle">Nova Psicóloga</h3>
+      <h3 id="modalPsiTitle">Editar Profissional</h3>
       <button onclick="closeModal('modalPsi')">✕</button>
     </div>
     <div class="modal-body">
-      <input type="hidden" id="psiId" />
-      <div class="field"><label>Nome completo</label><input type="text" id="psiNome" placeholder="Dra. Maria Silva" /></div>
-      <div class="field"><label>CRP</label><input type="text" id="psiCRP" placeholder="06/12345" /></div>
-      <div class="field"><label>E-mail</label><input type="email" id="psiEmail" placeholder="maria@email.com" /></div>
-      <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" /></div>
-      <div class="field">
-        <label>Tipo de sublocação</label>
-        <select id="psiTipoSub">
-          <option value="avulso">Avulso (por sessão)</option>
+      <input type="hidden" id="psiEditId" />
+      <div class="field"><label>Nome completo</label><input type="text" id="psiEditNome" /></div>
+      <div class="field-row">
+        <div class="field"><label>Conselho</label>
+          <select id="psiEditConselho">
+            <option value="CRP">CRP</option><option value="CRM">CRM</option>
+            <option value="CRO">CRO</option><option value="CRN">CRN</option>
+            <option value="CREFITO">CREFITO</option><option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="field"><label>Registro</label><input type="text" id="psiEditCRP" /></div>
+      </div>
+      <div class="field"><label>E-mail</label><input type="email" id="psiEditEmail" /></div>
+      <div class="field"><label>Telefone</label><input type="text" id="psiEditTel" /></div>
+      <div class="field"><label>Tipo sublocação</label>
+        <select id="psiEditTipoSub">
+          <option value="avulso">Avulso</option>
           <option value="semanal">Semanal</option>
           <option value="quinzenal">Quinzenal</option>
-          <option value="mensal">Mensal fixo</option>
+          <option value="mensal">Mensal</option>
         </select>
       </div>
     </div>
