@@ -180,7 +180,7 @@ function getCobrancas()   { return DB.get('cobrancas_' + currentUser.clinicaId);
 // ═══════════════════════════════════════════
 // PAINEL DE SALAS
 // ═══════════════════════════════════════════
-const HORAS = ['07','08','09','10','11','12','13','14','15','16','17','18','19','20','21'];
+const HORAS = ['08','09','10','11','14','15','16','17','18','19','20'];
 const DIAS_PT = { segunda:'Segunda', terca:'Terça', quarta:'Quarta', quinta:'Quinta', sexta:'Sexta' };
 
 function renderPainel() {
@@ -203,9 +203,9 @@ function renderPainel() {
   `;
 
   // Filtros
-  const horasFiltradas = filtroTurno === 'manha' ? HORAS.filter(h => parseInt(h) >= 7  && parseInt(h) <= 11) :
-                         filtroTurno === 'tarde'  ? HORAS.filter(h => parseInt(h) >= 12 && parseInt(h) <= 17) :
-                         filtroTurno === 'noite'  ? HORAS.filter(h => parseInt(h) >= 18 && parseInt(h) <= 21) : HORAS;
+  const horasFiltradas = filtroTurno === 'manha' ? ['08','09','10','11'] :
+                         filtroTurno === 'tarde'  ? ['14','15','16','17'] :
+                         filtroTurno === 'noite'  ? ['18','19','20'] : HORAS;
 
   const diasFiltrados = filtroDia ? [filtroDia] : Object.keys(DIAS_PT);
 
@@ -394,83 +394,33 @@ function resetModalSala() {
 // ═══════════════════════════════════════════
 const tipoSubLabel = { avulso: 'Avulso', semanal: 'Semanal', quinzenal: 'Quinzenal', mensal: 'Mensal fixo' };
 
-function renderPsicologas() { renderPsis(); }
-
-function renderPsis() {
+function renderPsicologas() {
   const psis = getPsis();
   const grid = document.getElementById('psiGrid');
-  const empty = document.getElementById('psiEmpty');
-  const search = (document.getElementById('psiSearch')?.value || '').toLowerCase();
-  const filtroTipo = document.getElementById('psiFiltroTipo')?.value || '';
+  if (!psis.length) { grid.innerHTML = '<p class="text-muted">Nenhuma psicóloga cadastrada.</p>'; return; }
 
-  let lista = psis.filter(p => {
-    const matchSearch = !search || p.nome?.toLowerCase().includes(search) || p.email?.toLowerCase().includes(search);
-    const matchTipo = !filtroTipo || p.tipoSub === filtroTipo;
-    return matchSearch && matchTipo;
-  });
-
-  if (!lista.length) {
-    grid.innerHTML = '';
-    if (empty) empty.style.display = 'block';
-    return;
-  }
-  if (empty) empty.style.display = 'none';
-
-  const badgeClass = { avulso:'psi-badge-avulso', semanal:'psi-badge-semanal', quinzenal:'psi-badge-quinzenal', mensal:'psi-badge-mensal' };
-  const tipoLabel  = { avulso:'Avulso', semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' };
-
-  grid.innerHTML = lista.map(p => {
+  grid.innerHTML = psis.map(p => {
     const agends  = getAgendamentos().filter(a => a.psiId === p.id && a.status !== 'cancelado');
     const receita = agends.reduce((s, a) => s + (a.valor || 0), 0);
-    const initials = (p.nome || '?').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
-    const conselho = p.conselho || 'CRP';
-    const crp = p.crp || '—';
-    const badge = badgeClass[p.tipoSub] || 'psi-badge-avulso';
-    const label = tipoLabel[p.tipoSub] || p.tipoSub;
-
     return `
-      <div class="psi-card">
-        <span class="psi-badge ${badge}">${label}</span>
-        <div class="psi-card-header">
-          <div class="psi-avatar">${initials}</div>
+      <div class="item-card">
+        <div class="item-card-head">
           <div>
-            <div class="psi-card-name">${p.nome}</div>
-            <div class="psi-card-reg">${conselho} ${crp}</div>
-            ${p.especialidade ? `<div style="font-size:11px;color:#0d9488;font-weight:600;margin-top:2px;">${p.especialidade}</div>` : ''}
+            <div class="item-card-name">${p.nome}</div>
+            <div class="item-card-sub">CRP ${p.crp}</div>
           </div>
+          <span class="badge badge-green">${tipoSubLabel[p.tipoSub] || p.tipoSub}</span>
         </div>
-        <div class="psi-card-body">
-          ${p.email ? `<div class="psi-info-row">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
-            <span>${p.email}</span>
-          </div>` : ''}
-          ${p.tel ? `<div class="psi-info-row">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.76a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg>
-            <span>${p.tel}</span>
-          </div>` : ''}
+        <div class="item-card-details">
+          <div class="detail-row"><span>E-mail</span><strong>${p.email}</strong></div>
+          <div class="detail-row"><span>Telefone</span><strong>${p.tel}</strong></div>
+          <div class="detail-row"><span>Agendamentos</span><strong>${agends.length}</strong></div>
+          <div class="detail-row"><span>Receita gerada</span><strong class="text-green">R$ ${receita.toLocaleString('pt-BR', {minimumFractionDigits:2})}</strong></div>
         </div>
-        <div class="psi-stats">
-          <div class="psi-stat">
-            <div class="psi-stat-val">${agends.length}</div>
-            <div class="psi-stat-label">Agendamentos</div>
-          </div>
-          <div class="psi-stat">
-            <div class="psi-stat-val">R$ ${receita.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
-            <div class="psi-stat-label">Receita gerada</div>
-          </div>
-        </div>
-        <div class="psi-card-actions">
-          <button class="psi-btn-edit" onclick="editPsi('${p.id}')">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Editar
-          </button>
-          <button class="psi-btn-cobrar" onclick="gerarCobrancaPsi('${p.id}')">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            Cobrar
-          </button>
-          <button class="psi-btn-del" onclick="deletePsi('${p.id}')" title="Remover">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-          </button>
+        <div class="item-card-actions">
+          <button class="btn-outline" style="flex:1" onclick="editPsi('${p.id}')">✎ Editar</button>
+          <button class="btn-outline" style="flex:1" onclick="gerarCobrancaPsi('${p.id}')">💳 Cobrar</button>
+          <button class="btn-icon" onclick="deletePsi('${p.id}')">🗑</button>
         </div>
       </div>
     `;
@@ -478,13 +428,12 @@ function renderPsis() {
 }
 
 function salvarPsi() {
-  const id       = document.getElementById('psiEditId')?.value || document.getElementById('psiId')?.value || '';
-  const nome     = document.getElementById('psiEditNome')?.value.trim() || '';
-  const crp      = document.getElementById('psiEditCRP')?.value.trim() || '';
-  const email    = document.getElementById('psiEditEmail')?.value.trim() || '';
-  const tel      = document.getElementById('psiEditTel')?.value.trim() || '';
-  const tipoSub  = document.getElementById('psiEditTipoSub')?.value || 'avulso';
-  const conselho = document.getElementById('psiEditConselho')?.value || 'CRP';
+  const id       = document.getElementById('psiId').value;
+  const nome     = document.getElementById('psiNome').value.trim();
+  const crp      = document.getElementById('psiCRP').value.trim();
+  const email    = document.getElementById('psiEmail').value.trim();
+  const tel      = document.getElementById('psiTel').value.trim();
+  const tipoSub  = document.getElementById('psiTipoSub').value;
 
   if (!nome) { toast('Informe o nome', 'warn'); return; }
 
@@ -937,541 +886,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-
-// ── TURNO BUTTONS ──
-function setTurno(val) {
-  document.getElementById('painelFiltroTurno').value = val;
-  ['Todos','Manha','Tarde','Noite'].forEach(t => {
-    const el = document.getElementById('btnTurno' + t);
-    if (el) el.classList.toggle('active', 
-      (val === '' && t === 'Todos') ||
-      (val === 'manha' && t === 'Manha') ||
-      (val === 'tarde' && t === 'Tarde') ||
-      (val === 'noite' && t === 'Noite')
-    );
-  });
-  renderPainel();
-}
-
-// ── MÁSCARAS ──
-function mascaraCPF(el) {
-  let v = el.value.replace(/\D/g,'');
-  v = v.replace(/(\d{3})(\d)/,'$1.$2');
-  v = v.replace(/(\d{3})(\d)/,'$1.$2');
-  v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
-  el.value = v;
-}
-async function mascaraCEP(el) {
-  let v = el.value.replace(/\D/g,'');
-  v = v.replace(/(\d{5})(\d)/,'$1-$2');
-  el.value = v;
-  if (v.replace(/\D/g,'').length === 8) {
-    const s = document.getElementById('cepStatus');
-    if(s) s.textContent = '⏳';
-    try {
-      const r = await fetch('https://viacep.com.br/ws/' + v.replace(/\D/g,'') + '/json/');
-      const d = await r.json();
-      if (d.erro) { if(s) s.textContent = '❌'; setTimeout(()=>{if(s)s.textContent='';},2000); return; }
-      document.getElementById('psiRua').value = d.logradouro || '';
-      document.getElementById('psiBairro').value = d.bairro || '';
-      document.getElementById('psiCidade').value = d.localidade || '';
-      document.getElementById('psiUF').value = d.uf || '';
-      if(s) { s.textContent = '✓'; setTimeout(()=>{ s.textContent=''; },3000); }
-      document.getElementById('psiNumero').focus();
-    } catch(e) { if(s) { s.textContent='❌'; setTimeout(()=>{s.textContent='';},2000); } }
-  }
-}
-
-// ── HORÁRIOS DISPONÍVEIS ──
-const TURNOS_HORAS = {
-  manha: ['07:00','08:00','09:00','10:00','11:00'],
-  tarde: ['12:00','13:00','14:00','15:00','16:00','17:00'],
-  noite: ['18:00','19:00','20:00','21:00']
-};
-const TODAS_HORAS = [...TURNOS_HORAS.manha, ...TURNOS_HORAS.tarde, ...TURNOS_HORAS.noite];
-let _horasSelecionadas = [];
-let _periodoFiltro = '';
-
-function filtrarPeriodo(periodo, el) {
-  _periodoFiltro = _periodoFiltro === periodo ? '' : periodo;
-  document.querySelectorAll('.periodo-tag').forEach(e => e.classList.remove('active'));
-  if (_periodoFiltro) el.classList.add('active');
-  carregarHorariosDisp();
-}
-
-function carregarHorariosDisp() {
-  const salaId = document.getElementById('psiSala')?.value;
-  const data = document.getElementById('psiDataInicio')?.value;
-  const grid = document.getElementById('horariosGrid');
-  const msg = document.getElementById('horariosMsg');
-  if (!grid) return;
-  if (!salaId) {
-    grid.innerHTML = '';
-    if (msg) { msg.style.display = 'block'; msg.textContent = 'Selecione uma sala para ver os horários'; }
-    return;
-  }
-  if (!data) {
-    if (msg) { msg.style.display = 'block'; msg.textContent = 'Selecione uma data para ver a disponibilidade real'; }
-  } else {
-    if (msg) msg.style.display = 'none';
-  }
-  const sala = getSalas().find(s => s.id === salaId);
-  const agends = getAgendamentos().filter(a => a.salaId === salaId && a.data === data && a.status !== 'cancelado');
-  const ocupadas = agends.map(a => a.horaI);
-  const horas = _periodoFiltro ? TURNOS_HORAS[_periodoFiltro] : TODAS_HORAS;
-  
-  // Filtrar pelas horas da sala
-  const horaInicio = sala?.horaInicio || '07:00';
-  const horaFim = sala?.horaFim || '21:00';
-  const horasFiltradas = horas.filter(h => h >= horaInicio && h <= horaFim);
-  
-  grid.innerHTML = horasFiltradas.map(h => {
-    const ocp = ocupadas.includes(h);
-    const sel = _horasSelecionadas.includes(h);
-    const cls = ocp ? 'hora-slot ocupado' : sel ? 'hora-slot selecionado' : 'hora-slot disponivel';
-    return `<div class="${cls}" onclick="toggleHora('${h}',${ocp})">${h}</div>`;
-  }).join('');
-  calcularTotal();
-}
-
-function toggleHora(hora, ocupado) {
-  if (ocupado) return;
-  const idx = _horasSelecionadas.indexOf(hora);
-  if (idx > -1) _horasSelecionadas.splice(idx, 1);
-  else _horasSelecionadas.push(hora);
-  carregarHorariosDisp();
-  calcularTotal();
-}
-
-// ── TIPO DE RESERVA ──
-function setTipoReserva(tipo, el) {
-  document.querySelectorAll('.tipo-reserva-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('psiTipoSub').value = tipo;
-  const simples = document.getElementById('reservaSimples');
-  const bloco = document.getElementById('reservaBloco');
-  if (tipo === 'bloco') {
-    simples.style.display = 'none';
-    bloco.style.display = 'block';
-  } else {
-    simples.style.display = 'block';
-    bloco.style.display = 'none';
-  }
-}
-
-// ── BLOCO ──
-let _numBlocos = 1;
-function addBlocoPeriodo() {
-  const cont = document.getElementById('blocosPeriodos');
-  const i = _numBlocos++;
-  const div = document.createElement('div');
-  div.className = 'bloco-periodo';
-  div.id = 'blocoItem' + i;
-  div.innerHTML = `
-    <select class="bloco-dia-sel" onchange="verificarBlocoDisp(${i})">
-      <option value="">Dia da semana...</option>
-      <option value="segunda">Segunda-feira</option>
-      <option value="terca">Terça-feira</option>
-      <option value="quarta">Quarta-feira</option>
-      <option value="quinta">Quinta-feira</option>
-      <option value="sexta">Sexta-feira</option>
-      <option value="sabado">Sábado</option>
-    </select>
-    <div class="periodo-tags">
-      <span class="periodo-tag" onclick="toggleBlocoPeriodo(${i},'manha',this)">Manhã</span>
-      <span class="periodo-tag" onclick="toggleBlocoPeriodo(${i},'tarde',this)">Tarde</span>
-      <span class="periodo-tag" onclick="toggleBlocoPeriodo(${i},'noite',this)">Noite</span>
-    </div>
-    <span id="blocoValor${i}" style="font-size:13px;font-weight:700;color:#0d9488;white-space:nowrap;"></span>
-    <button type="button" onclick="this.parentElement.remove()" style="border:none;background:transparent;color:#ef4444;cursor:pointer;font-size:16px;padding:0 4px;">×</button>
-  `;
-  cont.appendChild(div);
-}
-
-let _blocosPeriodos = {};
-function toggleBlocoPeriodo(idx, periodo, el) {
-  if (!_blocosPeriodos[idx]) _blocosPeriodos[idx] = {};
-  _blocosPeriodos[idx][periodo] = !_blocosPeriodos[idx][periodo];
-  el.classList.toggle('active', _blocosPeriodos[idx][periodo]);
-  verificarBlocoDisp(idx);
-}
-
-function verificarBlocoDisp(idx) {
-  const salaId = document.getElementById('psiSala')?.value;
-  const item = document.getElementById('blocoItem' + idx);
-  if (!item || !salaId) return;
-  const dia = item.querySelector('.bloco-dia-sel')?.value;
-  const periodos = _blocosPeriodos[idx] || {};
-  const sala = getSalas().find(s => s.id === salaId);
-  if (!dia || !sala) return;
-  
-  // Verificar disponibilidade do bloco
-  const agends = getAgendamentos().filter(a => a.salaId === salaId && a.status !== 'cancelado');
-  const valorHora = parseFloat(document.getElementById('psiValorHora')?.value) || 0;
-  let totalHoras = 0;
-  let disponivel = true;
-  
-  Object.entries(periodos).forEach(([p, ativo]) => {
-    if (!ativo) return;
-    const horas = TURNOS_HORAS[p] || [];
-    horas.forEach(h => {
-      const ocupadoNoDia = agends.some(a => a.diaSemana === dia && a.horaI === h);
-      if (ocupadoNoDia) disponivel = false;
-      else totalHoras++;
-    });
-  });
-  
-  const valEl = document.getElementById('blocoValor' + idx);
-  if (valEl) {
-    if (Object.values(periodos).some(v => v)) {
-      valEl.style.color = disponivel ? '#0d9488' : '#ef4444';
-      valEl.textContent = disponivel 
-        ? 'R$ ' + (totalHoras * valorHora).toFixed(2).replace('.',',')
-        : '⚠ Indisponível';
-    }
-  }
-  calcularTotal();
-}
-
-// ── HELPER: dias do mês com determinado dia da semana ──
-function _diasMesComDia(diaSem, mes, ano) {
-  const map = {segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6,domingo:0};
-  const alvo = map[diaSem];
-  const dias = [];
-  const total = new Date(ano, mes, 0).getDate();
-  for (let d = 1; d <= total; d++) {
-    if (new Date(ano, mes-1, d).getDay() === alvo) dias.push(d);
-  }
-  return dias;
-}
-
-// ── CALCULAR TOTAL ──
-function calcularTotal() {
-  const valorHora = parseFloat(document.getElementById('psiValorHora')?.value) || 0;
-  const tipo = document.getElementById('psiTipoSub')?.value;
-  const resumoItens = document.getElementById('resumoItens');
-  const resumoTotal = document.getElementById('resumoTotal');
-  if (!resumoItens || !resumoTotal) return;
-
-  const hoje = new Date();
-  const mesRef = hoje.getMonth() + 1;
-  const anoRef = hoje.getFullYear();
-  const nomeMes = hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-  const perLbl = {manha:'Manhã',tarde:'Tarde',noite:'Noite'};
-  const diaLbl = {segunda:'Segunda',terca:'Terça',quarta:'Quarta',quinta:'Quinta',sexta:'Sexta',sabado:'Sábado'};
-
-  let total = 0;
-  let itens = [];
-
-  if (tipo === 'bloco') {
-    Object.entries(_blocosPeriodos).forEach(([idx, periodos]) => {
-      const item = document.getElementById('blocoItem' + idx);
-      if (!item) return;
-      const dia = item.querySelector('.bloco-dia-sel')?.value;
-      if (!dia) return;
-      Object.entries(periodos).forEach(([p, ativo]) => {
-        if (!ativo) return;
-        const nHoras = TURNOS_HORAS[p]?.length || 0;
-        const diasMes = _diasMesComDia(dia, mesRef, anoRef);
-        const valDia = nHoras * valorHora;
-        const valTotal = valDia * diasMes.length;
-        total += valTotal;
-        itens.push(`<div class="resumo-item">
-          <span>${diaLbl[dia]||dia} — ${perLbl[p]||p} · ${nHoras}h × ${diasMes.length} dias (${nomeMes})</span>
-          <span style="font-weight:700;">R$ ${valTotal.toFixed(2).replace('.',',')}</span>
-        </div>`);
-      });
-    });
-  } else if ((tipo === 'semanal' || tipo === 'quinzenal') && _horasSelecionadas.length > 0) {
-    const data = document.getElementById('psiDataInicio')?.value;
-    if (!data) { resumoItens.innerHTML='<div style="font-size:12px;color:#94a3b8;padding:4px 0;">Selecione a data de início</div>'; resumoTotal.textContent='R$ 0,00'; return; }
-    const dtBase = new Date(data+'T12:00');
-    const diaSem = dtBase.getDay();
-    const diasSemNome = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-    const mesDaData = dtBase.getMonth()+1;
-    const anoDaData = dtBase.getFullYear();
-    let ocorrencias = _diasMesComDia(Object.keys({0:'domingo',1:'segunda',2:'terca',3:'quarta',4:'quinta',5:'sexta',6:'sabado'})[diaSem]||'segunda', mesDaData, anoDaData);
-    if (tipo === 'quinzenal') ocorrencias = ocorrencias.filter((_,i) => i%2===0);
-    const n = _horasSelecionadas.length;
-    const valDia = n * valorHora;
-    total = valDia * ocorrencias.length;
-    const datas = ocorrencias.map(d => `${String(d).padStart(2,'0')}/${String(mesDaData).padStart(2,'0')}`).join(', ');
-    itens.push(`<div class="resumo-item"><span>${n}h × ${ocorrencias.length}× ${diasSemNome[diaSem]} em ${dtBase.toLocaleString('pt-BR',{month:'long',year:'numeric'})}</span><span style="font-weight:600;">R$ ${valDia.toFixed(2).replace('.',',')} / dia</span></div>`);
-    itens.push(`<div class="resumo-item" style="font-size:11px;color:#64748b;"><span>Datas: ${datas}</span><span>= R$ ${total.toFixed(2).replace('.',',')}</span></div>`);
-  } else {
-    // Avulso
-    const n = _horasSelecionadas.length;
-    if (n > 0) {
-      total = n * valorHora;
-      const data = document.getElementById('psiDataInicio')?.value;
-      const dataFmt = data ? new Date(data+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long'}) : '';
-      itens.push(`<div class="resumo-item"><span>${n} hora${n>1?'s':''} — ${dataFmt}</span><span style="font-weight:700;">R$ ${total.toFixed(2).replace('.',',')}</span></div>`);
-    }
-  }
-
-  resumoItens.innerHTML = itens.join('') || '<div style="font-size:12px;color:#94a3b8;padding:4px 0;">Selecione os horários para ver o resumo</div>';
-  resumoTotal.textContent = 'R$ ' + total.toFixed(2).replace('.',',');
-}
-
-// ── RENDERIZAR PROFISSIONAIS ──
-function renderPsicologas() { renderPsis(); }
-
-function renderPsis() {
-  const psis = getPsis();
-  const grid = document.getElementById('psiGrid');
-  const empty = document.getElementById('psiEmpty');
-  const search = (document.getElementById('psiSearch')?.value || '').toLowerCase();
-  const filtroTipo = document.getElementById('psiFiltroTipo')?.value || '';
-  if (!grid) return;
-
-  let lista = psis.filter(p => {
-    const matchSearch = !search || (p.nome||'').toLowerCase().includes(search) || (p.email||'').toLowerCase().includes(search);
-    const matchTipo = !filtroTipo || p.tipoSub === filtroTipo;
-    return matchSearch && matchTipo;
-  });
-
-  if (!lista.length) {
-    grid.innerHTML = '';
-    if (empty) empty.style.display = 'block';
-    return;
-  }
-  if (empty) empty.style.display = 'none';
-
-  const badgeClass = { avulso:'psi-badge-avulso', semanal:'psi-badge-semanal', quinzenal:'psi-badge-quinzenal', mensal:'psi-badge-mensal' };
-  const tipoLabel  = { avulso:'Avulso', semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal', bloco:'Bloco' };
-
-  grid.innerHTML = lista.map(p => {
-    const agends  = getAgendamentos().filter(a => a.psiId === p.id && a.status !== 'cancelado');
-    const receita = agends.reduce((s, a) => s + (a.valor || 0), 0);
-    const initials = (p.nome || '?').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
-    const conselho = p.conselho || 'CRP';
-    const crp = p.crp || '—';
-    const badge = badgeClass[p.tipoSub] || 'psi-badge-avulso';
-    const label = tipoLabel[p.tipoSub] || p.tipoSub;
-
-    return `<div class="psi-card">
-      <span class="psi-badge ${badge}">${label}</span>
-      <div class="psi-card-header">
-        <div class="psi-avatar">${initials}</div>
-        <div>
-          <div class="psi-card-name">${p.nome}</div>
-          <div class="psi-card-reg">${conselho} ${crp}</div>
-          ${p.especialidade ? `<div style="font-size:11px;color:#0d9488;font-weight:600;margin-top:2px;">${p.especialidade}</div>` : ''}
-        </div>
-      </div>
-      <div class="psi-card-body">
-        ${p.email ? `<div class="psi-info-row"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg><span>${p.email}</span></div>` : ''}
-        ${p.tel ? `<div class="psi-info-row"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.76a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg><span>${p.tel}</span></div>` : ''}
-      </div>
-      <div class="psi-stats">
-        <div class="psi-stat"><div class="psi-stat-val">${agends.length}</div><div class="psi-stat-label">Agendamentos</div></div>
-        <div class="psi-stat"><div class="psi-stat-val">R$ ${receita.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div><div class="psi-stat-label">Receita gerada</div></div>
-      </div>
-      <div class="psi-card-actions">
-        <button class="psi-btn-edit" onclick="editPsi('${p.id}')">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Editar
-        </button>
-        <button class="psi-btn-cobrar" onclick="gerarCobrancaPsi('${p.id}')">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Cobrar
-        </button>
-        <button class="psi-btn-del" onclick="deletePsi('${p.id}')" title="Remover">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ── NOVA RESERVA ──
-let _rPasso = 1;
-let _horasSelecionadas = [];
-let _periodoFiltro = '';
-let _numBlocos = 1;
-let _blocosPeriodos = {};
-
-function openNovaReserva() {
-  _rPasso = 1;
-  _horasSelecionadas = [];
-  _periodoFiltro = '';
-  _numBlocos = 1;
-  _blocosPeriodos = {};
-  
-  // Popular salas
-  const salas = getSalas();
-  const sel = document.getElementById('psiSala');
-  if (sel) sel.innerHTML = '<option value="">Selecione a sala...</option>' + salas.map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
-  
-  // Limpar campos
-  ['psiId','psiNome','psiCRP','psiEmail','psiTel','psiEspecialidade','psiCPF','psiCEP','psiRua','psiNumero','psiComplemento','psiBairro','psiCidade','psiUF','psiValorHora','psiCobDesc'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  
-  // Reset tipo reserva
-  document.querySelectorAll('.tipo-reserva-btn').forEach(b => b.classList.remove('active'));
-  const firstBtn = document.querySelector('.tipo-reserva-btn');
-  if (firstBtn) firstBtn.classList.add('active');
-  const tipoEl = document.getElementById('psiTipoSub');
-  if (tipoEl) tipoEl.value = 'avulso';
-  
-  const reservaSimples = document.getElementById('reservaSimples');
-  const reservaBloco = document.getElementById('reservaBloco');
-  if (reservaSimples) reservaSimples.style.display = 'block';
-  if (reservaBloco) reservaBloco.style.display = 'none';
-  
-  // Reset blocos
-  const blocosCont = document.getElementById('blocosPeriodos');
-  if (blocosCont) {
-    const items = blocosCont.querySelectorAll('.bloco-periodo');
-    items.forEach((el, i) => { if (i > 0) el.remove(); });
-  }
-  
-  // Reset horários
-  const grid = document.getElementById('horariosGrid');
-  if (grid) grid.innerHTML = '';
-  const msg = document.getElementById('horariosMsg');
-  if (msg) msg.style.display = 'block';
-  
-  // Reset resumo
-  const resumoItens = document.getElementById('resumoItens');
-  if (resumoItens) resumoItens.innerHTML = '';
-  const resumoTotal = document.getElementById('resumoTotal');
-  if (resumoTotal) resumoTotal.textContent = 'R$ 0,00';
-  
-  reservaAtualizarUI();
-  openModal('modalReserva');
-}
-
-function reservaAtualizarUI() {
-  ['rPasso1','rPasso2','rPasso3'].forEach((id, i) => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = _rPasso === i + 1 ? 'block' : 'none';
-  });
-  ['rStep1dot','rStep2dot','rStep3dot'].forEach((id, i) => {
-    const el = document.getElementById(id);
-    if (el) el.style.background = i < _rPasso ? '#0d9488' : '#e2e8f0';
-  });
-  const titles = ['Nova Reserva — Profissional', 'Nova Reserva — Detalhes', 'Nova Reserva — Pagamento'];
-  const titleEl = document.getElementById('reservaTitle');
-  if (titleEl) titleEl.textContent = titles[_rPasso - 1];
-  const voltar = document.getElementById('rBtnVoltar');
-  const cancelar = document.getElementById('rBtnCancelar');
-  const avancar = document.getElementById('rBtnAvancar');
-  if (voltar) voltar.style.display = _rPasso > 1 ? 'block' : 'none';
-  if (cancelar) cancelar.style.display = _rPasso > 1 ? 'none' : 'block';
-  if (avancar) avancar.textContent = _rPasso < 3 ? 'Continuar →' : 'Salvar Reserva';
-}
-
-function reservaAvancar() {
-  if (_rPasso === 1) {
-    const nome = document.getElementById('psiNome')?.value.trim();
-    const cpf = document.getElementById('psiCPF')?.value.trim();
-    if (!nome) { toast('Informe o nome do profissional', 'warn'); return; }
-    if (!cpf) { toast('Informe o CPF', 'warn'); return; }
-    _rPasso = 2;
-  } else if (_rPasso === 2) {
-    const sala = document.getElementById('psiSala')?.value;
-    const tipo = document.getElementById('psiTipoSub')?.value;
-    if (!sala) { toast('Selecione a sala', 'warn'); return; }
-    if (tipo !== 'bloco' && _horasSelecionadas.length === 0) { toast('Selecione pelo menos um horário', 'warn'); return; }
-    _rPasso = 3;
-    // Sugerir descrição
-    const salaNome = document.getElementById('psiSala')?.selectedOptions[0]?.text || 'sala';
-    const descEl = document.getElementById('psiCobDesc');
-    if (descEl && !descEl.value) {
-      const hoje = new Date().toLocaleString('pt-BR',{month:'long',year:'numeric'});
-      descEl.value = `Sublocação ${salaNome} — ${hoje}`;
-    }
-    calcularTotal();
-  } else if (_rPasso === 3) {
-    salvarNovaReserva();
-    return;
-  }
-  reservaAtualizarUI();
-}
-
-function reservaVoltar() {
-  if (_rPasso > 1) { _rPasso--; reservaAtualizarUI(); }
-}
-
-function salvarNovaReserva() {
-  const nome = document.getElementById('psiNome')?.value.trim();
-  const crp = document.getElementById('psiCRP')?.value.trim();
-  const conselho = document.getElementById('psiConselho')?.value || 'CRP';
-  const email = document.getElementById('psiEmail')?.value.trim();
-  const tel = document.getElementById('psiTel')?.value.trim();
-  const cpf = document.getElementById('psiCPF')?.value.trim();
-  const especialidade = document.getElementById('psiEspecialidade')?.value.trim();
-  const tipoSub = document.getElementById('psiTipoSub')?.value;
-  const salaId = document.getElementById('psiSala')?.value;
-  const valorHora = parseFloat(document.getElementById('psiValorHora')?.value) || 0;
-  const venc = document.getElementById('psiVenc')?.value;
-  const desc = document.getElementById('psiCobDesc')?.value.trim();
-  const endereco = {
-    cep: document.getElementById('psiCEP')?.value,
-    rua: document.getElementById('psiRua')?.value,
-    numero: document.getElementById('psiNumero')?.value,
-    complemento: document.getElementById('psiComplemento')?.value,
-    bairro: document.getElementById('psiBairro')?.value,
-    cidade: document.getElementById('psiCidade')?.value,
-    uf: document.getElementById('psiUF')?.value
-  };
-
-  // Salvar profissional
-  const psis = getPsis();
-  const novaPsi = { id: DB.id(), clinicaId: currentUser.clinicaId, nome, crp, conselho, email, tel, cpf, especialidade, tipoSub, endereco };
-  psis.push(novaPsi);
-  DB.set('psicologas_' + currentUser.clinicaId, psis);
-
-  // Salvar agendamentos dos horários selecionados
-  if (salaId && _horasSelecionadas.length > 0) {
-    const agends = getAgendamentos();
-    const data = document.getElementById('psiDataInicio')?.value;
-    _horasSelecionadas.forEach(h => {
-      const [hr] = h.split(':');
-      const horaF = (parseInt(hr) + 1).toString().padStart(2,'0') + ':00';
-      agends.push({ id: DB.id(), clinicaId: currentUser.clinicaId, psiId: novaPsi.id, salaId, data, horaI: h, horaF, valor: valorHora, tipo: tipoSub, status: 'agendado', paciente: '' });
-    });
-    DB.set('agendamentos_' + currentUser.clinicaId, agends);
-  }
-
-  // Salvar cobrança
-  if (valorHora > 0 && venc) {
-    const cobs = getCobrancas();
-    const total = _horasSelecionadas.length * valorHora;
-    cobs.push({ id: DB.id(), clinicaId: currentUser.clinicaId, psiId: novaPsi.id, descricao: desc, valor: total, vencimento: venc, status: 'pendente' });
-    DB.set('cobrancas_' + currentUser.clinicaId, cobs);
-  }
-
-  closeModal('modalReserva');
-  renderPsis();
-  toast('Reserva criada com sucesso!', 'success');
-}
-
-function selectPagto(el, tipo) {
-  document.querySelectorAll('.mp-method').forEach(e => {
-    e.style.borderColor = '#e2e8f0';
-    e.style.background = 'white';
-  });
-  el.style.borderColor = '#0d9488';
-  el.style.background = '#f0fdfa';
-  const hidden = document.getElementById('psiPagtoTipo');
-  if (hidden) hidden.value = tipo;
-}
-
-function editPsi(id) {
-  const p = getPsis().find(x => x.id === id);
-  if (!p) return;
-  const set = (eid, val) => { const el = document.getElementById(eid); if (el) el.value = val || ''; };
-  set('psiEditId', p.id);
-  set('psiEditNome', p.nome);
-  set('psiEditCRP', p.crp);
-  set('psiEditEmail', p.email);
-  set('psiEditTel', p.tel);
-  set('psiEditTipoSub', p.tipoSub || 'avulso');
-  set('psiEditConselho', p.conselho || 'CRP');
-  document.getElementById('modalPsiTitle').textContent = 'Editar Profissional';
-  openModal('modalPsi');
-}
