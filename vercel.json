@@ -1,8 +1,11 @@
 {
   "rewrites": [
     { "source": "/", "destination": "/home.html" },
-    { "source": "/painel", "destination": "/index.html" },
-    { "source": "/index", "destination": "/index.html" },
-    { "source": "/index.html", "destination": "/index.html" }
+    { "source": "/index.html", "destination": "/index.html" },
+    { "source": "/painel-psi.html", "destination": "/painel-psi.html" },
+    { "source": "/portal-psi.html", "destination": "/portal-psi.html" },
+    { "source": "/sala-detalhe.html", "destination": "/sala-detalhe.html" },
+    { "source": "/config-avancado.html", "destination": "/config-avancado.html" },
+    { "source": "/superadmin.html", "destination": "/superadmin.html" }
   ]
 }
