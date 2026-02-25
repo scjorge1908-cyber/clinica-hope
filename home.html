@@ -1357,17 +1357,26 @@ async function mEnviarToken() {
   _tokenGerado = String(Math.floor(100000 + Math.random() * 900000));
   _emailCadastro = em;
   _senhaCadastro = s;
+  // MODO TESTE: emails @teste.com mostram o token direto na tela
+  const modoTeste = em.endsWith('@teste.com') || em === 'admin@sublocafacil.com.br';
   try {
-    const r = await fetch('/api/send-token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: em, token: _tokenGerado })
-    });
-    if (!r.ok) throw new Error('Falha no envio');
+    if (!modoTeste) {
+      const r = await fetch('/api/send-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: em, token: _tokenGerado })
+      });
+      if (!r.ok) throw new Error('Falha no envio');
+    }
     document.getElementById('mStep1a').style.display = 'none';
     document.getElementById('mStep1b').style.display = 'block';
     document.getElementById('mEmailShow').textContent = em;
     document.getElementById('stepLabel').textContent = 'ETAPA 1 DE 2 — Verificação';
+    // Modo teste: mostrar token na tela
+    if (modoTeste) {
+      document.getElementById('me_token').value = _tokenGerado;
+      toast('🧪 MODO TESTE — Código: ' + _tokenGerado);
+    }
     setTimeout(() => { _tokenGerado = ''; }, 15 * 60 * 1000);
   } catch(err) {
     console.error(err);
