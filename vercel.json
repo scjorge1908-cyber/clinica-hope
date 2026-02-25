@@ -1,6 +1,8 @@
 {
-  "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/home.html" }
+    { "source": "/", "destination": "/home.html" },
+    { "source": "/painel", "destination": "/index.html" },
+    { "source": "/index", "destination": "/index.html" },
+    { "source": "/index.html", "destination": "/index.html" }
   ]
 }
