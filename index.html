@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clínica Hope — Gestão de Sublocação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LOGIN / CADASTRO
+══════════════════════════════════════════════ -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <span class="brand-mark">H</span>
+      <span class="brand-name">Clínica Hope</span>
+    </div>
+    <h1 class="auth-headline">Gestão de<br><em>Sublocação</em><br>sem planilhas.</h1>
+    <p class="auth-sub">Salas, psicólogas, agendamentos e pagamentos — tudo em um lugar só.</p>
+    <div class="auth-features">
+      <div class="feat">✦ Painel de salas em tempo real</div>
+      <div class="feat">✦ Cobrança automática via Mercado Pago</div>
+      <div class="feat">✦ Relatórios gerenciais completos</div>
+      <div class="feat">✦ Multi-clínica, dados isolados</div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">Entrar</button>
+        <button class="auth-tab" onclick="switchTab('register')">Criar conta</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="tabLogin" class="auth-form active">
+        <h2>Bem-vindo de volta</h2>
+        <p class="form-hint">Acesse o painel da sua clínica</p>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="loginEmail" placeholder="seuemail@clinica.com" />
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="loginPass" placeholder="••••••••" />
+        </div>
+        <button class="btn-primary full" onclick="doLogin()">Entrar no painel</button>
+        <p class="form-hint center"><a href="#" onclick="forgotPass()">Esqueci minha senha</a></p>
+      </div>
+
+      <!-- REGISTRO -->
+      <div id="tabRegister" class="auth-form">
+        <h2>Criar sua conta</h2>
+        <p class="form-hint">Comece gratuitamente por 14 dias</p>
+        <div class="field">
+          <label>Nome da clínica</label>
+          <input type="text" id="regClinica" placeholder="Clínica Esperança Ltda" />
+        </div>
+        <div class="field">
+          <label>Seu nome</label>
+          <input type="text" id="regNome" placeholder="Dra. Ana Lima" />
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="regEmail" placeholder="seuemail@clinica.com" />
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="regPass" placeholder="Mín. 8 caracteres" />
+        </div>
+        <button class="btn-primary full" onclick="doRegister()">Criar conta grátis</button>
+        <p class="form-hint center">Ao criar, você concorda com os <a href="#">termos de uso</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     APP PRINCIPAL
+══════════════════════════════════════════════ -->
+<div id="appScreen" class="app-screen hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-mark">H</span>
+      <div>
+        <div class="sidebar-clinic-name" id="sideClinicName">Clínica Hope</div>
+        <div class="sidebar-plan">Plano Profissional</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" onclick="goTo('painel')">
+        <span class="nav-icon">⬡</span> Painel de Salas
+      </a>
+      <a href="#" class="nav-item" onclick="goTo('salas')">
+        <span class="nav-icon">⬛</span> Salas
+      </a>
+      <a href="#" class="nav-item" onclick="goTo('psicologas')">
+        <span class="nav-icon">◎</span> Psicólogas
+      </a>
+      <a href="#" class="nav-item" onclick="goTo('agendamentos')">
+        <span class="nav-icon">◈</span> Agendamentos
+      </a>
+      <a href="#" class="nav-item" onclick="goTo('financeiro')">
+        <span class="nav-icon">◇</span> Financeiro
+      </a>
+      <a href="#" class="nav-item" onclick="goTo('relatorios')">
+        <span class="nav-icon">⊞</span> Relatórios
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a href="#" class="nav-item" onclick="goTo('config')">
+        <span class="nav-icon">⚙</span> Configurações
+      </a>
+      <a href="#" class="nav-item" onclick="doLogout()">
+        <span class="nav-icon">→</span> Sair
+      </a>
+    </div>
+  </aside>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="main-content">
+
+    <!-- ── PAINEL DE SALAS ── -->
+    <section id="pagePainel" class="page active">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Painel de Salas</h2>
+          <p class="page-sub">Visão geral de ocupação em tempo real</p>
+        </div>
+        <div class="header-actions">
+          <select id="painelFiltroTurno" onchange="renderPainel()" class="select-sm">
+            <option value="">Todos os turnos</option>
+            <option value="manha">Manhã</option>
+            <option value="tarde">Tarde</option>
+            <option value="noite">Noite</option>
+          </select>
+          <select id="painelFiltroDia" onchange="renderPainel()" class="select-sm">
+            <option value="">Todos os dias</option>
+            <option value="segunda">Segunda</option>
+            <option value="terca">Terça</option>
+            <option value="quarta">Quarta</option>
+            <option value="quinta">Quinta</option>
+            <option value="sexta">Sexta</option>
+          </select>
+          <button class="btn-primary" onclick="exportPainelPDF()">↓ PDF Disponibilidade</button>
+        </div>
+      </div>
+
+      <div class="stats-row" id="statsRow"></div>
+      <div class="painel-wrap" id="painelWrap"></div>
+    </section>
+
+    <!-- ── SALAS ── -->
+    <section id="pageSalas" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Salas</h2>
+          <p class="page-sub">Cadastre e gerencie as salas da clínica</p>
+        </div>
+        <button class="btn-primary" onclick="openModal('modalSala')">+ Nova Sala</button>
+      </div>
+      <div class="cards-grid" id="salasGrid"></div>
+    </section>
+
+    <!-- ── PSICÓLOGAS ── -->
+    <section id="pagePsicologas" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Psicólogas</h2>
+          <p class="page-sub">Profissionais que sublocam salas</p>
+        </div>
+        <button class="btn-primary" onclick="openModal('modalPsi')">+ Nova Psicóloga</button>
+      </div>
+      <div class="cards-grid" id="psiGrid"></div>
+    </section>
+
+    <!-- ── AGENDAMENTOS ── -->
+    <section id="pageAgendamentos" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Agendamentos</h2>
+          <p class="page-sub">Controle de uso das salas</p>
+        </div>
+        <button class="btn-primary" onclick="openModal('modalAgend')">+ Novo Agendamento</button>
+      </div>
+      <div class="filter-bar">
+        <select id="agendFiltroSala" onchange="renderAgendamentos()" class="select-sm">
+          <option value="">Todas as salas</option>
+        </select>
+        <select id="agendFiltroPsi" onchange="renderAgendamentos()" class="select-sm">
+          <option value="">Todas as psicólogas</option>
+        </select>
+        <select id="agendFiltroStatus" onchange="renderAgendamentos()" class="select-sm">
+          <option value="">Todos os status</option>
+          <option value="agendado">Agendado</option>
+          <option value="confirmado">Confirmado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+      <div class="table-card">
+        <table class="data-table" id="agendTable">
+          <thead>
+            <tr>
+              <th>Paciente</th><th>Psicóloga</th><th>Sala</th>
+              <th>Data</th><th>Horário</th><th>Valor</th><th>Status</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="agendBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── FINANCEIRO ── -->
+    <section id="pageFinanceiro" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Financeiro</h2>
+          <p class="page-sub">Cobranças de sublocação via Mercado Pago</p>
+        </div>
+        <button class="btn-primary" onclick="openModal('modalCobranca')">+ Gerar Cobrança</button>
+      </div>
+
+      <div class="stats-row" id="statsFinanceiro"></div>
+
+      <div class="mp-config-banner" id="mpBanner">
+        <div class="mp-banner-icon">💳</div>
+        <div>
+          <strong>Configure o Mercado Pago</strong>
+          <p>Adicione suas credenciais para cobrar automaticamente por PIX e cartão.</p>
+        </div>
+        <button class="btn-outline" onclick="goTo('config')">Configurar agora</button>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>Psicóloga</th><th>Referência</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="finBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── RELATÓRIOS ── -->
+    <section id="pageRelatorios" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Relatórios</h2>
+          <p class="page-sub">Análises de ocupação e desempenho</p>
+        </div>
+      </div>
+      <div class="relatorios-grid">
+        <div class="relatorio-card" onclick="gerarRelatorioOcupacao()">
+          <div class="rel-icon">⬡</div>
+          <h3>Ocupação de Salas</h3>
+          <p>Taxa de uso por sala, dia e turno</p>
+          <span class="rel-link">Gerar relatório →</span>
+        </div>
+        <div class="relatorio-card" onclick="gerarRelatorioFinanceiro()">
+          <div class="rel-icon">◇</div>
+          <h3>Financeiro Mensal</h3>
+          <p>Receita por psicóloga e sala</p>
+          <span class="rel-link">Gerar relatório →</span>
+        </div>
+        <div class="relatorio-card" onclick="gerarRelatorioDisponibilidade()">
+          <div class="rel-icon">◎</div>
+          <h3>Disponibilidade PDF</h3>
+          <p>Horários livres para enviar às psicólogas</p>
+          <span class="rel-link">Gerar PDF →</span>
+        </div>
+        <div class="relatorio-card" onclick="gerarRelatorioAssiduidade()">
+          <div class="rel-icon">⊞</div>
+          <h3>Assiduidade</h3>
+          <p>Presença e cancelamentos por psicóloga</p>
+          <span class="rel-link">Gerar relatório →</span>
+        </div>
+      </div>
+      <div id="relatorioOutput" class="relatorio-output hidden"></div>
+    </section>
+
+    <!-- ── CONFIGURAÇÕES ── -->
+    <section id="pageConfig" class="page hidden">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Configurações</h2>
+          <p class="page-sub">Clínica, assinatura e integrações</p>
+        </div>
+      </div>
+      <div class="config-grid">
+        <div class="config-section">
+          <h3>Dados da Clínica</h3>
+          <div class="field"><label>Nome da clínica</label><input type="text" id="cfgNome" /></div>
+          <div class="field"><label>CNPJ</label><input type="text" id="cfgCNPJ" placeholder="00.000.000/0001-00" /></div>
+          <div class="field"><label>Endereço</label><input type="text" id="cfgEndereco" /></div>
+          <div class="field"><label>Telefone</label><input type="text" id="cfgTel" /></div>
+          <button class="btn-primary" onclick="salvarConfig()">Salvar dados</button>
+        </div>
+
+        <div class="config-section">
+          <h3>Mercado Pago</h3>
+          <p class="form-hint">Suas credenciais são criptografadas e nunca compartilhadas.</p>
+          <div class="field"><label>Access Token (Produção)</label><input type="password" id="cfgMPToken" placeholder="APP_USR-..." /></div>
+          <div class="field"><label>Public Key</label><input type="text" id="cfgMPPubKey" placeholder="APP_USR-..." /></div>
+          <button class="btn-primary" onclick="salvarMP()">Salvar integração</button>
+          <div id="mpStatus" class="mp-status"></div>
+        </div>
+
+        <div class="config-section">
+          <h3>Sua Assinatura</h3>
+          <div class="plan-card active-plan">
+            <div class="plan-name">Plano Profissional</div>
+            <div class="plan-price">R$ 97<span>/mês</span></div>
+            <ul class="plan-features">
+              <li>✓ Salas ilimitadas</li>
+              <li>✓ Psicólogas ilimitadas</li>
+              <li>✓ Cobranças via Mercado Pago</li>
+              <li>✓ Relatórios completos</li>
+              <li>✓ Suporte prioritário</li>
+            </ul>
+            <div class="plan-status">Ativa — próxima cobrança em <strong>15/03/2026</strong></div>
+          </div>
+          <button class="btn-outline" onclick="gerenciarAssinatura()">Gerenciar assinatura</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODAIS
+══════════════════════════════════════════════ -->
+
+<!-- Modal Sala -->
+<div id="modalSala" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalSalaTitle">Nova Sala</h3>
+      <button onclick="closeModal('modalSala')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="salaId" />
+      <div class="field"><label>Nome da sala</label><input type="text" id="salaNome" placeholder="Ex: Sala 01, Sala Azul..." /></div>
+      <div class="field"><label>Endereço / localização</label><input type="text" id="salaEndereco" placeholder="Ex: 2º andar, sala 201" /></div>
+      <div class="field-row">
+        <div class="field"><label>Hora início</label><input type="time" id="salaHoraInicio" value="08:00" /></div>
+        <div class="field"><label>Hora fim</label><input type="time" id="salaHoraFim" value="21:00" /></div>
+      </div>
+      <div class="field">
+        <label>Dias disponíveis</label>
+        <div class="days-picker" id="daysPicker">
+          <button type="button" class="day-btn" data-day="segunda" onclick="toggleDay(this)">SEG</button>
+          <button type="button" class="day-btn" data-day="terca" onclick="toggleDay(this)">TER</button>
+          <button type="button" class="day-btn" data-day="quarta" onclick="toggleDay(this)">QUA</button>
+          <button type="button" class="day-btn" data-day="quinta" onclick="toggleDay(this)">QUI</button>
+          <button type="button" class="day-btn" data-day="sexta" onclick="toggleDay(this)">SEX</button>
+          <button type="button" class="day-btn" data-day="sabado" onclick="toggleDay(this)">SÁB</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Valor da sublocação (por sessão)</label>
+        <div class="input-prefix"><span>R$</span><input type="number" id="salaValor" placeholder="150.00" step="0.01" /></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal('modalSala')">Cancelar</button>
+      <button class="btn-primary" onclick="salvarSala()">Salvar sala</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Psicóloga -->
+<div id="modalPsi" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalPsiTitle">Nova Psicóloga</h3>
+      <button onclick="closeModal('modalPsi')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="psiId" />
+      <div class="field"><label>Nome completo</label><input type="text" id="psiNome" placeholder="Dra. Maria Silva" /></div>
+      <div class="field"><label>CRP</label><input type="text" id="psiCRP" placeholder="06/12345" /></div>
+      <div class="field"><label>E-mail</label><input type="email" id="psiEmail" placeholder="maria@email.com" /></div>
+      <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" /></div>
+      <div class="field">
+        <label>Tipo de sublocação</label>
+        <select id="psiTipoSub">
+          <option value="avulso">Avulso (por sessão)</option>
+          <option value="semanal">Semanal</option>
+          <option value="quinzenal">Quinzenal</option>
+          <option value="mensal">Mensal fixo</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal('modalPsi')">Cancelar</button>
+      <button class="btn-primary" onclick="salvarPsi()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Agendamento -->
+<div id="modalAgend" class="modal-overlay hidden">
+  <div class="modal-box modal-lg">
+    <div class="modal-head">
+      <h3 id="modalAgendTitle">Novo Agendamento</h3>
+      <button onclick="closeModal('modalAgend')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="agendId" />
+      <div class="field-row">
+        <div class="field"><label>Psicóloga</label>
+          <select id="agendPsi"><option value="">Selecione...</option></select>
+        </div>
+        <div class="field"><label>Sala</label>
+          <select id="agendSala"><option value="">Selecione...</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Nome do paciente</label><input type="text" id="agendPaciente" placeholder="Nome completo" /></div>
+      <div class="field-row">
+        <div class="field"><label>Data</label><input type="date" id="agendData" /></div>
+        <div class="field"><label>Hora início</label><input type="time" id="agendHoraI" /></div>
+        <div class="field"><label>Hora fim</label><input type="time" id="agendHoraF" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Valor (R$)</label>
+          <div class="input-prefix"><span>R$</span><input type="number" id="agendValor" placeholder="150.00" step="0.01" /></div>
+        </div>
+        <div class="field"><label>Frequência</label>
+          <select id="agendFreq">
+            <option value="avulso">Avulso</option>
+            <option value="semanal">Semanal</option>
+            <option value="quinzenal">Quinzenal</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Observações</label><textarea id="agendObs" rows="2" placeholder="Informações adicionais..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal('modalAgend')">Cancelar</button>
+      <button class="btn-primary" onclick="salvarAgendamento()">Salvar agendamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cobrança MP -->
+<div id="modalCobranca" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Gerar Cobrança</h3>
+      <button onclick="closeModal('modalCobranca')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Psicóloga</label>
+        <select id="cobPsi"><option value="">Selecione...</option></select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Valor (R$)</label>
+          <div class="input-prefix"><span>R$</span><input type="number" id="cobValor" placeholder="0.00" step="0.01" /></div>
+        </div>
+        <div class="field"><label>Vencimento</label><input type="date" id="cobVenc" /></div>
+      </div>
+      <div class="field"><label>Descrição</label><input type="text" id="cobDesc" placeholder="Ex: Sublocação sala 01 — fevereiro/2026" /></div>
+      <div class="mp-methods">
+        <div class="mp-method active"><span>PIX</span><small>Pagamento imediato</small></div>
+        <div class="mp-method"><span>Cartão</span><small>Débito/crédito</small></div>
+        <div class="mp-method"><span>Boleto</span><small>3 dias úteis</small></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal('modalCobranca')">Cancelar</button>
+      <button class="btn-primary" onclick="gerarCobranca()">Gerar e enviar link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
