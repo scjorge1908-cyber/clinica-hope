@@ -11,195 +11,163 @@
   <script src="supabase.js"></script>
 
   <style>
-  /* ── PROFISSIONAIS — Redesign ── */
-  :root {
-    --midnight: #1e293b;
-    --teal: #0d9488;
-    --teal-light: #f0fdfa;
-    --warm-50: #fafaf9;
-    --warm-100: #f5f5f4;
-    --warm-200: #e7e5e0;
-    --slate-400: #94a3b8;
-    --slate-600: #475569;
-  }
-
-  /* Cards de profissionais */
-  .psi-card {
-    background: white;
-    border-radius: 16px;
-    border: 1px solid var(--warm-200);
-    overflow: hidden;
-    transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease;
-    position: relative;
-  }
-  .psi-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(0,0,0,.09);
-  }
-  .psi-card-header {
-    padding: 20px 20px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-  }
-  .psi-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: white;
-    flex-shrink: 0;
-    letter-spacing: -.5px;
-  }
-  .psi-card-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--midnight);
-    margin: 0 0 3px;
-    line-height: 1.2;
-  }
-  .psi-card-reg {
+  /* Turno buttons */
+  .turno-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
     font-size: 12px;
-    color: var(--slate-400);
-    font-weight: 500;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
   }
-  .psi-badge {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .08em;
+  .turno-btn.active {
+    background: white;
+    color: #0d9488;
+    box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  }
+  .turno-btn:hover:not(.active) { color: #1e293b; }
+
+  /* Modal reserva melhorado */
+  .bloco-periodo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+  .bloco-periodo select {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    color: #1e293b;
+    font-family: inherit;
+    outline: none;
+  }
+  .bloco-periodo .periodo-tags {
+    display: flex;
+    gap: 4px;
+  }
+  .periodo-tag {
     padding: 3px 8px;
-    border-radius: 20px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    background: white;
+    color: #64748b;
   }
-  .psi-badge-avulso { background: #fef3c7; color: #92400e; }
-  .psi-badge-semanal { background: #d1fae5; color: #065f46; }
-  .psi-badge-quinzenal { background: #dbeafe; color: #1e40af; }
-  .psi-badge-mensal { background: #ede9fe; color: #5b21b6; }
-
-  .psi-card-body {
-    padding: 14px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .periodo-tag.active {
+    background: #0d9488;
+    color: white;
+    border-color: #0d9488;
   }
-  .psi-info-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--slate-600);
-  }
-  .psi-info-row svg { flex-shrink: 0; opacity: .6; }
-  .psi-info-row strong { color: var(--midnight); font-weight: 600; }
-
-  .psi-stats {
+  .horarios-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 12px 20px;
-    background: var(--warm-50);
-    border-top: 1px solid var(--warm-200);
-    border-bottom: 1px solid var(--warm-200);
-    margin: 0;
-  }
-  .psi-stat { text-align: center; }
-  .psi-stat-val { font-size: 17px; font-weight: 800; color: var(--midnight); }
-  .psi-stat-label { font-size: 11px; color: var(--slate-400); font-weight: 500; margin-top: 2px; }
-
-  .psi-card-actions {
-    padding: 12px 20px;
-    display: flex;
-    gap: 8px;
-  }
-  .psi-btn-edit {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid var(--warm-200);
-    border-radius: 8px;
-    background: white;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--midnight);
-    cursor: pointer;
-    transition: all .15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    grid-template-columns: repeat(4, 1fr);
     gap: 6px;
+    margin-top: 8px;
   }
-  .psi-btn-edit:hover { background: var(--warm-100); }
-  .psi-btn-cobrar {
-    flex: 1;
-    padding: 8px;
-    border: none;
+  .hora-slot {
+    padding: 7px 4px;
+    text-align: center;
     border-radius: 8px;
-    background: var(--teal);
-    font-size: 13px;
+    border: 1px solid #e2e8f0;
+    font-size: 12px;
     font-weight: 600;
-    color: white;
     cursor: pointer;
     transition: all .15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .psi-btn-cobrar:hover { background: #0f766e; transform: translateY(-1px); }
-  .psi-btn-del {
-    padding: 8px 10px;
-    border: 1px solid #fee2e2;
-    border-radius: 8px;
     background: white;
-    color: #ef4444;
-    cursor: pointer;
-    transition: all .15s;
+    color: #64748b;
+  }
+  .hora-slot.disponivel { border-color: #d1fae5; color: #065f46; background: #f0fdf4; }
+  .hora-slot.ocupado { background: #fef2f2; color: #ef4444; border-color: #fecaca; cursor: not-allowed; }
+  .hora-slot.selecionado { background: #0d9488; color: white; border-color: #0d9488; }
+  .resumo-reserva {
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .resumo-item {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+    border-bottom: 1px solid #ccfbf1;
   }
-  .psi-btn-del:hover { background: #fef2f2; }
-
-  /* FAB Mobile */
-  .psi-fab {
-    display: none;
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--teal);
-    color: white;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(13,148,136,.4);
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    transition: transform .2s;
-  }
-  .psi-fab:hover { transform: scale(1.08); }
-
-  /* Steps no modal reserva */
-  #rPasso1, #rPasso2, #rPasso3 { animation: fadeIn .2s ease; }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-
-  /* Sidebar nav item psicologas update */
-  #navPsicologas { }
-
-  @media (max-width: 768px) {
-    .psi-fab { display: flex; }
-    .psi-btn-desktop { display: none !important; }
+  .resumo-item:last-child { border: none; }
+  .resumo-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0d9488;
+    padding-top: 8px;
+    margin-top: 4px;
   }
   </style>
+
+
+  <style>
+  /* ── PROFISSIONAIS CARDS ── */
+  .psi-card { background:white;border-radius:16px;border:1px solid #e7e5e0;overflow:hidden;transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s ease;position:relative; }
+  .psi-card:hover { transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.09); }
+  .psi-card-header { padding:20px 20px 0;display:flex;align-items:flex-start;gap:14px; }
+  .psi-avatar { width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#0d9488 0%,#0f766e 100%);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;flex-shrink:0;letter-spacing:-.5px; }
+  .psi-card-name { font-size:15px;font-weight:700;color:#1e293b;margin:0 0 3px;line-height:1.2; }
+  .psi-card-reg { font-size:12px;color:#94a3b8;font-weight:500; }
+  .psi-badge { position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:20px; }
+  .psi-badge-avulso { background:#fef3c7;color:#92400e; }
+  .psi-badge-semanal { background:#d1fae5;color:#065f46; }
+  .psi-badge-quinzenal { background:#dbeafe;color:#1e40af; }
+  .psi-badge-mensal { background:#ede9fe;color:#5b21b6; }
+  .psi-card-body { padding:14px 20px;display:flex;flex-direction:column;gap:8px; }
+  .psi-info-row { display:flex;align-items:center;gap:8px;font-size:13px;color:#475569; }
+  .psi-info-row svg { flex-shrink:0;opacity:.6; }
+  .psi-stats { display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 20px;background:#fafaf9;border-top:1px solid #e7e5e0;border-bottom:1px solid #e7e5e0; }
+  .psi-stat { text-align:center; }
+  .psi-stat-val { font-size:17px;font-weight:800;color:#1e293b; }
+  .psi-stat-label { font-size:11px;color:#94a3b8;font-weight:500;margin-top:2px; }
+  .psi-card-actions { padding:12px 20px;display:flex;gap:8px; }
+  .psi-btn-edit { flex:1;padding:8px;border:1px solid #e7e5e0;border-radius:8px;background:white;font-size:13px;font-weight:600;color:#1e293b;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit; }
+  .psi-btn-edit:hover { background:#f5f5f4; }
+  .psi-btn-cobrar { flex:1;padding:8px;border:none;border-radius:8px;background:#0d9488;font-size:13px;font-weight:600;color:white;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit; }
+  .psi-btn-cobrar:hover { background:#0f766e;transform:translateY(-1px); }
+  .psi-btn-del { padding:8px 10px;border:1px solid #fee2e2;border-radius:8px;background:white;color:#ef4444;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;font-family:inherit; }
+  .psi-btn-del:hover { background:#fef2f2; }
+  .psi-fab { display:none;position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:#0d9488;color:white;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(13,148,136,.4);align-items:center;justify-content:center;z-index:100; }
+  @media(max-width:768px) { .psi-fab { display:flex; } }
+  .resumo-reserva { background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:16px;margin-top:12px; }
+  .resumo-item { display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid #ccfbf1;color:#1e293b; }
+  .resumo-item:last-child { border:none; }
+  .resumo-total { display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:#0d9488;padding-top:8px;margin-top:4px; }
+  .bloco-periodo { display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:8px;flex-wrap:wrap; }
+  .bloco-periodo select { flex:1;border:none;background:transparent;font-size:13px;color:#1e293b;font-family:inherit;outline:none;min-width:120px; }
+  .periodo-tags { display:flex;gap:4px; }
+  .periodo-tag { padding:4px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;background:white;color:#64748b; }
+  .periodo-tag.active { background:#0d9488;color:white;border-color:#0d9488; }
+  .horarios-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px; }
+  .hora-slot { padding:8px 4px;text-align:center;border-radius:8px;border:1px solid #e2e8f0;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;background:white;color:#64748b; }
+  .hora-slot.disponivel { border-color:#d1fae5;color:#065f46;background:#f0fdf4; }
+  .hora-slot.ocupado { background:#fef2f2;color:#ef4444;border-color:#fecaca;cursor:not-allowed;opacity:.6; }
+  .hora-slot.selecionado { background:#0d9488;color:white;border-color:#0d9488; }
+  .tipo-reserva-btn { padding:7px 14px;border-radius:8px;border:1px solid #e2e8f0;background:white;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .15s;font-family:inherit; }
+  .tipo-reserva-btn.active { background:#0d9488;color:white;border-color:#0d9488; }
+  .turno-btn { padding:5px 10px;border:none;border-radius:7px;background:transparent;font-size:12px;font-weight:600;color:#64748b;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit; }
+  .turno-btn.active { background:white;color:#0d9488;box-shadow:0 1px 4px rgba(0,0,0,.1); }
+  </style>
+
 </head>
 <body>
 
@@ -295,7 +263,7 @@
         <span class="nav-icon">⬛</span> Salas
       </a>
       <a href="#" class="nav-item" onclick="goTo('psicologas')">
-        <span class="nav-icon">◎</span> Profissionais
+        <span class="nav-icon">◎</span> Psicólogas
       </a>
       <a href="#" class="nav-item" onclick="goTo('agendamentos')">
         <span class="nav-icon">◈</span> Agendamentos
@@ -328,8 +296,15 @@
           <h2 class="page-title">Painel de Salas</h2>
           <p class="page-sub">Visão geral de ocupação em tempo real</p>
         </div>
-        <div class="header-actions">
-          <select id="painelFiltroTurno" onchange="renderPainel()" class="select-sm">
+        <div class="header-actions" style="align-items:center;gap:8px;">
+          <!-- Filtro Turno como botões -->
+          <div style="display:flex;background:#f1f5f9;border-radius:10px;padding:3px;gap:2px;">
+            <button id="btnTurnoTodos" class="turno-btn active" onclick="setTurno('')">Todos</button>
+            <button id="btnTurnoManha" class="turno-btn" onclick="setTurno('manha')">Manhã <span style="font-size:10px;opacity:.6;">7–11h</span></button>
+            <button id="btnTurnoTarde" class="turno-btn" onclick="setTurno('tarde')">Tarde <span style="font-size:10px;opacity:.6;">12–17h</span></button>
+            <button id="btnTurnoNoite" class="turno-btn" onclick="setTurno('noite')">Noite <span style="font-size:10px;opacity:.6;">18–21h</span></button>
+          </div>
+          <select id="painelFiltroTurno" style="display:none;" onchange="renderPainel()">
             <option value="">Todos os turnos</option>
             <option value="manha">Manhã</option>
             <option value="tarde">Tarde</option>
@@ -343,7 +318,6 @@
             <option value="quinta">Quinta</option>
             <option value="sexta">Sexta</option>
           </select>
-          <button class="btn-primary" onclick="exportPainelPDF()">↓ PDF Disponibilidade</button>
         </div>
       </div>
 
@@ -365,17 +339,15 @@
 
     <!-- ── PROFISSIONAIS ── -->
     <section id="pagePsicologas" class="page hidden">
-      <div class="page-header" style="flex-wrap:wrap;gap:16px;">
+      <div class="page-header" style="flex-wrap:wrap;gap:12px;">
         <div>
           <h2 class="page-title">Profissionais</h2>
           <p class="page-sub">Sublocatários com contratos ativos</p>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;background:#f8f7f5;border:1px solid #e5e2dc;border-radius:12px;padding:8px 16px;flex:1;max-width:480px;">
-          <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input id="psiSearch" type="text" placeholder="Buscar profissional..." oninput="renderPsis()"
-            style="border:none;background:transparent;outline:none;font-size:14px;color:#1e293b;width:100%;font-family:inherit;" />
-          <select id="psiFiltroTipo" onchange="renderPsis()"
-            style="border:none;background:transparent;outline:none;font-size:13px;color:#64748b;font-family:inherit;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:8px;background:#f8f7f5;border:1px solid #e5e2dc;border-radius:12px;padding:8px 14px;flex:1;max-width:420px;">
+          <svg width="15" height="15" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="psiSearch" type="text" placeholder="Buscar profissional..." oninput="renderPsis()" style="border:none;background:transparent;outline:none;font-size:14px;color:#1e293b;width:100%;font-family:inherit;"/>
+          <select id="psiFiltroTipo" onchange="renderPsis()" style="border:none;background:transparent;outline:none;font-size:12px;color:#64748b;font-family:inherit;cursor:pointer;">
             <option value="">Todos</option>
             <option value="avulso">Avulso</option>
             <option value="semanal">Semanal</option>
@@ -383,22 +355,19 @@
             <option value="mensal">Mensal</option>
           </select>
         </div>
-        <button class="btn-primary" onclick="openNovaReserva()" style="display:flex;align-items:center;gap:8px;">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        <button class="btn-primary" onclick="openNovaReserva()" style="display:flex;align-items:center;gap:6px;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
           Nova Reserva
         </button>
       </div>
-      <div id="psiGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-top:8px;"></div>
-      <div id="psiEmpty" style="display:none;text-align:center;padding:64px 24px;">
-        <div style="width:56px;height:56px;border-radius:16px;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
-          <svg width="24" height="24" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        </div>
+      <div id="psiGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:8px;"></div>
+      <div id="psiEmpty" style="display:none;text-align:center;padding:56px 24px;">
         <p style="font-size:15px;font-weight:600;color:#1e293b;margin:0 0 6px;">Nenhum profissional encontrado</p>
-        <p style="font-size:13px;color:#94a3b8;margin:0 0 20px;">Adicione uma nova reserva para comecar</p>
+        <p style="font-size:13px;color:#94a3b8;margin:0 0 16px;">Adicione uma nova reserva para começar</p>
         <button class="btn-primary" onclick="openNovaReserva()">+ Nova Reserva</button>
       </div>
-      <button onclick="openNovaReserva()" class="psi-fab" title="Nova Reserva">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      <button onclick="openNovaReserva()" style="display:none;position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:#0d9488;color:white;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(13,148,136,.4);align-items:center;justify-content:center;z-index:100;" class="psi-fab" title="Nova Reserva">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
       </button>
     </section>
 
@@ -597,16 +566,16 @@
   </div>
 </div>
 
-<!-- Modal Nova Reserva (3 passos) -->
+<!-- Modal Nova Reserva — Completo -->
 <div id="modalReserva" class="modal-overlay hidden">
-  <div class="modal-box modal-lg" style="max-width:560px;">
-    <div class="modal-head">
+  <div class="modal-box modal-lg" style="max-width:600px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-head" style="position:sticky;top:0;background:white;z-index:2;border-bottom:1px solid #f1f5f9;padding-bottom:12px;">
       <div>
         <h3 id="reservaTitle">Nova Reserva</h3>
-        <div style="display:flex;gap:6px;margin-top:6px;">
-          <div id="rStep1dot" style="height:3px;width:32px;border-radius:2px;background:#0d9488;transition:.3s;"></div>
-          <div id="rStep2dot" style="height:3px;width:32px;border-radius:2px;background:#e2e8f0;transition:.3s;"></div>
-          <div id="rStep3dot" style="height:3px;width:32px;border-radius:2px;background:#e2e8f0;transition:.3s;"></div>
+        <div style="display:flex;gap:4px;margin-top:8px;">
+          <div id="rStep1dot" style="height:3px;width:40px;border-radius:2px;background:#0d9488;transition:.3s;"></div>
+          <div id="rStep2dot" style="height:3px;width:40px;border-radius:2px;background:#e2e8f0;transition:.3s;"></div>
+          <div id="rStep3dot" style="height:3px;width:40px;border-radius:2px;background:#e2e8f0;transition:.3s;"></div>
         </div>
       </div>
       <button onclick="closeModal('modalReserva')">✕</button>
@@ -614,12 +583,11 @@
 
     <!-- PASSO 1: Dados do Profissional -->
     <div id="rPasso1" class="modal-body">
-      <p style="font-size:12px;font-weight:600;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin:0 0 16px;">Passo 1 — Profissional</p>
+      <p style="font-size:11px;font-weight:700;color:#0d9488;text-transform:uppercase;letter-spacing:.1em;margin:0 0 14px;">Passo 1 — Profissional</p>
       <input type="hidden" id="psiId" />
-      <div class="field"><label>Nome completo</label><input type="text" id="psiNome" placeholder="Ex: Dr. Carlos Mendes" /></div>
+      <div class="field"><label>Nome completo *</label><input type="text" id="psiNome" placeholder="Ex: Dr. Carlos Mendes" /></div>
       <div class="field-row">
-        <div class="field">
-          <label>Conselho Regional</label>
+        <div class="field"><label>Conselho Regional *</label>
           <select id="psiConselho">
             <option value="CRP">CRP — Psicologia</option>
             <option value="CRM">CRM — Medicina</option>
@@ -627,73 +595,155 @@
             <option value="CRN">CRN — Nutrição</option>
             <option value="CREFITO">CREFITO — Fisioterapia</option>
             <option value="CRFa">CRFa — Fonoaudiologia</option>
-            <option value="CRO">CRO — Terapia Ocup.</option>
+            <option value="COREN">COREN — Enfermagem</option>
             <option value="Outro">Outro</option>
           </select>
         </div>
         <div class="field"><label>Número do registro</label><input type="text" id="psiCRP" placeholder="Ex: 06/12345" /></div>
       </div>
+      <div class="field"><label>Especialidade</label><input type="text" id="psiEspecialidade" placeholder="Ex: Psicoterapia, Clínica Geral..." /></div>
       <div class="field-row">
-        <div class="field"><label>E-mail</label><input type="email" id="psiEmail" placeholder="profissional@email.com" /></div>
-        <div class="field"><label>WhatsApp</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" /></div>
+        <div class="field"><label>CPF *</label><input type="text" id="psiCPF" placeholder="000.000.000-00" oninput="mascaraCPF(this)" maxlength="14" /></div>
+        <div class="field"><label>WhatsApp *</label><input type="text" id="psiTel" placeholder="(11) 99999-9999" /></div>
       </div>
-      <div class="field">
-        <label>Especialidade</label>
-        <input type="text" id="psiEspecialidade" placeholder="Ex: Psicoterapia, Clínica Geral, Ortodontia..." />
+      <div class="field"><label>E-mail</label><input type="email" id="psiEmail" placeholder="profissional@email.com" /></div>
+      <div class="field-row">
+        <div class="field" style="flex:0 0 140px;">
+          <label>CEP *</label>
+          <div style="display:flex;gap:4px;">
+            <input type="text" id="psiCEP" placeholder="00000-000" maxlength="9" oninput="mascaraCEP(this)" style="flex:1;" />
+            <button type="button" onclick="buscarCEP()" style="padding:0 10px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:13px;white-space:nowrap;">Buscar</button>
+          </div>
+        </div>
+        <div class="field"><label>Logradouro</label><input type="text" id="psiRua" placeholder="Rua, Avenida..." readonly style="background:#f8fafc;" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field" style="flex:0 0 100px;"><label>Número</label><input type="text" id="psiNumero" placeholder="123" /></div>
+        <div class="field"><label>Complemento</label><input type="text" id="psiComplemento" placeholder="Apto, Sala..." /></div>
+        <div class="field"><label>Bairro</label><input type="text" id="psiBairro" readonly style="background:#f8fafc;" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Cidade</label><input type="text" id="psiCidade" readonly style="background:#f8fafc;" /></div>
+        <div class="field" style="flex:0 0 80px;"><label>UF</label><input type="text" id="psiUF" maxlength="2" readonly style="background:#f8fafc;" /></div>
       </div>
     </div>
 
     <!-- PASSO 2: Detalhes da Reserva -->
     <div id="rPasso2" class="modal-body" style="display:none;">
-      <p style="font-size:12px;font-weight:600;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin:0 0 16px;">Passo 2 — Reserva</p>
-      <div class="field-row">
-        <div class="field"><label>Sala</label>
-          <select id="psiSala"><option value="">Selecione...</option></select>
+      <p style="font-size:11px;font-weight:700;color:#0d9488;text-transform:uppercase;letter-spacing:.1em;margin:0 0 14px;">Passo 2 — Reserva</p>
+      <div class="field">
+        <label>Sala *</label>
+        <select id="psiSala" onchange="carregarHorariosDisp()">
+          <option value="">Selecione a sala...</option>
+        </select>
+      </div>
+      <!-- Tipo de reserva como botões -->
+      <div class="field">
+        <label>Tipo de reserva *</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;" id="tipoReservaGroup">
+          <button type="button" class="tipo-reserva-btn active" onclick="setTipoReserva('avulso',this)">Avulsa</button>
+          <button type="button" class="tipo-reserva-btn" onclick="setTipoReserva('semanal',this)">Semanal</button>
+          <button type="button" class="tipo-reserva-btn" onclick="setTipoReserva('quinzenal',this)">Quinzenal</button>
+          <button type="button" class="tipo-reserva-btn" onclick="setTipoReserva('bloco',this)">Bloco</button>
         </div>
+        <input type="hidden" id="psiTipoSub" value="avulso" />
+      </div>
+
+      <!-- Avulsa / Semanal / Quinzenal -->
+      <div id="reservaSimples">
+        <div class="field-row">
+          <div class="field"><label>Data *</label><input type="date" id="psiDataInicio" onchange="carregarHorariosDisp()" /></div>
+          <div class="field"><label>Data fim (opcional)</label><input type="date" id="psiDataFim" /></div>
+        </div>
+        <!-- Períodos do dia -->
         <div class="field">
-          <label>Tipo de sublocação</label>
-          <select id="psiTipoSub">
-            <option value="avulso">Avulso (por hora)</option>
-            <option value="semanal">Semanal</option>
-            <option value="quinzenal">Quinzenal</option>
-            <option value="mensal">Mensal fixo</option>
-          </select>
+          <label>Período</label>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button type="button" class="periodo-tag" onclick="filtrarPeriodo('manha',this)">🌅 Manhã (7–11h)</button>
+            <button type="button" class="periodo-tag" onclick="filtrarPeriodo('tarde',this)">☀️ Tarde (12–17h)</button>
+            <button type="button" class="periodo-tag" onclick="filtrarPeriodo('noite',this)">🌙 Noite (18–21h)</button>
+          </div>
+        </div>
+        <!-- Grade de horários disponíveis -->
+        <div class="field">
+          <label>Horários disponíveis <span style="color:#94a3b8;font-weight:400;font-size:11px;">(clique para selecionar)</span></label>
+          <div id="horariosGrid" class="horarios-grid"></div>
+          <div id="horariosMsg" style="font-size:12px;color:#94a3b8;padding:8px 0;display:none;">Selecione uma sala e data para ver os horários</div>
         </div>
       </div>
-      <div class="field-row">
-        <div class="field"><label>Data início</label><input type="date" id="psiDataInicio" /></div>
-        <div class="field"><label>Data fim (opcional)</label><input type="date" id="psiDataFim" /></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Horário início</label><input type="time" id="psiHoraI" value="08:00" /></div>
-        <div class="field"><label>Horário fim</label><input type="time" id="psiHoraF" value="09:00" /></div>
+
+      <!-- Bloco -->
+      <div id="reservaBloco" style="display:none;">
+        <div id="blocosPeriodos">
+          <div class="bloco-periodo" id="blocoItem0">
+            <select class="bloco-dia-sel" onchange="verificarBlocoDisp(0)">
+              <option value="">Dia da semana...</option>
+              <option value="segunda">Segunda-feira</option>
+              <option value="terca">Terça-feira</option>
+              <option value="quarta">Quarta-feira</option>
+              <option value="quinta">Quinta-feira</option>
+              <option value="sexta">Sexta-feira</option>
+              <option value="sabado">Sábado</option>
+            </select>
+            <div class="periodo-tags">
+              <span class="periodo-tag" onclick="toggleBlocoPeriodo(0,'manha',this)">Manhã</span>
+              <span class="periodo-tag" onclick="toggleBlocoPeriodo(0,'tarde',this)">Tarde</span>
+              <span class="periodo-tag" onclick="toggleBlocoPeriodo(0,'noite',this)">Noite</span>
+            </div>
+            <span id="blocoValor0" style="font-size:13px;font-weight:700;color:#0d9488;white-space:nowrap;"></span>
+          </div>
+        </div>
+        <button type="button" onclick="addBlocoPeriodo()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;border:1px dashed #cbd5e1;border-radius:8px;background:transparent;color:#64748b;cursor:pointer;font-size:13px;font-weight:600;width:100%;justify-content:center;margin-top:4px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Adicionar outro período
+        </button>
+        <div class="field-row" style="margin-top:12px;">
+          <div class="field"><label>Data início *</label><input type="date" id="blocoDataInicio" /></div>
+          <div class="field"><label>Data fim *</label><input type="date" id="blocoDataFim" /></div>
+        </div>
       </div>
     </div>
 
     <!-- PASSO 3: Financeiro -->
     <div id="rPasso3" class="modal-body" style="display:none;">
-      <p style="font-size:12px;font-weight:600;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin:0 0 16px;">Passo 3 — Cobrança</p>
+      <p style="font-size:11px;font-weight:700;color:#0d9488;text-transform:uppercase;letter-spacing:.1em;margin:0 0 14px;">Passo 3 — Pagamento</p>
       <div class="field-row">
-        <div class="field"><label>Valor por hora (R$)</label>
-          <div class="input-prefix"><span>R$</span><input type="number" id="psiValor" placeholder="0.00" step="0.01" /></div>
+        <div class="field">
+          <label>Valor por hora (R$)</label>
+          <div class="input-prefix"><span>R$</span><input type="number" id="psiValorHora" placeholder="0.00" step="0.01" oninput="calcularTotal()" /></div>
         </div>
-        <div class="field"><label>Vencimento</label><input type="date" id="psiVenc" /></div>
-      </div>
-      <div class="field"><label>Descrição da cobrança</label>
-        <input type="text" id="psiCobDesc" placeholder="Ex: Sublocação sala 01 — março/2026" />
+        <div class="field"><label>Data de pagamento *</label><input type="date" id="psiVenc" /></div>
       </div>
       <div class="field">
         <label>Forma de pagamento</label>
         <div style="display:flex;gap:8px;margin-top:4px;">
-          <div class="mp-method active" onclick="selectPagto(this,'pix')"><span>PIX</span><small>Imediato</small></div>
-          <div class="mp-method" onclick="selectPagto(this,'cartao')"><span>Cartão</span><small>Crédito/Débito</small></div>
-          <div class="mp-method" onclick="selectPagto(this,'boleto')"><span>Boleto</span><small>3 dias úteis</small></div>
+          <div class="mp-method active" onclick="selectPagto(this,'pix')" style="cursor:pointer;flex:1;text-align:center;padding:10px;border-radius:10px;border:2px solid #0d9488;background:#f0fdfa;">
+            <div style="font-size:14px;font-weight:700;">PIX</div><div style="font-size:11px;color:#64748b;">Imediato</div>
+          </div>
+          <div class="mp-method" onclick="selectPagto(this,'cartao')" style="cursor:pointer;flex:1;text-align:center;padding:10px;border-radius:10px;border:2px solid #e2e8f0;background:white;">
+            <div style="font-size:14px;font-weight:700;">Cartão</div><div style="font-size:11px;color:#64748b;">Crédito/Débito</div>
+          </div>
+          <div class="mp-method" onclick="selectPagto(this,'boleto')" style="cursor:pointer;flex:1;text-align:center;padding:10px;border-radius:10px;border:2px solid #e2e8f0;background:white;">
+            <div style="font-size:14px;font-weight:700;">Boleto</div><div style="font-size:11px;color:#64748b;">3 dias úteis</div>
+          </div>
+        </div>
+        <input type="hidden" id="psiPagtoTipo" value="pix" />
+      </div>
+      <div class="field"><label>Descrição da cobrança</label>
+        <input type="text" id="psiCobDesc" placeholder="Ex: Sublocação sala 01 — março/2026" />
+      </div>
+      <!-- Resumo -->
+      <div class="resumo-reserva" id="resumoReserva">
+        <div style="font-size:12px;font-weight:700;color:#0d9488;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Resumo da reserva</div>
+        <div id="resumoItens"></div>
+        <div class="resumo-total">
+          <span>Total</span>
+          <span id="resumoTotal">R$ 0,00</span>
         </div>
       </div>
-      <input type="hidden" id="psiPagtoTipo" value="pix" />
     </div>
 
-    <div class="modal-footer" style="justify-content:space-between;">
+    <div class="modal-footer" style="justify-content:space-between;position:sticky;bottom:0;background:white;border-top:1px solid #f1f5f9;padding-top:12px;z-index:2;">
       <button class="btn-outline" id="rBtnVoltar" onclick="reservaVoltar()" style="display:none;">← Voltar</button>
       <button class="btn-outline" id="rBtnCancelar" onclick="closeModal('modalReserva')">Cancelar</button>
       <button class="btn-primary" id="rBtnAvancar" onclick="reservaAvancar()">Continuar →</button>
@@ -701,7 +751,27 @@
   </div>
 </div>
 
-<!-- Modal Editar Profissional (simples) -->
+<!-- Estilos internos do modal reserva -->
+<style>
+.tipo-reserva-btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all .15s;
+}
+.tipo-reserva-btn.active {
+  background: #0d9488;
+  color: white;
+  border-color: #0d9488;
+}
+</style>
+
+<!-- Modal Editar Profissional -->
 <div id="modalPsi" class="modal-overlay hidden">
   <div class="modal-box">
     <div class="modal-head">
