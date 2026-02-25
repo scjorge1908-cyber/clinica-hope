@@ -1123,6 +1123,11 @@ document.addEventListener('DOMContentLoaded',loadRooms);
           <div style="font-size:15px;font-weight:600;color:white;margin-bottom:6px;">Verifique seu e-mail</div>
           <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:20px;">Enviamos um código de 6 dígitos para <span id="mEmailShow" style="color:var(--gl);font-weight:600;"></span></div>
         </div>
+        <!-- Banner modo teste -->
+        <div id="mTesteBanner" style="display:none;background:rgba(13,158,133,.15);border:1px solid rgba(13,158,133,.4);border-radius:10px;padding:12px 16px;margin-bottom:16px;text-align:center;">
+          <div style="font-size:11px;font-weight:700;color:var(--gl);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">🧪 Modo Teste — Seu código é:</div>
+          <div id="mTesteToken" style="font-size:36px;font-weight:800;color:white;letter-spacing:10px;"></div>
+        </div>
         <div class="fg">
           <label>Código de verificação</label>
           <input type="text" id="me_token" placeholder="000000" maxlength="6"
@@ -1375,7 +1380,8 @@ async function mEnviarToken() {
     // Modo teste: mostrar token na tela
     if (modoTeste) {
       document.getElementById('me_token').value = _tokenGerado;
-      toast('🧪 MODO TESTE — Código: ' + _tokenGerado);
+      document.getElementById('mTesteBanner').style.display = 'block';
+      document.getElementById('mTesteToken').textContent = _tokenGerado;
     }
     setTimeout(() => { _tokenGerado = ''; }, 15 * 60 * 1000);
   } catch(err) {
