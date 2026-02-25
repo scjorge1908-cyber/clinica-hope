@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Portal do Profissional — SublocaFácil</title>
+<title>Cadastro de Profissional — SublocaFácil</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -242,6 +242,37 @@ body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-s
 .toast.show { opacity:1; }
 .toast.success { border-left:4px solid var(--green-l); }
 .toast.error   { border-left:4px solid var(--danger); }
+
+/* UPLOAD DOCS */
+.upload-box {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: white;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.upload-box:hover { border-color: var(--green); background: #f0fdf8; }
+.upload-box.has-file { border-color: var(--green-l); background: #f0fdf4; border-style: solid; }
+.upload-box.has-file:hover { background: #dcfce7; }
+.doc-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 0 8px;
+}
+.doc-preview-icon { font-size: 32px; flex-shrink: 0; }
+.doc-preview-info { flex: 1; overflow: hidden; }
+.doc-preview-name { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-preview-size { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.doc-preview-ok { font-size: 18px; color: var(--green); flex-shrink: 0; }
+.doc-remove { background: none; border: none; color: var(--danger); font-size: 13px; cursor: pointer; margin-top: 6px; font-family: var(--font-b); padding: 0; }
 </style>
 </head>
 <body>
@@ -257,12 +288,6 @@ body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-s
   <div class="step active" id="step1"><div class="step-num">1</div> Verificação</div>
   <div class="step-sep"></div>
   <div class="step" id="step2"><div class="step-num">2</div> Cadastro</div>
-  <div class="step-sep"></div>
-  <div class="step" id="step3"><div class="step-num">3</div> Reserva</div>
-  <div class="step-sep"></div>
-  <div class="step" id="step4"><div class="step-num">4</div> Contrato</div>
-  <div class="step-sep"></div>
-  <div class="step" id="step5"><div class="step-num">5</div> Assinatura</div>
 </div>
 
 <div class="wrap">
@@ -285,22 +310,45 @@ body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-s
       </div>
       <!-- Etapa B: digitar token -->
       <div id="etapaToken" style="display:none;">
+        <!-- Cabeçalho: email + ícone de envelope animado -->
         <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:36px;margin-bottom:10px;">📬</div>
           <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">Código enviado para</div>
-          <div style="font-weight:700;color:var(--ink);" id="veriEmailMostra"></div>
+          <div style="font-weight:700;color:var(--ink);font-size:15px;" id="veriEmailMostra"></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;">Verifique também a caixa de spam</div>
         </div>
+
+        <!-- Box modo teste -->
         <div id="tokenTestBox" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px;text-align:center;margin-bottom:16px;">
-          <div style="font-size:11px;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Código de teste</div>
+          <div style="font-size:11px;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">🧪 Código de teste</div>
           <div id="tokenTestValor" style="font-size:32px;font-weight:800;letter-spacing:8px;color:#15803d;margin-top:4px;"></div>
         </div>
+
+        <!-- Input do código -->
         <div class="field">
           <label>Código de 6 dígitos</label>
           <input type="text" id="veriToken" placeholder="000000" maxlength="6"
-            style="text-align:center;font-size:24px;font-weight:700;letter-spacing:8px;"
+            style="text-align:center;font-size:28px;font-weight:700;letter-spacing:10px;padding:14px;"
             oninput="this.value=this.value.replace(/\D/g,'')" />
         </div>
-        <button class="btn-primary" onclick="validarToken()">Confirmar código →</button>
-        <div style="text-align:center;margin-top:12px;">
+
+        <button class="btn-primary" onclick="validarToken()" style="width:100%;">Confirmar código →</button>
+
+        <!-- Reenviar código com contador -->
+        <div style="text-align:center;margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;">
+          <div id="reenvioContador" style="font-size:13px;color:var(--muted);">
+            Não recebeu? Aguarde <span id="contadorSeg" style="font-weight:700;color:var(--green);font-size:15px;">60</span>s para reenviar
+          </div>
+          <button id="btnReenviar" onclick="reenviarToken()"
+            style="display:none;background:none;border:1px solid var(--green);color:var(--green);
+                   border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;
+                   cursor:pointer;font-family:var(--font-b);margin-top:2px;transition:all .2s;"
+            onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='none'">
+            🔄 Reenviar código
+          </button>
+        </div>
+
+        <div style="text-align:center;margin-top:10px;">
           <button onclick="voltarParaEmail()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--font-b);">← Trocar e-mail</button>
         </div>
       </div>
@@ -366,13 +414,47 @@ body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-s
         </div>
       </div>
     </div>
-    <div class="nav-row">
+      <!-- Documentos obrigatórios -->
+      <div style="background:#f8fafc;border-radius:10px;padding:16px;margin-top:16px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px;">Documentos obrigatórios</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Envie foto ou scan legível. Formatos aceitos: JPG, PNG ou PDF (até 5MB cada)</div>
+
+        <!-- RG ou CNH -->
+        <div class="field">
+          <label>RG ou CNH (documento com foto) *</label>
+          <div class="upload-box" id="uploadRGBox" onclick="document.getElementById('inputRG').click()">
+            <input type="file" id="inputRG" accept="image/*,.pdf" style="display:none" onchange="previewDoc('RG',this)" />
+            <div id="uploadRGPlaceholder">
+              <div style="font-size:28px;margin-bottom:8px;">📄</div>
+              <div style="font-weight:600;color:var(--ink);font-size:14px;">Clique para enviar RG ou CNH</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px;">Frente e verso — JPG, PNG ou PDF</div>
+            </div>
+            <div id="uploadRGPreview" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Carteirinha do conselho -->
+        <div class="field" style="margin-top:12px;">
+          <label>Carteirinha do conselho profissional *</label>
+          <div class="upload-box" id="uploadConselhoBox" onclick="document.getElementById('inputConselho').click()">
+            <input type="file" id="inputConselho" accept="image/*,.pdf" style="display:none" onchange="previewDoc('Conselho',this)" />
+            <div id="uploadConselhoPlaceholder">
+              <div style="font-size:28px;margin-bottom:8px;">🪪</div>
+              <div style="font-weight:600;color:var(--ink);font-size:14px;">Clique para enviar carteirinha</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px;">CRP, CRM, CRO ou outro conselho — JPG, PNG ou PDF</div>
+            </div>
+            <div id="uploadConselhoPreview" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+
+    <div class="nav-row" style="margin-top:24px;">
       <button class="btn-outline" onclick="irPara('screenVerificacao',1)">← Voltar</button>
-      <button class="btn-primary" onclick="irParaReserva()">Próximo → Escolher sala</button>
+      <button class="btn-primary" id="btnFinalizarCad" onclick="finalizarCadastro()">✓ Enviar cadastro</button>
     </div>
   </div>
 
-  <!-- ══ TELA 2: RESERVA ══ -->
+  <!-- ══ TELA 2: RESERVA (removida — feita no painel) ══ -->
   <div class="screen" id="screenReserva">
     <div class="sec-title">Tipo de sublocação</div>
     <div class="sec-sub">Escolha como quer usar a sala</div>
@@ -459,87 +541,6 @@ body { font-family:var(--font-b); background:var(--bg); color:var(--ink); font-s
     </div>
   </div>
 
-  <!-- ══ TELA 3: CONTRATO ══ -->
-  <div class="screen" id="screenContrato">
-    <div class="sec-title">Contrato de Sublocação</div>
-    <div class="sec-sub">Leia com atenção antes de assinar</div>
-
-    <div class="info-box">
-      ✦ Este contrato tem validade de <strong>12 meses</strong>. Após esse período, um novo contrato será gerado automaticamente.
-    </div>
-
-    <div class="contrato-box" id="contratoTexto"></div>
-
-    <div class="check-row">
-      <input type="checkbox" id="checkContrato" />
-      <label for="checkContrato">Li e aceito os termos do contrato de sublocação acima</label>
-    </div>
-    <div class="check-row">
-      <input type="checkbox" id="checkLGPD" />
-      <label for="checkLGPD">Autorizo o tratamento dos meus dados conforme a LGPD</label>
-    </div>
-
-    <div class="nav-row">
-      <button class="btn-outline" onclick="irPara('screenReserva',3)">← Voltar</button>
-      <button class="btn-primary" onclick="irParaAssinatura()">Próximo → Assinar</button>
-    </div>
-  </div>
-
-  <!-- ══ TELA 4: ASSINATURA ══ -->
-  <div class="screen" id="screenAssinatura">
-    <div class="sec-title">Assinatura Digital</div>
-    <div class="sec-sub">Assine com o dedo ou mouse para confirmar o contrato</div>
-
-    <div class="card">
-      <div class="card-title">Sua assinatura</div>
-      <div class="card-sub">Use o mouse ou o dedo na tela para assinar abaixo</div>
-      <div class="sig-area">
-        <canvas id="sigCanvas" width="640" height="160"></canvas>
-        <div class="sig-placeholder" id="sigPlaceholder">
-          <div class="sig-placeholder-icon">✍</div>
-          <div class="sig-placeholder-text">Assine aqui</div>
-        </div>
-      </div>
-      <div class="sig-actions">
-        <button class="btn-sm" onclick="limparAssinatura()">✕ Limpar</button>
-        <span style="font-size:12px;color:var(--muted);align-self:center">Carimbado com seu IP e data/hora</span>
-      </div>
-    </div>
-
-    <div class="card" id="cardAssinaturaClinica">
-      <div class="card-title">Assinatura da Clínica</div>
-      <div class="card-sub">Assinatura da proprietária (pré-registrada)</div>
-      <div style="border:1px solid var(--border);border-radius:8px;padding:16px;background:var(--bg);">
-        <canvas id="sigClinicaCanvas" width="640" height="100" style="display:block"></canvas>
-      </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:8px">
-        Dra. Ana Lima — CRM 12345 — Proprietária da Clínica Esperança
-      </div>
-    </div>
-
-    <div class="nav-row">
-      <button class="btn-outline" onclick="irPara('screenContrato',3)">← Voltar</button>
-      <button class="btn-primary full" onclick="finalizarContrato()" id="btnFinalizar" style="margin-top:12px">✓ Finalizar e gerar contrato</button>
-    </div>
-  </div>
-
-  <!-- ══ TELA 5: SUCESSO ══ -->
-  <div class="screen" id="screenSucesso">
-    <div class="sucesso-box">
-      <div class="sucesso-icon">🎉</div>
-      <div class="sucesso-title">Contrato assinado!</div>
-      <div class="sucesso-sub">Sua reserva foi confirmada. Você receberá o contrato por e-mail em instantes.</div>
-      <div class="sucesso-badges">
-        <div class="sucesso-badge">📄 Contrato válido por 12 meses</div>
-        <div class="sucesso-badge" id="sucessoBadgeTipo">📅 Avulso</div>
-        <div class="sucesso-badge" id="sucessoBadgeValor">R$ —</div>
-      </div>
-      <div style="margin-top:32px">
-        <button class="btn-primary" onclick="irParaPainelPsi()">Acessar meu painel →</button>
-      </div>
-    </div>
-  </div>
-
 </div><!-- /wrap -->
 
 <div class="toast" id="toast"></div>
@@ -583,7 +584,7 @@ function toast(msg, type='success') {
 }
 
 function atualizarSteps(ativo) {
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 2; i++) {
     const el = document.getElementById('step' + i);
     if (el) el.className = 'step' + (i === ativo ? ' active' : i < ativo ? ' done' : '');
   }
@@ -628,7 +629,7 @@ function irParaReserva() {
 
   renderBlocoSlots();
   renderHorasAvulso();
-  irPara('screenReserva', 3);
+  irPara('screenContrato', 3);
 }
 
 // ═══ TIPO ═══
@@ -731,16 +732,167 @@ function calcularBloco() {
   reservaData.blocoDesconto= desconto;
 }
 
+// ═══ FINALIZAR CADASTRO (2 passos) ═══
+async function finalizarCadastro() {
+  const nome     = document.getElementById('psiNome').value.trim();
+  const conselho = document.getElementById('psiConselho').value;
+  const crp      = document.getElementById('psiCRP').value.trim();
+  const cpf      = document.getElementById('psiCPF').value.trim();
+  const tel      = document.getElementById('psiTel').value.trim();
+  const cep      = document.getElementById('psiCEP').value.trim();
+  const numero   = document.getElementById('psiNumero').value.trim();
+
+  if (!nome)     { toast('Informe o nome completo', 'error'); return; }
+  if (!conselho) { toast('Selecione o conselho regional', 'error'); return; }
+  if (!crp)      { toast('Informe o número do registro', 'error'); return; }
+  if (!cpf)      { toast('Informe o CPF', 'error'); return; }
+  if (!tel)      { toast('Informe o WhatsApp', 'error'); return; }
+  if (!cep || !numero) { toast('Preencha o endereço com CEP e número', 'error'); return; }
+  if (!docRG)       { toast('Envie o documento com foto (RG ou CNH)', 'error'); return; }
+  if (!docConselho) { toast('Envie a carteirinha do conselho profissional', 'error'); return; }
+
+  const btn = document.getElementById('btnFinalizarCad');
+  btn.disabled = true;
+  btn.textContent = '⏳ Enviando...';
+
+  const rua    = document.getElementById('psiRua').value;
+  const comp   = document.getElementById('psiComplemento').value;
+  const bairro = document.getElementById('psiBairro').value;
+  const cidade = document.getElementById('psiCidade').value;
+  const uf     = document.getElementById('psiUF').value;
+
+  dadosPsi = {
+    nome, conselho, crp, cpf, tel,
+    email: emailVerificado,
+    end: `${rua}, ${numero}${comp ? ', ' + comp : ''} — ${bairro}, ${cidade}/${uf} — CEP ${cep}`
+  };
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const clinicaId = params.get('c') || null;
+
+    const psiComDocs = {
+      ...dadosPsi,
+      doc_rg: typeof docRG === 'string' ? docRG : null,
+      doc_conselho: typeof docConselho === 'string' ? docConselho : null,
+      status: 'pendente_aprovacao'
+    };
+
+    const psiData = await dbCadastrarPsiPortal(psiComDocs, clinicaId || 'sublocafacil');
+    if (!psiData) throw new Error('Erro ao salvar cadastro');
+
+    localStorage.setItem('hope_psi_logada', JSON.stringify({
+      id: psiData.id,
+      nome: dadosPsi.nome,
+      conselho: dadosPsi.conselho,
+      crp: dadosPsi.crp,
+      email: emailVerificado
+    }));
+
+    // Mostrar tela de sucesso
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screenSucesso').classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+
+  } catch(err) {
+    console.error(err);
+    toast('Erro ao enviar cadastro. Tente novamente.', 'error');
+    btn.disabled = false;
+    btn.textContent = '✓ Enviar cadastro';
+  }
+}
+
+// ─── UPLOAD DE DOCS ───
+let docRG = null;
+let docConselho = null;
+
+function previewDoc(tipo, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('Arquivo muito grande. Máximo 5MB.', 'error'); input.value=''; return; }
+
+  const isPdf = file.type === 'application/pdf';
+  const sizeStr = file.size > 1024*1024
+    ? (file.size/1024/1024).toFixed(1) + ' MB'
+    : (file.size/1024).toFixed(0) + ' KB';
+  const icon = isPdf ? '📋' : '🖼️';
+
+  const boxId  = 'upload' + tipo + 'Box';
+  const prevId = 'upload' + tipo + 'Preview';
+  const phId   = 'upload' + tipo + 'Placeholder';
+
+  document.getElementById(boxId).classList.add('has-file');
+  document.getElementById(phId).style.display  = 'none';
+  document.getElementById(prevId).style.display = 'block';
+  document.getElementById(prevId).innerHTML = `
+    <div class="doc-preview">
+      <div class="doc-preview-icon">${icon}</div>
+      <div class="doc-preview-info">
+        <div class="doc-preview-name">${file.name}</div>
+        <div class="doc-preview-size">${sizeStr}</div>
+        <button class="doc-remove" onclick="event.stopPropagation();removerDoc('${tipo}')">✕ Remover</button>
+      </div>
+      <div class="doc-preview-ok">✓</div>
+    </div>`;
+
+  if (isPdf) {
+    tipo === 'RG' ? (docRG = file) : (docConselho = file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = e => { tipo === 'RG' ? (docRG = e.target.result) : (docConselho = e.target.result); };
+    reader.readAsDataURL(file);
+  }
+}
+
+function removerDoc(tipo) {
+  const boxId  = 'upload' + tipo + 'Box';
+  const prevId = 'upload' + tipo + 'Preview';
+  const phId   = 'upload' + tipo + 'Placeholder';
+  const inputId = 'input' + tipo;
+  document.getElementById(boxId).classList.remove('has-file');
+  document.getElementById(phId).style.display  = 'block';
+  document.getElementById(prevId).style.display = 'none';
+  document.getElementById(prevId).innerHTML = '';
+  document.getElementById(inputId).value = '';
+  tipo === 'RG' ? (docRG = null) : (docConselho = null);
+}
+
 // ═══ TELA 2 → 3 ═══
 function irParaContrato() {
-  if (!tipoSelecionado) { toast('Selecione o tipo de sublocação', 'error'); return; }
+  // Validar dados pessoais
+  const nome     = document.getElementById('psiNome').value.trim();
+  const conselho = document.getElementById('psiConselho').value;
+  const crp      = document.getElementById('psiCRP').value.trim();
+  const cpf      = document.getElementById('psiCPF').value.trim();
+  const tel      = document.getElementById('psiTel').value.trim();
+  const cep      = document.getElementById('psiCEP').value.trim();
+  const numero   = document.getElementById('psiNumero').value.trim();
 
-  if (tipoSelecionado === 'avulso' && !reservaData.horaAvulso) {
-    toast('Selecione um horário disponível', 'error'); return;
-  }
+  if (!nome)     { toast('Informe o nome completo', 'error'); return; }
+  if (!conselho) { toast('Selecione o conselho regional', 'error'); return; }
+  if (!crp)      { toast('Informe o número do registro', 'error'); return; }
+  if (!cpf)      { toast('Informe o CPF', 'error'); return; }
+  if (!tel)      { toast('Informe o WhatsApp', 'error'); return; }
+  if (!cep || !numero) { toast('Preencha o endereço completo com CEP', 'error'); return; }
+
+  // Validar documentos
+  if (!docRG)       { toast('Envie o documento com foto (RG ou CNH)', 'error'); return; }
+  if (!docConselho) { toast('Envie a carteirinha do conselho profissional', 'error'); return; }
+
+  const rua  = document.getElementById('psiRua').value;
+  const comp = document.getElementById('psiComplemento').value;
+  const bairro = document.getElementById('psiBairro').value;
+  const cidade = document.getElementById('psiCidade').value;
+  const uf   = document.getElementById('psiUF').value;
+
+  dadosPsi = {
+    nome, conselho, crp, cpf, tel,
+    email: emailVerificado,
+    end: `${rua}, ${numero}${comp ? ', ' + comp : ''} — ${bairro}, ${cidade}/${uf} — CEP ${cep}`
+  };
 
   gerarContratoTexto();
-  irPara('screenContrato', 4);
+  irPara('screenContrato', 3);
 }
 
 function gerarContratoTexto() {
@@ -809,7 +961,7 @@ function irParaAssinatura() {
   if (!document.getElementById('checkLGPD').checked)     { toast('Você precisa aceitar os termos da LGPD', 'error'); return; }
   iniciarCanvas();
   renderAssinaturaClinica();
-  irPara('screenAssinatura', 5);
+  irPara('screenAssinatura', 4);
 }
 
 // ═══ CANVAS ═══
@@ -884,8 +1036,13 @@ async function finalizarContrato() {
     const params = new URLSearchParams(window.location.search);
     const clinicaId = params.get('c') || CONFIG_CLINICA.id;
 
-    // 2. Cadastrar psicóloga no banco
-    const psiData = await dbCadastrarPsiPortal(dadosPsi, clinicaId);
+    // 2. Cadastrar psicóloga no banco (com docs em base64)
+    const psiComDocs = {
+      ...dadosPsi,
+      doc_rg: typeof docRG === 'string' ? docRG : null,
+      doc_conselho: typeof docConselho === 'string' ? docConselho : null,
+    };
+    const psiData = await dbCadastrarPsiPortal(psiComDocs, clinicaId);
     if (!psiData) throw new Error('Erro ao cadastrar psicóloga');
 
     // 3. Salvar assinatura da psicóloga (canvas → base64)
@@ -967,36 +1124,85 @@ let emailVerificado = '';
 let tokenGerado = '';
 const EMAIL_TESTE = 'teste@teste.com';
 
+let _contadorTimer = null;
+
+function iniciarContador() {
+  let seg = 60;
+  const spanSeg   = document.getElementById('contadorSeg');
+  const divCount  = document.getElementById('reenvioContador');
+  const btnReenv  = document.getElementById('btnReenviar');
+
+  // Reset visual
+  if (spanSeg)  spanSeg.textContent = '60';
+  if (divCount) divCount.style.display = 'block';
+  if (btnReenv) btnReenv.style.display = 'none';
+
+  // Limpar timer anterior se existir
+  if (_contadorTimer) clearInterval(_contadorTimer);
+
+  _contadorTimer = setInterval(() => {
+    seg--;
+    if (spanSeg) spanSeg.textContent = seg;
+    if (seg <= 0) {
+      clearInterval(_contadorTimer);
+      _contadorTimer = null;
+      if (divCount) divCount.style.display = 'none';
+      if (btnReenv) btnReenv.style.display = 'inline-block';
+    }
+  }, 1000);
+}
+
+async function _dispararEnvio(email) {
+  const isTeste = email === EMAIL_TESTE || email.endsWith('@teste.com');
+  if (isTeste) {
+    document.getElementById('testeBanner').style.display = 'block';
+    document.getElementById('tokenTestBox').style.display = 'block';
+    document.getElementById('tokenTestValor').textContent = tokenGerado;
+    toast('Modo teste — código exibido na tela', 'success');
+  } else {
+    try {
+      const r = await fetch('/api/send-token', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ email, token: tokenGerado })
+      });
+      if (r.ok) toast('Código enviado! Verifique sua caixa de entrada', 'success');
+      else toast('Erro ao enviar. Tente novamente.', 'error');
+    } catch { toast('Erro de conexão', 'error'); }
+  }
+}
+
 function enviarToken() {
   const email = document.getElementById('veriEmail').value.trim().toLowerCase();
   if (!email || !email.includes('@')) { toast('Digite um e-mail válido', 'error'); return; }
 
-  // Gerar token de 6 dígitos
   tokenGerado = String(Math.floor(100000 + Math.random() * 900000));
-
-  const isTeste = email === EMAIL_TESTE || email.endsWith('@teste.com');
 
   document.getElementById('etapaEmail').style.display = 'none';
   document.getElementById('etapaToken').style.display = 'block';
   document.getElementById('veriEmailMostra').textContent = email;
 
+  _dispararEnvio(email);
+  iniciarContador();
+}
+
+async function reenviarToken() {
+  const email = document.getElementById('veriEmail').value.trim().toLowerCase();
+  // Gerar novo token
+  tokenGerado = String(Math.floor(100000 + Math.random() * 900000));
+
+  // Atualizar no modo teste
+  const isTeste = email === EMAIL_TESTE || email.endsWith('@teste.com');
   if (isTeste) {
-    // Modo teste: mostrar token na tela
-    document.getElementById('testeBanner').style.display = 'block';
-    document.getElementById('tokenTestBox').style.display = 'block';
     document.getElementById('tokenTestValor').textContent = tokenGerado;
-    toast('Modo teste ativo — código exibido na tela', 'success');
-  } else {
-    // Enviar via API
-    fetch('/api/send-token', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, token: tokenGerado })
-    }).then(r => {
-      if (r.ok) toast('Código enviado para ' + email, 'success');
-      else toast('Erro ao enviar e-mail. Tente novamente.', 'error');
-    }).catch(() => toast('Erro de conexão', 'error'));
   }
+
+  // Limpar input
+  document.getElementById('veriToken').value = '';
+
+  await _dispararEnvio(email);
+  iniciarContador();
+  toast('Novo código enviado!', 'success');
 }
 
 function validarToken() {
@@ -1010,11 +1216,13 @@ function validarToken() {
 }
 
 function voltarParaEmail() {
+  if (_contadorTimer) { clearInterval(_contadorTimer); _contadorTimer = null; }
   document.getElementById('etapaEmail').style.display = 'block';
   document.getElementById('etapaToken').style.display = 'none';
   document.getElementById('tokenTestBox').style.display = 'none';
   document.getElementById('testeBanner').style.display = 'none';
   document.getElementById('veriToken').value = '';
+  document.getElementById('veriEmail').value = '';
   tokenGerado = '';
 }
 
